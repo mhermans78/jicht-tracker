@@ -468,8 +468,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
         const saved=await upsertEntry(payload,token);
         if(saved?.[0]){const n=norm(saved[0]);setEntries(es=>{const i=es.findIndex(e=>e.date===regDate);return i>=0?es.map(e=>e.date===regDate?n:e):[n,...es].sort((a,b)=>b.date.localeCompare(a.date));});}
         setSync("saved");setTimeout(()=>setSync(""),2000);
-      }catch(e){console.error("Supabase fout:",e);setSync("error:"+(e?.message||"onbekend"));setTimeout(()=>setSync(""),8000);
-
+      }catch(e){console.error("Supabase fout:",e);setSync("error:"+(e?.message||"onbekend"));setTimeout(()=>setSync(""),8000);}
     },800);
   },[dag]);// eslint-disable-line
 
