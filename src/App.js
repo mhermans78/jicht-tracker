@@ -15,8 +15,8 @@ async function upsertProfile(d,t){ const r=await fetch(SU+"/rest/v1/profiles",{m
   return r.ok?r.json():null;
 }
 async function getEntries(t){return await sf("/rest/v1/entries?select=*&order=date.desc","GET",null,t)||[];}
-async function upsertEntry(e,t){ const r=await fetch(SU+"/rest/v1/entries",{method:"POST",headers:{"Content-Type":"application/json","apikey":SK,"Authorization":"Bearer "+t,"Prefer":"return=representation,resolution=merge-duplicates","on-conflict":"user_id,date"},body:JSON.stringify(e)});
-  if(!r.ok){const e=await r.json().catch(()=>{});throw new Error(e?.message||"Fout");}
+async function upsertEntry(e,t){ const r=await fetch(SU+"/rest/v1/entries?on_conflict=user_id,date",{method:"POST",headers:{"Content-Type":"application/json","apikey":SK,"Authorization":"Bearer "+t,"Prefer":"return=representation,resolution=merge-duplicates"},body:JSON.stringify(e)});
+  if(!r.ok){const err=await r.json().catch(()=>{});throw new Error(err?.message||"Fout");}
   return r.json();
 }
 
