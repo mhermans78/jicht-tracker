@@ -8,6 +8,7 @@ async function sf(path,method="GET",body=null,token=null){ const h={"Content-Typ
   const t=await r.text(); return t?JSON.parse(t):null;
 }
 async function signIn(e,p){return sf("/auth/v1/token?grant_type=password","POST",{email:e,password:p});}
+async function signUp(e,p){return sf("/auth/v1/signup","POST",{email:e,password:p});}
 async function signOut(t){return sf("/auth/v1/logout","POST",{},t);}
 async function getProfile(t){const r=await sf("/rest/v1/profiles?select=*","GET",null,t);return r?.[0]||null;}
 async function upsertProfile(d,t){ const r=await fetch(SU+"/rest/v1/profiles",{method:"POST",headers:{"Content-Type":"application/json","apikey":SK,"Authorization":"Bearer "+t,"Prefer":"return=representation,resolution=merge-duplicates","on-conflict":"id"},body:JSON.stringify(d)});
@@ -293,15 +294,40 @@ function GewrichtsKaart({sel, onToggle}) {
       </svg><div style={{fontSize:12,textAlign:"center",marginTop:6,color:sel.length>0?C.danger:C.muted,fontWeight:sel.length>0?600:400}}>{sel.length>0?sel.map(id=>GEWRICHTEN.find(g=>g.id===id)?.label).filter(Boolean).join(", "):"Tik op een gewricht om het te selecteren"}</div></div>);}
 
 // ── Login ─────────────────────────────────────────────────────────────────────
-function LoginScreen({onLogin}){ const[email,setEmail]=useState("");
+function LoginScreen({onLogin}){
+  const[mode,setMode]=useState("login");
+  const[email,setEmail]=useState("");
   const[pw,setPw]=useState("");
+  const[pw2,setPw2]=useState("");
   const[loading,setLoading]=useState(false);
   const[err,setErr]=useState("");
-  async function handle(){ setErr("");setLoading(true);
-    try{const d=await signIn(email,pw);if(!d?.access_token)throw new Error("Inloggen mislukt");onLogin({token:d.access_token,user:d.user});}
-    catch(e){setErr(e.message);}
+  const[ok,setOk]=useState("");
+
+  async function handle(){
+    setErr("");setOk("");
+    if(mode==="register"){
+      if(pw!==pw2){setErr("Wachtwoorden komen niet overeen.");return;}
+      if(pw.length<6){setErr("Wachtwoord moet minimaal 6 tekens zijn.");return;}
+    }
+    setLoading(true);
+    try{
+      if(mode==="register"){
+        const d=await signUp(email,pw);
+        if(d?.user){
+          setOk("Account aangemaakt! Je kunt nu inloggen.");
+          setMode("login");setPw("");setPw2("");
+        } else {
+          throw new Error(d?.error_description||d?.msg||"Registreren mislukt");
+        }
+      } else {
+        const d=await signIn(email,pw);
+        if(!d?.access_token)throw new Error("Inloggen mislukt — controleer je gegevens");
+        onLogin({token:d.access_token,user:d.user});
+      }
+    }catch(e){setErr(e.message);}
     setLoading(false);
   }
+
   return (
     <div style={{fontFamily:"system-ui,sans-serif",background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
       <div style={{width:"100%",maxWidth:380}}>
@@ -311,12 +337,35 @@ function LoginScreen({onLogin}){ const[email,setEmail]=useState("");
           <p style={{color:C.muted,fontSize:13,marginTop:4}}>een product van <strong>HOBC BV</strong></p>
         </div>
         <div style={{background:C.card,borderRadius:16,padding:24,border:"1px solid "+C.border,boxShadow:"0 4px 20px rgba(0,0,0,0.08)"}}>
+          {/* Tab switcher */}
+          <div style={{display:"flex",background:C.bg,borderRadius:8,padding:3,marginBottom:20}}>
+            {[["login","Inloggen"],["register","Registreren"]].map(([m,l])=>(
+              <button key={m} onClick={()=>{setMode(m);setErr("");setOk("");}} style={{flex:1,padding:"8px",border:"none",borderRadius:6,cursor:"pointer",fontSize:13,fontWeight:mode===m?700:400,background:mode===m?C.card:"transparent",color:mode===m?C.primary:C.muted,boxShadow:mode===m?"0 1px 4px rgba(0,0,0,0.1)":"none"}}>{l}</button>
+            ))}
+          </div>
+
           {err&&<div style={{background:C.dL,border:"1px solid "+C.danger,borderRadius:8,padding:"9px 12px",color:C.danger,fontSize:13,marginBottom:14}}>{err}</div>}
-          <div style={{marginBottom:12}}><div style={{fontSize:12,color:C.muted,marginBottom:5}}>E-mailadres</div><input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="jouw@email.nl" style={inp} onKeyDown={e=>e.key==="Enter"&&handle()}/></div>
-          <div style={{marginBottom:20}}><div style={{fontSize:12,color:C.muted,marginBottom:5}}>Wachtwoord</div><input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Wachtwoord" style={inp} onKeyDown={e=>e.key==="Enter"&&handle()}/></div>
-          <button onClick={handle} disabled={loading||!email||!pw} style={{width:"100%",padding:"13px",background:email&&pw?C.primary:C.border,color:"#fff",border:"none",borderRadius:10,fontSize:15,fontWeight:700,cursor:email&&pw?"pointer":"default"}}>
-            {loading?"⏳ Even geduld...":"Inloggen →"}
+          {ok&&<div style={{background:C.sL,border:"1px solid #81C784",borderRadius:8,padding:"9px 12px",color:C.success,fontSize:13,marginBottom:14}}>✅ {ok}</div>}
+
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:12,color:C.muted,marginBottom:5}}>E-mailadres</div>
+            <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="jouw@email.nl" style={inp} onKeyDown={e=>e.key==="Enter"&&handle()}/>
+          </div>
+          <div style={{marginBottom:mode==="register"?12:20}}>
+            <div style={{fontSize:12,color:C.muted,marginBottom:5}}>Wachtwoord</div>
+            <input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Minimaal 6 tekens" style={inp} onKeyDown={e=>e.key==="Enter"&&handle()}/>
+          </div>
+          {mode==="register"&&(
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:12,color:C.muted,marginBottom:5}}>Wachtwoord herhalen</div>
+              <input type="password" value={pw2} onChange={e=>setPw2(e.target.value)} placeholder="Herhaal wachtwoord" style={inp} onKeyDown={e=>e.key==="Enter"&&handle()}/>
+            </div>
+          )}
+
+          <button onClick={handle} disabled={loading||!email||!pw||(mode==="register"&&!pw2)} style={{width:"100%",padding:"13px",background:(email&&pw&&(mode==="login"||pw2))?C.primary:C.border,color:"#fff",border:"none",borderRadius:10,fontSize:15,fontWeight:700,cursor:(email&&pw)?"pointer":"default"}}>
+            {loading?"⏳ Even geduld...":(mode==="login"?"Inloggen →":"Account aanmaken →")}
           </button>
+
           <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid "+C.border,textAlign:"center"}}>
             <div style={{fontSize:11,color:C.muted,marginBottom:10}}>Wil je eerst de app bekijken?</div>
             <button onClick={()=>onLogin({token:"demo",user:{email:"demo@demo.nl"},demo:true})} style={{width:"100%",padding:"11px",background:C.aL,color:C.aT,border:"1.5px solid "+C.accent,borderRadius:10,fontSize:14,fontWeight:700,cursor:"pointer"}}>
