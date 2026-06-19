@@ -464,7 +464,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
     if(saveTimer.current)clearTimeout(saveTimer.current);
     setSync("saving");
     saveTimer.current=setTimeout(async()=>{ try{ const sl=berekenSlaap(dag.slaap.bedtijd,dag.slaap.wektijd);
-        const payload={date:regDate,eten:dag.eten,drinken:dag.drinken,bewegen:dag.bewegen,slaap:{...dag.slaap,uren:sl?sl.dec:dag.slaap.uren},pijn_logs:dag.pijnLogs,aanval:dag.aanval,med:dag.med,suppl:dag.suppl,urinezuur:dag.urinezuur};
+        const payload={user_id:session.user.id,date:regDate,eten:dag.eten,drinken:dag.drinken,bewegen:dag.bewegen,slaap:{...dag.slaap,uren:sl?sl.dec:dag.slaap.uren},pijn_logs:dag.pijnLogs,aanval:dag.aanval,med:dag.med,suppl:dag.suppl,urinezuur:dag.urinezuur};
         const saved=await upsertEntry(payload,token);
         if(saved?.[0]){const n=norm(saved[0]);setEntries(es=>{const i=es.findIndex(e=>e.date===regDate);return i>=0?es.map(e=>e.date===regDate?n:e):[n,...es].sort((a,b)=>b.date.localeCompare(a.date));});}
         setSync("saved");setTimeout(()=>setSync(""),2000);
