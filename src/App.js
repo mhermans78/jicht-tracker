@@ -468,7 +468,8 @@ function JichtTracker({session,onLogout}){ const{token}=session;
         const saved=await upsertEntry(payload,token);
         if(saved?.[0]){const n=norm(saved[0]);setEntries(es=>{const i=es.findIndex(e=>e.date===regDate);return i>=0?es.map(e=>e.date===regDate?n:e):[n,...es].sort((a,b)=>b.date.localeCompare(a.date));});}
         setSync("saved");setTimeout(()=>setSync(""),2000);
-      }catch{setSync("error");}
+      }catch(e){console.error("Supabase fout:",e);setSync("error:"+(e?.message||"onbekend"));setTimeout(()=>setSync(""),8000);
+
     },800);
   },[dag]);// eslint-disable-line
 
@@ -528,7 +529,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   const avgPain=allPains.length?(allPains.reduce((a,b)=>a+b,0)/allPains.length).toFixed(1):"–";
   const monthly=getStats(entries);
   const recent=monthly.slice(-6);
-  const syncBadge=sync==="saving"?{bg:"#FFF8E1",b:"#FFD54F",t:"⏳ Opslaan...",c:"#795548"}:sync==="saved"?{bg:C.sL,b:"#81C784",t:"✅ Opgeslagen",c:C.success}:sync==="error"?{bg:C.dL,b:C.danger,t:"❌ Fout",c:C.danger}:null;
+  const syncBadge=sync==="saving"?{bg:"#FFF8E1",b:"#FFD54F",t:"⏳ Opslaan...",c:"#795548"}:sync==="saved"?{bg:C.sL,b:"#81C784",t:"✅ Opgeslagen",c:C.success}:(sync.startsWith("error"))?{bg:C.dL,b:C.danger,t:"❌ Fout bij opslaan: "+sync.replace("error:",""),c:C.danger}:null;
   const slaap=berekenSlaap(dag.slaap.bedtijd,dag.slaap.wektijd);
   const PG="linear-gradient(90deg,#4CAF50 0%,#8BC34A 25%,#FF9800 50%,#F44336 75%,#B71C1C 100%)";
 
