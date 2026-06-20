@@ -39,7 +39,8 @@ const DCAT=["Water","Koffie/thee","Frisdrank","Alcohol","Fruitsap","Sportdrank",
 const PORTIE={ "Water":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Groot glas",i:"glas",ml:300},{l:"Flesje",i:"fles",ml:330},{l:"Fles",i:"fles",ml:500},{l:"Grote fles",i:"fles",ml:750}], "Koffie/thee":[{l:"Espresso",i:"kop",ml:30},{l:"Kopje",i:"kop",ml:150},{l:"Groot kopje",i:"kop",ml:250},{l:"Mok",i:"mok",ml:350}], "Frisdrank":[{l:"Glas",i:"glas",ml:200},{l:"Blikje",i:"blik",ml:330},{l:"Flesje",i:"fles",ml:500},{l:"Groot glas",i:"glas",ml:400}], "Alcohol":[{l:"Borrel",i:"shot",ml:35},{l:"Wijn",i:"wijn",ml:150},{l:"Biertje",i:"bier",ml:250},{l:"Pint",i:"bier",ml:500}], "Fruitsap":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Groot glas",i:"glas",ml:300},{l:"Flesje",i:"fles",ml:250}], "Sportdrank":[{l:"Klein flesje",i:"fles",ml:250},{l:"Flesje",i:"fles",ml:500},{l:"Grote fles",i:"fles",ml:750}], "Melk":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Groot glas",i:"glas",ml:300}], "Anders":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Kopje",i:"kop",ml:150},{l:"Flesje",i:"fles",ml:330},{l:"Fles",i:"fles",ml:500}],
 };
 const MMT=["Ontbijt","Lunch","Avondeten","Tussendoor","Avondsnack"];
-const RTABS=[{id:"eten",icon:"🍽",label:"Eten"},{id:"drinken",icon:"💧",label:"Drinken"},{id:"bewegen",icon:"🏃",label:"Bewegen"},{id:"slaap",icon:"😴",label:"Slaap"},{id:"pijn",icon:"😣",label:"Pijn"},{id:"aanval",icon:"⚠",label:"Aanval"},{id:"med",icon:"💊",label:"Medicatie"},{id:"suppl",icon:"🌿",label:"Suppl."},{id:"urinezuur",icon:"🩸",label:"Urinezuur"}];
+const PRO_TABS=["drinken","bewegen","slaap","med","suppl","urinezuur"];
+const RTABS=[{id:"eten",icon:"🍽",label:"Eten"},{id:"drinken",icon:"💧",label:"Drinken"},{id:"bewegen",icon:"🏃",label:"Bewegen"},{id:"slaap",icon:"😴",label:"Slaap"},{id:"pijn",icon:"😣",label:"Pijn"},{id:"aanval",icon:"⚠",label:"Aanval"},{id:"med",icon:"💊",label:"Medicatie"},{id:"suppl",icon:"🌿",label:"Supplementen"},{id:"urinezuur",icon:"🩸",label:"Urinezuur"}];
 const MTABS=[["registreer","✏","Registreer"],["overzicht","📖","Dagboek"],["statistieken","📈","Trends"],["analyse","🧠","AI"]];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -102,7 +103,13 @@ function BarChart({data,vk,color,maxV=1,unit=""}){ const max=maxV||Math.max(...d
 }
 
 // ── Modal wrapper ─────────────────────────────────────────────────────────────
-function Modal({show,onClose,title,accentColor=C.primary,children}){ if(!show)return null;
+function Modal({show,onClose,title,accentColor=C.primary,children}){
+  useEffect(()=>{
+    if(show){document.body.style.overflow="hidden";}
+    else{document.body.style.overflow="";}
+    return ()=>{document.body.style.overflow="";};
+  },[show]);
+  if(!show)return null;
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:200,display:"flex",alignItems:"flex-end"}} onClick={onClose}>
       <div style={{background:C.card,borderRadius:"20px 20px 0 0",padding:"24px 20px 44px",width:"100%",maxWidth:680,maxHeight:"88vh",overflowY:"auto",margin:"0 auto"}} onClick={e=>e.stopPropagation()}>
@@ -293,6 +300,98 @@ function GewrichtsKaart({sel, onToggle}) {
         {sel.map(id=>{const g=GEWRICHTEN.find(x=>x.id===id);if(!g)return null;const isL=g.cx>130;return(<text key={id+"_l"} x={isL?g.cx+(g.r||9)+3:g.cx-(g.r||9)-3} y={g.cy} textAnchor={isL?"start":"end"} dominantBaseline="middle" fontSize="7" fill={C.danger} fontWeight="600">{g.label.replace(" rechts","R").replace(" links","L")}</text>);})}
       </svg><div style={{fontSize:12,textAlign:"center",marginTop:6,color:sel.length>0?C.danger:C.muted,fontWeight:sel.length>0?600:400}}>{sel.length>0?sel.map(id=>GEWRICHTEN.find(g=>g.id===id)?.label).filter(Boolean).join(", "):"Tik op een gewricht om het te selecteren"}</div></div>);}
 
+// ── Scan componenten ────────────────────────────────────────────────────────
+function FotoScan({onResult}){
+  const[loading,setLoading]=useState(false);
+  const ref=useRef(null);
+  async function handle(e){
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=async(ev)=>{
+      const b64=ev.target.result.split(",")[1];
+      setLoading(true);
+      try{
+        const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:150,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:file.type,data:b64}},{type:"text",text:"Wat zie je op deze foto? Geef alleen de naam van het voedsel, drank of supplement in max 8 woorden. Geen uitleg."}]}]})});
+        const d=await res.json();
+        onResult(d.content?.map(b=>b.text||"").join("").trim()||"");
+      }catch{onResult("");}
+      setLoading(false);
+    };
+    reader.readAsDataURL(file);
+  }
+  return(<div style={{display:"inline"}}><input ref={ref} type="file" accept="image/*" capture="environment" onChange={handle} style={{display:"none"}}/><button onClick={()=>ref.current?.click()} disabled={loading} style={{padding:"6px 12px",borderRadius:8,border:"1.5px solid "+C.primary,background:C.pL,color:C.primary,fontSize:12,fontWeight:600,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:5}}>{loading?"⏳ Herkennen...":"📷 Scan foto"}</button></div>);
+}
+
+function BarcodeScan({onResult}){
+  const[loading,setLoading]=useState(false);
+  const ref=useRef(null);
+  async function handle(e){
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=async(ev)=>{
+      const b64=ev.target.result.split(",")[1];
+      setLoading(true);
+      try{
+        const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:50,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:file.type,data:b64}},{type:"text",text:"Lees de barcode/EAN uit deze foto. Geef alleen het getal. Als geen barcode: schrijf 'geen'."}]}]})});
+        const d=await res.json();
+        const barcode=(d.content?.map(b=>b.text||"").join("").trim()||"").replace(/\D/g,"");
+        if(!barcode||barcode.length<8){onResult(null,"Geen barcode herkend");setLoading(false);return;}
+        const p=await fetch("https://world.openfoodfacts.org/api/v0/product/"+barcode+".json");
+        const pd=await p.json();
+        if(pd.status===1){onResult(pd.product?.product_name_nl||pd.product?.product_name||pd.product?.brands||"Onbekend product");}
+        else{onResult(null,"Product niet gevonden");}
+      }catch{onResult(null,"Scan mislukt");}
+      setLoading(false);
+    };
+    reader.readAsDataURL(file);
+  }
+  return(<div style={{display:"inline"}}><input ref={ref} type="file" accept="image/*" capture="environment" onChange={handle} style={{display:"none"}}/><button onClick={()=>ref.current?.click()} disabled={loading} style={{padding:"6px 12px",borderRadius:8,border:"1.5px solid "+C.accent,background:C.aL,color:C.aT,fontSize:12,fontWeight:600,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:5}}>{loading?"⏳ Zoeken...":"🔢 Scan barcode"}</button></div>);
+}
+
+// ── Upgrade modal ────────────────────────────────────────────────────────────
+function UpgradeModal({show, onClose}) {
+  return (
+    <Modal show={show} onClose={onClose} title="🔓 Upgrade naar Pro">
+      <div style={{textAlign:"center",marginBottom:20}}>
+        <div style={{fontSize:40,marginBottom:8}}>🦶</div>
+        <div style={{fontWeight:700,fontSize:16,color:C.text,marginBottom:6}}>Jicht Tracker Pro</div>
+        <div style={{fontSize:13,color:C.muted,lineHeight:1.7}}>Krijg toegang tot alle 9 registratie-modules en onbeperkte AI-analyses.</div>
+      </div>
+      <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
+        {["💧 Drinken registreren","🏃 Beweging bijhouden","😴 Slaap monitoren","💊 Medicatie logging","🌿 Supplementen tracking","🩸 Urinezuurwaarden"].map(f=>(
+          <div key={f} style={{display:"flex",alignItems:"center",gap:8,fontSize:13,color:C.text}}>
+            <span style={{color:C.success,fontWeight:700}}>✓</span>{f}
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
+        <div style={{background:C.pL,borderRadius:12,padding:"14px 16px",border:"1.5px solid "+C.primary}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontWeight:700,color:C.primary,fontSize:15}}>Maandelijks</div><div style={{fontSize:12,color:C.muted}}>Maandelijks opzegbaar</div></div>
+            <div style={{textAlign:"right"}}><div style={{fontWeight:800,fontSize:20,color:C.primary}}>€9</div><div style={{fontSize:11,color:C.muted}}>/maand</div></div>
+          </div>
+          <button onClick={()=>window.open("https://buy.stripe.com/test_6oUdR17qZ2tW8h84fLdQQ01","_blank")} style={{width:"100%",marginTop:10,padding:"10px",background:C.primary,color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer"}}>
+            Kies maandelijks →
+          </button>
+        </div>
+        <div style={{background:"#F5F0FF",borderRadius:12,padding:"14px 16px",border:"1.5px solid #7C3AED",position:"relative"}}>
+          <div style={{position:"absolute",top:-10,right:12,background:"#7C3AED",color:"#fff",fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:10}}>BESTE DEAL</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontWeight:700,color:"#7C3AED",fontSize:15}}>Jaarlijks</div><div style={{fontSize:12,color:C.muted}}>2 maanden gratis</div></div>
+            <div style={{textAlign:"right"}}><div style={{fontWeight:800,fontSize:20,color:"#7C3AED"}}>€99</div><div style={{fontSize:11,color:C.muted}}>/jaar</div></div>
+          </div>
+          <button onClick={()=>window.open("https://buy.stripe.com/test_4gM00bfXv2tW54W7rXdQQ00","_blank")} style={{width:"100%",marginTop:10,padding:"10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer"}}>
+            Kies jaarlijks →
+          </button>
+        </div>
+      </div>
+      <div style={{fontSize:11,color:C.muted,textAlign:"center",lineHeight:1.6}}>
+        Betaling via iDEAL, creditcard of SEPA · Veilig via Stripe · Op elk moment opzegbaar
+      </div>
+    </Modal>
+  );
+}
+
 // ── Login ─────────────────────────────────────────────────────────────────────
 function LoginScreen({onLogin}){
   const[mode,setMode]=useState("login");
@@ -329,10 +428,10 @@ function LoginScreen({onLogin}){
   }
 
   return (
-    <div style={{fontFamily:"system-ui,sans-serif",background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+    <div style={{fontFamily:"system-ui,sans-serif",background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 20px"}}>
       <div style={{width:"100%",maxWidth:380}}>
-        <div style={{textAlign:"center",marginBottom:28}}>
-          <div style={{fontSize:44,marginBottom:8}}>🦶</div>
+        <div style={{textAlign:"center",marginBottom:16}}>
+          <div style={{fontSize:36,marginBottom:4}}>🦶</div>
           <h1 style={{margin:0,fontSize:24,fontWeight:700,color:C.primary}}>Jicht Tracker</h1>
           <p style={{color:C.muted,fontSize:13,marginTop:4}}>een product van <strong>HOBC BV</strong></p>
         </div>
@@ -416,6 +515,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   const[showPrivacy,setShowPrivacy]=useState(false);
   const[showDisc,setShowDisc]=useState(false);
   const[showTher,setShowTher]=useState(false);
+  const[showUpgrade,setShowUpgrade]=useState(false);
   const[wisConf,setWisConf]=useState(false);
   const[dag,setDag]=useState(()=>emptyDay());
   const[skip,setSkip]=useState(true);
@@ -522,6 +622,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
 
   // ── Na hooks: vroege return ───────────────────────────────────────────────
   if(loading)return <Spinner/>;
+  const isPro = profile.plan==='pro';
 
   const totalAttacks=entries.filter(e=>(e.aanval?.logs||[]).some(a=>a.type==="actief")).length;
   const allPains=entries.flatMap(e=>e.pijn_logs||e.pijnLogs||[]).map(p=>p.level).filter(Boolean);
@@ -533,7 +634,18 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   const PG="linear-gradient(90deg,#4CAF50 0%,#8BC34A 25%,#FF9800 50%,#F44336 75%,#B71C1C 100%)";
 
   const MENU_ITEMS=[
-    ["👤","Profiel",()=>setShowProfiel(true)], ["📧","Rapport versturen",()=>{setShowRapport(true);setRapportTekst("");}], ["🩺","Therapeut raadplegen",()=>setShowTher(true)], ["ℹ","Over Jicht Tracker",()=>setShowOver(true)], ["🆘","Ondersteuning",()=>setShowSupport(true)], ["🔒","Privacy",()=>setShowPrivacy(true)], ["⚖","Disclaimer",()=>setShowDisc(true)], ["🚪",isDemo?"↩ Terug naar login":"Uitloggen",async()=>{if(!isDemo)await signOut(token);onLogout();}], ];
+    ["🩺","Arts / Therapeut raadplegen",()=>setShowTher(true)],
+    ["📧","Rapport versturen",()=>{setShowRapport(true);setRapportTekst("");}],
+    ["🛒","Naar de webshop",()=>{}],
+    ["---","---",null],
+    ["👤","Profiel",()=>setShowProfiel(true)],
+    ["🆘","Ondersteuning",()=>setShowSupport(true)],
+    ["ℹ","Over Jicht Tracker",()=>setShowOver(true)],
+    ["---","---",null],
+    ["🔒","Privacy",()=>setShowPrivacy(true)],
+    ["⚖","Disclaimer",()=>setShowDisc(true)],
+    ["🚪",isDemo?"↩ Terug naar login":"Uitloggen",async()=>{if(!isDemo)await signOut(token);onLogout();}],
+  ];
 
   return (
     <div style={{fontFamily:"system-ui,-apple-system,sans-serif",background:C.bg,minHeight:"100vh",maxWidth:680,margin:"0 auto",paddingBottom:50}}>
@@ -549,9 +661,11 @@ function JichtTracker({session,onLogout}){ const{token}=session;
         {menuOpen&&(
           <div style={{position:"absolute",top:"100%",right:16,zIndex:100,background:C.card,borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.15)",border:"1px solid "+C.border,minWidth:210,overflow:"hidden"}} onClick={()=>setMenuOpen(false)}>
             {MENU_ITEMS.map(([icon,lbl,fn],i)=>(
-              <button key={lbl} onClick={fn} style={{width:"100%",padding:"12px 16px",border:"none",background:"transparent",textAlign:"left",cursor:"pointer",fontSize:14,color:(lbl==="Uitloggen"||lbl==="↩ Terug naar login")?C.danger:C.text,display:"flex",alignItems:"center",gap:10,borderBottom:i<MENU_ITEMS.length-1?"1px solid "+C.border:"none"}}>
-                <span>{icon}</span><span style={{fontWeight:600}}>{lbl}</span>
-              </button>
+              lbl==="---"
+                ? <div key={i} style={{height:1,background:C.border,margin:"4px 0"}}/>
+                : <button key={lbl} onClick={fn} style={{width:"100%",padding:"12px 16px",border:"none",background:"transparent",textAlign:"left",cursor:"pointer",fontSize:14,color:(lbl==="Uitloggen"||lbl==="↩ Terug naar login")?C.danger:C.text,display:"flex",alignItems:"center",gap:10}}>
+                    <span>{icon}</span><span style={{fontWeight:600}}>{lbl}</span>
+                  </button>
             ))}
           </div>
         )}
@@ -638,6 +752,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
       <SupportModal show={showSupport} onClose={()=>setShowSupport(false)}/>
       <PrivacyModal show={showPrivacy} onClose={()=>setShowPrivacy(false)} entries={entries} wisAlleData={wisAlleData} wisConf={wisConf} setWisConf={setWisConf}/>
       <DisclaimerModal show={showDisc} onClose={()=>setShowDisc(false)}/>
+      <UpgradeModal show={showUpgrade} onClose={()=>setShowUpgrade(false)}/>
 
       <div style={{padding:"16px 14px"}}>
 
@@ -651,12 +766,14 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                 <input type="date" value={regDate} onChange={e=>setRegDate(e.target.value)} style={{...inp,flex:1,padding:"7px 10px"}}/>
               </div>
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
-              {RTABS.map(t=>(
-                <button key={t.id} onClick={()=>setRegSec(t.id)} style={{padding:"9px 4px",border:"2px solid "+(regSec===t.id?C.primary:C.border),borderRadius:10,background:regSec===t.id?C.pL:C.card,color:regSec===t.id?C.primary:C.muted,fontSize:11,fontWeight:regSec===t.id?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-                  <span style={{fontSize:18}}>{t.icon}</span>{t.label}
-                </button>
-              ))}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
+              {RTABS.map(t=>{
+                const locked=PRO_TABS.includes(t.id)&&!isPro;
+                return(
+                <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)} style={{padding:"12px 4px",border:"2px solid "+(regSec===t.id?C.primary:locked?"#E2D9F3":C.border),borderRadius:10,background:regSec===t.id?C.pL:locked?"#FAF8FF":C.card,color:regSec===t.id?C.primary:locked?"#9B59D6":C.muted,fontSize:11,fontWeight:regSec===t.id?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative"}}>
+                  {locked&&<span style={{position:"absolute",top:4,right:4,fontSize:8,fontWeight:700,background:"#7C3AED",color:"#fff",padding:"1px 4px",borderRadius:6}}>PRO</span>}
+                  <span style={{fontSize:28}}>{t.icon}</span>{t.label}
+                </button>);})}
             </div>
 
             {regSec==="eten"&&(
@@ -664,13 +781,16 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                 <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
                   {MMT.map(m=><button key={m} onClick={()=>setEtenMom(m)} style={{padding:"5px 11px",borderRadius:16,fontSize:12,cursor:"pointer",border:"1.5px solid "+(etenMom===m?C.accent:C.border),background:etenMom===m?C.aL:C.card,color:etenMom===m?C.aT:C.muted,fontWeight:etenMom===m?700:400}}>{m}</button>)}
                 </div>
-                <textarea value={etenTxt} onChange={e=>setEtenTxt(e.target.value)} placeholder="Wat heb je gegeten?" rows={2} style={{...inp,resize:"vertical",marginBottom:8}}/>
+                <div style={{display:"flex",gap:8,marginBottom:8}}>
+                  <FotoScan onResult={tekst=>{if(tekst)setEtenTxt(tekst);}}/>
+                </div>
+                <textarea value={etenTxt} onChange={e=>setEtenTxt(e.target.value)} placeholder="Wat heb je gegeten? Of scan een foto..." rows={2} style={{...inp,resize:"vertical",marginBottom:8}}/>
                 <button onClick={addEten} disabled={!etenTxt.trim()} style={{background:etenTxt.trim()?C.primary:C.border,color:"#fff",border:"none",borderRadius:8,padding:"8px",fontSize:13,fontWeight:600,cursor:etenTxt.trim()?"pointer":"default",width:"100%"}}>+ Toevoegen</button>
                 {dag.eten.logs.length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:10}}>{dag.eten.logs.map((l,i)=><div key={i} style={{display:"flex",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,fontWeight:700,color:C.aT,minWidth:70}}>{l.moment}</span><span style={{fontSize:12,flex:1}}>{l.tekst}</span><button onClick={()=>remEten(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button></div>)}</div>}
               </Card>
             )}
 
-            {regSec==="drinken"&&(
+            {regSec==="drinken"&&isPro&&(
               <Card title="💧 Drinken registreren">
                 {(()=>{ const tot=dag.drinken.logs.reduce((s,l)=>s+(l.ml||0),0);
                   const pct=Math.min(100,Math.round(tot/waterDoel*100));
@@ -695,12 +815,15 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                 <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:10}}>
                   {(PORTIE[dCat]||PORTIE["Anders"]).map(p=><button key={p.l} onClick={()=>{setDMl(p.ml);setDPortie(p.l);}} style={{padding:"7px 3px",borderRadius:10,border:"2px solid "+(dMl===p.ml&&dPortie===p.l?C.primary:C.border),background:dMl===p.ml&&dPortie===p.l?C.pL:C.card,color:dMl===p.ml&&dPortie===p.l?C.primary:C.muted,fontSize:10,fontWeight:dMl===p.ml&&dPortie===p.l?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:1}}><span style={{fontSize:16}}>{p.i==="kop"?"☕":p.i==="mok"?"🫖":p.i==="bier"?"🍺":p.i==="wijn"?"🍷":p.i==="fles"?"💧":"🥤"}</span><span>{p.l}</span><span style={{fontSize:9,color:C.muted}}>{p.ml}ml</span></button>)}
                 </div>
+                <div style={{display:"flex",gap:8,marginBottom:10}}>
+                  <FotoScan onResult={tekst=>{if(tekst)setDTxt(tekst);}}/>
+                </div>
                 <button onClick={addDrinken} style={{background:C.primary,color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:13,fontWeight:700,cursor:"pointer",width:"100%",marginBottom:10}}>+ Registreren</button>
                 {dag.drinken.logs.length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10}}>{dag.drinken.logs.map((l,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{l.tijd}</span><span style={{fontSize:12,fontWeight:700,color:C.primary,flex:1}}>{l.categorie}{l.tekst?" · "+l.tekst:""}</span><span style={{fontSize:11,color:C.muted,background:C.pL,padding:"2px 7px",borderRadius:8}}>{l.portie} · {l.ml}ml</span><button onClick={()=>remDrinken(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button></div>)}</div>}
               </Card>
             )}
 
-            {regSec==="bewegen"&&(
+            {regSec==="bewegen"&&isPro&&(
               <Card title="🏃 Beweging registreren">
                 {(dag.bewegen?.logs||[]).length>0&&(()=>{const tot=(dag.bewegen.logs).reduce((s,l)=>s+(parseInt(l.minuten)||0),0);return<div style={{background:C.pL,borderRadius:8,padding:"8px 12px",marginBottom:12,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:13,color:C.primary,fontWeight:700}}>{dag.bewegen.logs.length} sessie{dag.bewegen.logs.length>1?"s":""}</span><span style={{fontSize:12,color:C.primary}}>{tot} min totaal</span></div>;})()}
                 <div style={{display:"flex",gap:10,marginBottom:12,alignItems:"flex-end"}}>
@@ -716,7 +839,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
               </Card>
             )}
 
-            {regSec==="slaap"&&(
+            {regSec==="slaap"&&isPro&&(
               <Card title="😴 Slaap registreren">
                 <div style={{display:"flex",gap:12,marginBottom:16}}>
                   <div style={{flex:1}}><div style={{fontSize:12,color:C.muted,marginBottom:6,fontWeight:600}}>Wakker geworden</div><input type="time" value={dag.slaap.wektijd} onChange={e=>setDag(d=>({...d,slaap:{...d.slaap,wektijd:e.target.value}}))} style={{...inp,fontSize:17,fontWeight:700,textAlign:"center",padding:"11px"}}/></div>
@@ -820,7 +943,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
               </Card>
             )}
 
-            {regSec==="med"&&(
+            {regSec==="med"&&isPro&&(
               <Card title="💊 Medicatie vandaag">
                 {(dag.med?.logs||[]).length>0&&<div style={{background:C.pL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.primary,fontWeight:700}}>{dag.med.logs.length} inname{dag.med.logs.length>1?"s":""} vandaag</span></div>}
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
@@ -834,7 +957,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
               </Card>
             )}
 
-            {regSec==="urinezuur"&&(
+            {regSec==="urinezuur"&&isPro&&(
               <Card title="🩸 Urinezuurwaarde">
                 {(dag.urinezuur?.logs||[]).length>0&&<div style={{background:"#FEE2E2",borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.danger,fontWeight:700}}>{dag.urinezuur.logs.length} meting{dag.urinezuur.logs.length>1?"en":""} vandaag</span></div>}
                 <div style={{fontSize:13,color:C.muted,marginBottom:12,lineHeight:1.6}}>Voer de waarde in na een bloedprikbeurt. Streefwaarde bij jicht: onder 0.36 mmol/L (6 mg/dL).</div>
@@ -882,12 +1005,16 @@ function JichtTracker({session,onLogout}){ const{token}=session;
               </Card>
             )}
 
-            {regSec==="suppl"&&(
+            {regSec==="suppl"&&isPro&&(
               <Card title="🌿 Supplementen vandaag">
                 {(dag.suppl?.logs||[]).length>0&&<div style={{background:C.sL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.success,fontWeight:700}}>{dag.suppl.logs.length} inname{dag.suppl.logs.length>1?"s":""} vandaag</span></div>}
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}><div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Tijdstip</div><input type="time" value={sTijd} onChange={e=>setSTijd(e.target.value)} style={{...inp,width:100}}/></div></div>
+                <div style={{display:"flex",gap:8,marginBottom:10}}>
+                  <FotoScan onResult={tekst=>{if(tekst)setSAnders(tekst);}}/>
+                  <BarcodeScan onResult={(naam,err)=>{if(naam)setSAnders(naam);else if(err)setSAnders("");}}/>
+                </div>
                 <Chips opts={SUPPL} sel={sNaam?[sNaam]:[]} onToggle={item=>setSNaam(sNaam===item?"":item)} col={C.success} bg={C.sL}/>
-                <input value={sAnders} onChange={e=>setSAnders(e.target.value)} placeholder="Of typ een ander supplement..." style={{...inp,marginTop:10}}/>
+                <input value={sAnders} onChange={e=>setSAnders(e.target.value)} placeholder="Of typ of scan een supplement..." style={{...inp,marginTop:10}}/>
                 <button onClick={addSuppl} disabled={!sNaam&&!sAnders} style={{background:(sNaam||sAnders)?C.success:C.border,color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:13,fontWeight:700,cursor:(sNaam||sAnders)?"pointer":"default",width:"100%",marginTop:10}}>+ Inname registreren</button>
                 {(dag.suppl?.logs||[]).length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>{dag.suppl.logs.map((s,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{s.tijd}</span><span style={{fontSize:12,fontWeight:600,flex:1}}>{s.naam}</span><button onClick={()=>remSuppl(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button></div>)}</div>}
               </Card>
@@ -925,7 +1052,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                         {pijns.length>0&&<Row icon="😣" label="Pijn" val={pijns.map(p=>p.tijd+": "+(p.level>0?p.level+"/5":"geen")).join(", ")}/>}
                         {(e.aanval?.logs||[]).length>0&&<Row icon="⚠" label="Aanval" val={(e.aanval.logs).map(a=>a.tijd+" "+(a.type==="actief"?"🚨":a.type==="voorbij"?"✅":a.type==="afnemend"?"📉":"🔔")).join(" · ")}/>}
                         {(e.med?.logs||[]).length>0&&<Row icon="💊" label="Meds" val={(e.med.logs).map(m=>m.naam).join(", ")}/>}
-                        {(e.suppl?.logs||[]).length>0&&<Row icon="🌿" label="Suppl." val={(e.suppl.logs).map(s=>s.naam).join(", ")}/>
+                        {(e.suppl?.logs||[]).length>0&&<Row icon="🌿" label="Supplementen" val={(e.suppl.logs).map(s=>s.naam).join(", ")}/>
                         }{(e.urinezuur?.logs||[]).length>0&&<Row icon="🩸" label="Urinezuur" val={(e.urinezuur.logs).map(l=>l.waarde+" "+(l.eenheid==="mmol"?"mmol/L":"mg/dL")).join(", ")}/>}
                       </div>
                     </div>
