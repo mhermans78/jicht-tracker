@@ -39,8 +39,9 @@ const DCAT=["Water","Koffie/thee","Frisdrank","Alcohol","Fruitsap","Sportdrank",
 const PORTIE={ "Water":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Groot glas",i:"glas",ml:300},{l:"Flesje",i:"fles",ml:330},{l:"Fles",i:"fles",ml:500},{l:"Grote fles",i:"fles",ml:750}], "Koffie/thee":[{l:"Espresso",i:"kop",ml:30},{l:"Kopje",i:"kop",ml:150},{l:"Groot kopje",i:"kop",ml:250},{l:"Mok",i:"mok",ml:350}], "Frisdrank":[{l:"Glas",i:"glas",ml:200},{l:"Blikje",i:"blik",ml:330},{l:"Flesje",i:"fles",ml:500},{l:"Groot glas",i:"glas",ml:400}], "Alcohol":[{l:"Borrel",i:"shot",ml:35},{l:"Wijn",i:"wijn",ml:150},{l:"Biertje",i:"bier",ml:250},{l:"Pint",i:"bier",ml:500}], "Fruitsap":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Groot glas",i:"glas",ml:300},{l:"Flesje",i:"fles",ml:250}], "Sportdrank":[{l:"Klein flesje",i:"fles",ml:250},{l:"Flesje",i:"fles",ml:500},{l:"Grote fles",i:"fles",ml:750}], "Melk":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Groot glas",i:"glas",ml:300}], "Anders":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Kopje",i:"kop",ml:150},{l:"Flesje",i:"fles",ml:330},{l:"Fles",i:"fles",ml:500}],
 };
 const MMT=["Ontbijt","Lunch","Avondeten","Tussendoor","Avondsnack"];
-const PRO_TABS=["drinken","bewegen","slaap","med","suppl","urinezuur"];
-const RTABS=[{id:"eten",icon:"🍽",label:"Eten"},{id:"drinken",icon:"💧",label:"Drinken"},{id:"bewegen",icon:"🏃",label:"Bewegen"},{id:"slaap",icon:"😴",label:"Slaap"},{id:"pijn",icon:"😣",label:"Pijn"},{id:"aanval",icon:"⚠",label:"Aanval"},{id:"med",icon:"💊",label:"Medicatie"},{id:"suppl",icon:"🌿",label:"Supplementen"},{id:"urinezuur",icon:"🩸",label:"Urinezuur"}];
+const PRO_TABS=["drinken","bewegen","slaap","medsuppl","weer","urinezuur"];
+const RTABS_S1=[{id:"aanval",icon:"⚠",label:"Aanval"},{id:"pijn",icon:"😣",label:"Pijn"},{id:"urinezuur",icon:"🩸",label:"Urinezuur"}];
+const RTABS_S2=[{id:"eten",icon:"🍽",label:"Eten"},{id:"drinken",icon:"💧",label:"Drinken"},{id:"bewegen",icon:"🏃",label:"Bewegen"},{id:"slaap",icon:"😴",label:"Slaap"},{id:"weer",icon:"🌤",label:"Weer"},{id:"medsupp",icon:"💊",label:"Med & Suppl"}];
 const MTABS=[["registreer","✏","Registreer"],["overzicht","📖","Dagboek"],["statistieken","📈","Trends"],["analyse","🧠","AI"]];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -539,12 +540,13 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   const[sAnders,setSAnders]=useState("");
   const[sTijd,setSTijd]=useState(()=>nowT());
   const[uzWaarde,setUzWaarde]=useState("");
+  const[weerLoading,setWeerLoading]=useState(false);
   const[uzEenheid,setUzEenheid]=useState("mmol");
   const[newMed,setNewMed]=useState({name:"",dose:"",frequency:""});
   const[waterDoel,setWaterDoel]=useState(()=>parseInt(localStorage.getItem('waterDoel')||'2000'));
 
-  function emptyDay(){return{eten:{logs:[]},drinken:{logs:[]},bewegen:{logs:[]},slaap:{uren:"",bedtijd:"",wektijd:""},pijnLogs:[],aanval:{logs:[]},med:{logs:[]},suppl:{logs:[]},urinezuur:{logs:[],eenheid:"mmol"}};}
-  function norm(e){return{...e,pijnLogs:e.pijn_logs||e.pijnLogs||[],eten:e.eten||{logs:[]},drinken:e.drinken||{logs:[]},bewegen:Array.isArray(e.bewegen?.logs)?e.bewegen:{logs:[]},slaap:e.slaap||{uren:"",bedtijd:"",wektijd:""},aanval:Array.isArray(e.aanval?.logs)?e.aanval:{logs:[]},med:Array.isArray(e.med?.logs)?e.med:{logs:[]},suppl:Array.isArray(e.suppl?.logs)?e.suppl:{logs:[]},urinezuur:e.urinezuur&&Array.isArray(e.urinezuur.logs)?e.urinezuur:{logs:[],eenheid:e.urinezuur?.eenheid||"mmol"}};}
+  function emptyDay(){return{eten:{logs:[]},drinken:{logs:[]},bewegen:{logs:[]},slaap:{uren:"",bedtijd:"",wektijd:""},pijnLogs:[],aanval:{logs:[]},med:{logs:[]},suppl:{logs:[]},urinezuur:{logs:[],eenheid:"mmol"},weer:{logs:[]}};}
+  function norm(e){return{...e,pijnLogs:e.pijn_logs||e.pijnLogs||[],eten:e.eten||{logs:[]},drinken:e.drinken||{logs:[]},bewegen:Array.isArray(e.bewegen?.logs)?e.bewegen:{logs:[]},slaap:e.slaap||{uren:"",bedtijd:"",wektijd:""},aanval:Array.isArray(e.aanval?.logs)?e.aanval:{logs:[]},med:Array.isArray(e.med?.logs)?e.med:{logs:[]},suppl:Array.isArray(e.suppl?.logs)?e.suppl:{logs:[]},urinezuur:e.urinezuur&&Array.isArray(e.urinezuur.logs)?e.urinezuur:{logs:[],eenheid:e.urinezuur?.eenheid||"mmol"},weer:e.weer||{logs:[]}};}
 
   useEffect(()=>{ async function init(){ if(isDemo){setLoading(false);return;}
       try{const[p,es]=await Promise.all([getProfile(token),getEntries(token)]);if(p)setProfile({name:p.name||"",photo:p.photo||"",meds:p.meds||[],plan:p.plan||"free"});setEntries((es||[]).map(norm));}catch(e){console.error(e);}
@@ -564,7 +566,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
     if(saveTimer.current)clearTimeout(saveTimer.current);
     setSync("saving");
     saveTimer.current=setTimeout(async()=>{ try{ const sl=berekenSlaap(dag.slaap.bedtijd,dag.slaap.wektijd);
-        const payload={user_id:session.user.id,date:regDate,eten:dag.eten,drinken:dag.drinken,bewegen:dag.bewegen,slaap:{...dag.slaap,uren:sl?sl.dec:dag.slaap.uren},pijn_logs:dag.pijnLogs,aanval:dag.aanval,med:dag.med,suppl:dag.suppl,urinezuur:dag.urinezuur};
+        const payload={user_id:session.user.id,date:regDate,eten:dag.eten,drinken:dag.drinken,bewegen:dag.bewegen,slaap:{...dag.slaap,uren:sl?sl.dec:dag.slaap.uren},pijn_logs:dag.pijnLogs,aanval:dag.aanval,med:dag.med,suppl:dag.suppl,urinezuur:dag.urinezuur,weer:dag.weer};
         const saved=await upsertEntry(payload,token);
         if(saved?.[0]){const n=norm(saved[0]);setEntries(es=>{const i=es.findIndex(e=>e.date===regDate);return i>=0?es.map(e=>e.date===regDate?n:e):[n,...es].sort((a,b)=>b.date.localeCompare(a.date));});}
         setSync("saved");setTimeout(()=>setSync(""),2000);
@@ -598,6 +600,21 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   function remMed(i){setDag(d=>({...d,med:{logs:(d.med?.logs||[]).filter((_,j)=>j!==i)}}));}
   function addSuppl(){const n=sNaam||sAnders;if(!n)return;setDag(d=>({...d,suppl:{logs:[...(d.suppl?.logs||[]),{tijd:sTijd,naam:n}]}}));setSNaam("");setSAnders("");setSTijd(nowT());}
   function remSuppl(i){setDag(d=>({...d,suppl:{logs:(d.suppl?.logs||[]).filter((_,j)=>j!==i)}}));}
+  async function fetchWeer(){
+    setWeerLoading(true);
+    try{
+      const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:8000}));
+      const{latitude:lat,longitude:lon}=pos.coords;
+      const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto");
+      const d=await r.json();
+      const c=d.current;
+      const weerCode=c.weather_code;
+      const omschrijving=weerCode<=1?"Helder":weerCode<=3?"Bewolkt":weerCode<=48?"Mist":weerCode<=67?"Regen":weerCode<=77?"Sneeuw":weerCode<=82?"Buien":"Onweer";
+      const icon=weerCode<=1?"☀":weerCode<=3?"⛅":weerCode<=48?"🌫":weerCode<=67?"🌧":weerCode<=77?"❄":weerCode<=82?"🌦":"⛈";
+      setDag(dg=>({...dg,weer:{...dg.weer,logs:[...( dg.weer?.logs||[]),{tijd:nowT(),temp:c.temperature_2m,vochtigheid:c.relative_humidity_2m,wind:c.wind_speed_10m,omschrijving,icon}]}}));
+    }catch(e){alert("Kan weersdata niet ophalen: "+e.message);}
+    setWeerLoading(false);
+  }
   function addUZ(){
     if(!uzWaarde)return;
     const v=parseFloat(uzWaarde);
@@ -766,13 +783,31 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                 <input type="date" value={regDate} onChange={e=>setRegDate(e.target.value)} style={{...inp,flex:1,padding:"7px 10px"}}/>
               </div>
             </div>
+            {/* Sectie 1 — Aanval & Metingen */}
+            <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1.5,marginBottom:6}}>Aanval & Metingen</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
+              {RTABS_S1.map(t=>{
+                const locked=PRO_TABS.includes(t.id)&&!isPro;
+                const isAanval=t.id==="aanval";
+                return(
+                <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)}
+                  style={{padding:isAanval?"14px 4px":"12px 4px",border:"2px solid "+(regSec===t.id?(isAanval?C.danger:C.primary):locked?"#E2D9F3":isAanval?"#FECACA":C.border),borderRadius:10,background:regSec===t.id?(isAanval?C.dL:C.pL):locked?"#FAF8FF":isAanval?"#FFF5F5":C.card,color:regSec===t.id?(isAanval?C.danger:C.primary):locked?"#9B59D6":isAanval?C.danger:C.muted,fontSize:11,fontWeight:regSec===t.id?700:isAanval?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative"}}>
+                  {locked&&<span style={{position:"absolute",top:4,right:4,fontSize:8,fontWeight:700,background:"#7C3AED",color:"#fff",padding:"1px 4px",borderRadius:6}}>PRO</span>}
+                  <span style={{fontSize:isAanval?32:28}}>{t.icon}</span>
+                  <span style={{fontSize:isAanval?12:11,fontWeight:isAanval?700:400}}>{t.label}</span>
+                </button>);})}
+            </div>
+            {/* Sectie 2 — Invloeden */}
+            <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1.5,marginBottom:6}}>Invloeden</div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
-              {RTABS.map(t=>{
+              {RTABS_S2.map(t=>{
                 const locked=PRO_TABS.includes(t.id)&&!isPro;
                 return(
-                <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)} style={{padding:"12px 4px",border:"2px solid "+(regSec===t.id?C.primary:locked?"#E2D9F3":C.border),borderRadius:10,background:regSec===t.id?C.pL:locked?"#FAF8FF":C.card,color:regSec===t.id?C.primary:locked?"#9B59D6":C.muted,fontSize:11,fontWeight:regSec===t.id?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative"}}>
+                <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)}
+                  style={{padding:"12px 4px",border:"2px solid "+(regSec===t.id?C.primary:locked?"#E2D9F3":C.border),borderRadius:10,background:regSec===t.id?C.pL:locked?"#FAF8FF":C.card,color:regSec===t.id?C.primary:locked?"#9B59D6":C.muted,fontSize:11,fontWeight:regSec===t.id?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative"}}>
                   {locked&&<span style={{position:"absolute",top:4,right:4,fontSize:8,fontWeight:700,background:"#7C3AED",color:"#fff",padding:"1px 4px",borderRadius:6}}>PRO</span>}
-                  <span style={{fontSize:28}}>{t.icon}</span>{t.label}
+                  <span style={{fontSize:28}}>{t.icon}</span>
+                  <span style={{fontSize:11}}>{t.label}</span>
                 </button>);})}
             </div>
 
@@ -943,7 +978,8 @@ function JichtTracker({session,onLogout}){ const{token}=session;
               </Card>
             )}
 
-            {regSec==="med"&&isPro&&(
+            {regSec==="medsupp"&&isPro&&(
+              <div>
               <Card title="💊 Medicatie vandaag">
                 {(dag.med?.logs||[]).length>0&&<div style={{background:C.pL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.primary,fontWeight:700}}>{dag.med.logs.length} inname{dag.med.logs.length>1?"s":""} vandaag</span></div>}
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
@@ -1005,7 +1041,35 @@ function JichtTracker({session,onLogout}){ const{token}=session;
               </Card>
             )}
 
-            {regSec==="suppl"&&isPro&&(
+            {regSec==="weer"&&isPro&&(
+              <Card title="🌤 Weer registreren">
+                <div style={{fontSize:13,color:C.muted,marginBottom:14,lineHeight:1.6}}>
+                  Registreer het huidige weer automatisch via je locatie. Weersomstandigheden kunnen een trigger zijn voor jichtaanvallen.
+                </div>
+                <button onClick={fetchWeer} disabled={weerLoading} style={{background:weerLoading?C.border:C.primary,color:"#fff",border:"none",borderRadius:10,padding:"13px",fontSize:14,fontWeight:700,cursor:weerLoading?"not-allowed":"pointer",width:"100%",marginBottom:12,opacity:weerLoading?0.7:1}}>
+                  {weerLoading?"⏳ Locatie ophalen...":"📍 Registreer huidig weer"}
+                </button>
+                {(dag.weer?.logs||[]).length>0&&(
+                  <div style={{borderTop:"1px solid "+C.border,paddingTop:10}}>
+                    <div style={{fontSize:12,color:C.muted,fontWeight:600,marginBottom:7}}>Log vandaag:</div>
+                    {dag.weer.logs.map((w,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"10px 12px"}}>
+                        <span style={{fontSize:22}}>{w.icon}</span>
+                        <div style={{flex:1}}>
+                          <div style={{fontSize:13,fontWeight:700,color:C.text}}>{w.omschrijving}</div>
+                          <div style={{fontSize:11,color:C.muted}}>{w.temp}°C · {w.vochtigheid}% vochtig · wind {w.wind} km/u</div>
+                        </div>
+                        <span style={{fontSize:11,color:C.muted}}>{w.tijd}</span>
+                        <button onClick={()=>setDag(d=>({...d,weer:{...d.weer,logs:d.weer.logs.filter((_,j)=>j!==i)}}))} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            )}
+
+            {regSec==="medsupp"&&isPro&&(
+              <Card title="🌿 Supplementen vandaag">
               <Card title="🌿 Supplementen vandaag">
                 {(dag.suppl?.logs||[]).length>0&&<div style={{background:C.sL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.success,fontWeight:700}}>{dag.suppl.logs.length} inname{dag.suppl.logs.length>1?"s":""} vandaag</span></div>}
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}><div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Tijdstip</div><input type="time" value={sTijd} onChange={e=>setSTijd(e.target.value)} style={{...inp,width:100}}/></div></div>
@@ -1018,6 +1082,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                 <button onClick={addSuppl} disabled={!sNaam&&!sAnders} style={{background:(sNaam||sAnders)?C.success:C.border,color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:13,fontWeight:700,cursor:(sNaam||sAnders)?"pointer":"default",width:"100%",marginTop:10}}>+ Inname registreren</button>
                 {(dag.suppl?.logs||[]).length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>{dag.suppl.logs.map((s,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{s.tijd}</span><span style={{fontSize:12,fontWeight:600,flex:1}}>{s.naam}</span><button onClick={()=>remSuppl(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button></div>)}</div>}
               </Card>
+              </div>
             )}
 
             <div style={{textAlign:"center",fontSize:11,color:C.muted,marginTop:10}}>☁ Data wordt automatisch opgeslagen</div>
