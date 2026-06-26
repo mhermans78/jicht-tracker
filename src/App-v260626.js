@@ -547,7 +547,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   function norm(e){return{...e,pijnLogs:e.pijn_logs||e.pijnLogs||[],eten:e.eten||{logs:[]},drinken:e.drinken||{logs:[]},bewegen:Array.isArray(e.bewegen?.logs)?e.bewegen:{logs:[]},slaap:e.slaap||{uren:"",bedtijd:"",wektijd:""},aanval:Array.isArray(e.aanval?.logs)?e.aanval:{logs:[]},med:Array.isArray(e.med?.logs)?e.med:{logs:[]},suppl:Array.isArray(e.suppl?.logs)?e.suppl:{logs:[]},urinezuur:e.urinezuur&&Array.isArray(e.urinezuur.logs)?e.urinezuur:{logs:[],eenheid:e.urinezuur?.eenheid||"mmol"}};}
 
   useEffect(()=>{ async function init(){ if(isDemo){setLoading(false);return;}
-      try{const[p,es]=await Promise.all([getProfile(token),getEntries(token)]);if(p)setProfile({name:p.name||"",photo:p.photo||"",meds:p.meds||[],plan:p.plan||"free"});setEntries((es||[]).map(norm));}catch(e){console.error(e);}
+      try{const[p,es]=await Promise.all([getProfile(token),getEntries(token)]);if(p)setProfile({name:p.name||"",photo:p.photo||"",meds:p.meds||[]});setEntries((es||[]).map(norm));}catch(e){console.error(e);}
       setLoading(false);
     }
     init();
