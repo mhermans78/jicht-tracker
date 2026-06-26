@@ -25,38 +25,44 @@ exports.handler = async (event) => {
     const session = stripeEvent.data.object;
     const customerEmail = session.customer_details?.email;
     const subscriptionId = session.subscription;
-    const priceId = session.line_items?.data?.[0]?.price?.id;
+    const customerId = session.customer;
 
-    // Bepaal plan duur op basis van price
-    // Maandelijks of jaarlijks — beide zijn 'pro'
-    const planExpiry = new Date();
-    if (session.mode === "subscription") {
-      // Haal subscription op voor exacte vervaldatum
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-      planExpiry.setTime(subscription.current_period_end * 1000);
+    console.log("Betaling ontvangen voor:", customerEmail);
+
+    // Bepaal vervaldatum
+    let planExpiry = null;
+    try {
+      if (subscriptionId) {
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        if (subscription.current_period_end) {
+          planExpiry = new Date(subscription.current_period_end * 1000).toISOString();
+        }
+      }
+    } catch (err) {
+      console.error("Kon subscription niet ophalen:", err.message);
     }
 
-    // Zoek gebruiker op via email in Supabase Auth
-    const { data: users, error: userError } = await supabase.auth.admin.listUsers();
+    // Zoek gebruiker op via email
+    const { data: usersData, error: userError } = await supabase.auth.admin.listUsers();
     if (userError) {
       console.error("Fout bij ophalen users:", userError);
       return { statusCode: 500, body: "Database fout" };
     }
 
-    const user = users.users.find(u => u.email === customerEmail);
+    const user = usersData.users.find(u => u.email === customerEmail);
     if (!user) {
       console.error("Gebruiker niet gevonden voor email:", customerEmail);
       return { statusCode: 404, body: "Gebruiker niet gevonden" };
     }
 
-    // Update plan naar pro in profiles tabel
+    // Update plan naar pro
     const { error: updateError } = await supabase
       .from("profiles")
       .update({
         plan: "pro",
-        plan_expiry: planExpiry.toISOString(),
+        plan_expiry: planExpiry,
         stripe_subscription_id: subscriptionId,
-        stripe_customer_id: session.customer,
+        stripe_customer_id: customerId,
       })
       .eq("id", user.id);
 
@@ -65,11 +71,10 @@ exports.handler = async (event) => {
       return { statusCode: 500, body: "Update mislukt" };
     }
 
-    console.log(`✅ Pro geactiveerd voor ${customerEmail}`);
+    console.log("Pro geactiveerd voor:", customerEmail);
   }
 
   if (stripeEvent.type === "customer.subscription.deleted") {
-    // Abonnement opgezegd — plan terugzetten naar free
     const subscription = stripeEvent.data.object;
     const customerId = subscription.customer;
 
@@ -79,7 +84,7 @@ exports.handler = async (event) => {
       .eq("stripe_customer_id", customerId);
 
     if (error) console.error("Fout bij downgraden:", error);
-    else console.log(`↩️ Plan teruggezet naar free voor customer ${customerId}`);
+    else console.log("Plan teruggezet naar free voor customer:", customerId);
   }
 
   return { statusCode: 200, body: JSON.stringify({ received: true }) };
