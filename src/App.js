@@ -1081,18 +1081,6 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                   </div>
                 )}
               </Card>
-              <Card title="🌿 Supplementen vandaag">
-                {(dag.suppl?.logs||[]).length>0&&<div style={{background:C.sL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.success,fontWeight:700}}>{dag.suppl.logs.length} inname{dag.suppl.logs.length>1?"s":""} vandaag</span></div>}
-                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}><div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Tijdstip</div><input type="time" value={sTijd} onChange={e=>setSTijd(e.target.value)} style={{...inp,width:100}}/></div></div>
-                <div style={{display:"flex",gap:8,marginBottom:10}}>
-                  <FotoScan onResult={tekst=>{if(tekst)setSAnders(tekst);}}/>
-                  <BarcodeScan onResult={(naam,err)=>{if(naam)setSAnders(naam);else if(err)setSAnders("");}}/>
-                </div>
-                <Chips opts={SUPPL} sel={sNaam?[sNaam]:[]} onToggle={item=>setSNaam(sNaam===item?"":item)} col={C.success} bg={C.sL}/>
-                <input value={sAnders} onChange={e=>setSAnders(e.target.value)} placeholder="Of typ of scan een supplement..." style={{...inp,marginTop:10}}/>
-                <button onClick={addSuppl} disabled={!sNaam&&!sAnders} style={{background:(sNaam||sAnders)?C.success:C.border,color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:13,fontWeight:700,cursor:(sNaam||sAnders)?"pointer":"default",width:"100%",marginTop:10}}>+ Inname registreren</button>
-                {(dag.suppl?.logs||[]).length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>{dag.suppl.logs.map((s,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{s.tijd}</span><span style={{fontSize:12,fontWeight:600,flex:1}}>{s.naam}</span><button onClick={()=>remSuppl(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button></div>)}</div>}
-              </Card>
             )}
 
             <div style={{textAlign:"center",fontSize:11,color:C.muted,marginTop:10}}>☁ Data wordt automatisch opgeslagen</div>
