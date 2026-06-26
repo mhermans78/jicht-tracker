@@ -991,8 +991,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                 <button onClick={addMed} disabled={!mNaam&&!mAnders} style={{background:(mNaam||mAnders)?C.primary:C.border,color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:13,fontWeight:700,cursor:(mNaam||mAnders)?"pointer":"default",width:"100%",marginTop:10}}>+ Inname registreren</button>
                 {(dag.med?.logs||[]).length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>{dag.med.logs.map((m,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{m.tijd}</span><span style={{fontSize:11,padding:"2px 7px",borderRadius:8,fontWeight:700,background:m.type==="preventie"?C.pL:C.dL,color:m.type==="preventie"?C.primary:C.danger}}>{m.type==="preventie"?"🛡":"🚨"}</span><span style={{fontSize:12,fontWeight:600,flex:1}}>{m.naam}</span><button onClick={()=>remMed(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button></div>)}</div>}
               </Card>
-              <div style={{marginTop:14}}>
-              <Card title="🌿 Supplementen vandaag">
+              <Card title="🌿 Supplementen vandaag" style={{marginTop:14}}>
                 {(dag.suppl?.logs||[]).length>0&&<div style={{background:C.sL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.success,fontWeight:700}}>{dag.suppl.logs.length} inname{dag.suppl.logs.length>1?"s":""} vandaag</span></div>}
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}><div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Tijdstip</div><input type="time" value={sTijd} onChange={e=>setSTijd(e.target.value)} style={{...inp,width:100}}/></div></div>
                 <div style={{display:"flex",gap:8,marginBottom:10}}>
@@ -1004,7 +1003,6 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                 <button onClick={addSuppl} disabled={!sNaam&&!sAnders} style={{background:(sNaam||sAnders)?C.success:C.border,color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:13,fontWeight:700,cursor:(sNaam||sAnders)?"pointer":"default",width:"100%",marginTop:10}}>+ Inname registreren</button>
                 {(dag.suppl?.logs||[]).length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>{dag.suppl.logs.map((s,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{s.tijd}</span><span style={{fontSize:12,fontWeight:600,flex:1}}>{s.naam}</span><button onClick={()=>remSuppl(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button></div>)}</div>}
               </Card>
-              </div>
               </>
             )}
 
