@@ -979,6 +979,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             )}
 
             {regSec==="medsupp"&&isPro&&(
+              <>
               <Card title="💊 Medicatie vandaag">
                 {(dag.med?.logs||[]).length>0&&<div style={{background:C.pL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.primary,fontWeight:700}}>{dag.med.logs.length} inname{dag.med.logs.length>1?"s":""} vandaag</span></div>}
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
@@ -1004,6 +1005,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                 {(dag.suppl?.logs||[]).length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>{dag.suppl.logs.map((s,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{s.tijd}</span><span style={{fontSize:12,fontWeight:600,flex:1}}>{s.naam}</span><button onClick={()=>remSuppl(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button></div>)}</div>}
               </Card>
               </div>
+              </>
             )}
 
             {regSec==="urinezuur"&&isPro&&(
