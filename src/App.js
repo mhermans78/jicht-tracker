@@ -671,8 +671,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
       <div style={{background:C.primary,padding:"16px 20px 12px",color:"#fff",display:"flex",alignItems:"center",gap:14,position:"relative"}}>
         {profile.photo&&<img src={profile.photo} alt="p" style={{width:40,height:40,borderRadius:"50%",objectFit:"cover",border:"2px solid rgba(255,255,255,0.4)"}}/>}
         <div style={{flex:1}}>
-          <div style={{fontSize:10,letterSpacing:1.5,textTransform:"uppercase",opacity:0.7}}>een product van HOBC BV</div>
-          <h1 style={{margin:"2px 0 0",fontSize:20,fontWeight:700}}>{profile.name?"Jicht Tracker · "+profile.name:"Jicht Tracker"}</h1>
+          <h1 style={{margin:0,fontSize:24,fontWeight:700}}>{profile.name?"Jicht Tracker · "+profile.name:"Jicht Tracker"}</h1>
         </div>
         <button onClick={()=>setMenuOpen(m=>!m)} style={{background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",padding:"8px 11px",borderRadius:8,cursor:"pointer",fontSize:20}}>{menuOpen?"✕":"☰"}</button>
         {menuOpen&&(
