@@ -45,8 +45,8 @@ const RTABS_S2=[{id:"eten",icon:"🍽",label:"Eten"},{id:"drinken",icon:"💧",l
 const MTABS=[["registreer","✏","Registreer"],["overzicht","📖","Dagboek"],["statistieken","📈","Trends"],["analyse","🧠","AI"]];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function Card({title,children}){ return (
-    <div style={{background:C.card,borderRadius:12,padding:"14px 16px",border:"1px solid "+C.border}}>
+function Card({title,children,accentColor}){ return (
+    <div style={{background:C.card,borderRadius:12,padding:"14px 16px",border:"1px solid "+C.border,borderTop:accentColor?"3px solid "+accentColor:"1px solid "+C.border,boxShadow:"0 2px 10px rgba(0,0,0,0.04)"}}>
       {title&&<div style={{fontWeight:700,fontSize:14,color:C.text,marginBottom:10}}>{title}</div>}
       {children}
     </div>
@@ -784,35 +784,48 @@ function JichtTracker({session,onLogout}){ const{token}=session;
               </div>
             </div>
             {/* Sectie 1 — Aanval & Metingen */}
-            <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1.5,marginBottom:6}}>Aanval & Metingen</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
-              {RTABS_S1.map(t=>{
-                const locked=PRO_TABS.includes(t.id)&&!isPro;
-                const isAanval=t.id==="aanval";
-                return(
-                <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)}
-                  style={{padding:isAanval?"14px 4px":"12px 4px",border:"2px solid "+(regSec===t.id?(isAanval?C.danger:C.primary):locked?"#E2D9F3":isAanval?"#FECACA":C.border),borderRadius:10,background:regSec===t.id?(isAanval?C.dL:C.pL):locked?"#FAF8FF":isAanval?"#FFF5F5":C.card,color:regSec===t.id?(isAanval?C.danger:C.primary):locked?"#9B59D6":isAanval?C.danger:C.muted,fontSize:11,fontWeight:regSec===t.id?700:isAanval?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative"}}>
-                  {locked&&<span style={{position:"absolute",top:4,right:4,fontSize:8,fontWeight:700,background:"#7C3AED",color:"#fff",padding:"1px 4px",borderRadius:6}}>PRO</span>}
-                  <span style={{fontSize:isAanval?32:28}}>{t.icon}</span>
-                  <span style={{fontSize:isAanval?12:11,fontWeight:isAanval?700:400}}>{t.label}</span>
-                </button>);})}
+            <div style={{background:"#FFF8F8",border:"1.5px solid #FFE0E0",borderRadius:14,padding:"12px 12px 14px",marginBottom:12}}>
+              <div style={{fontSize:10,fontWeight:700,color:C.danger,textTransform:"uppercase",letterSpacing:1.5,marginBottom:8,display:"flex",alignItems:"center",gap:5}}>
+                <span style={{width:5,height:5,borderRadius:"50%",background:C.danger,display:"inline-block"}}/>Aanval & Metingen
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+                {RTABS_S1.map(t=>{
+                  const locked=PRO_TABS.includes(t.id)&&!isPro;
+                  const isAanval=t.id==="aanval";
+                  return(
+                  <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)}
+                    style={{padding:isAanval?"14px 4px":"12px 4px",border:"2px solid "+(regSec===t.id?(isAanval?C.danger:C.primary):locked?"#E2D9F3":isAanval?"#FECACA":C.border),borderRadius:10,background:regSec===t.id?(isAanval?C.dL:C.pL):locked?"#FAF8FF":isAanval?"#FFF5F5":C.card,color:regSec===t.id?(isAanval?C.danger:C.primary):locked?"#9B59D6":isAanval?C.danger:C.muted,fontSize:11,fontWeight:regSec===t.id?700:isAanval?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative",boxShadow:regSec===t.id?"0 2px 8px rgba(0,0,0,0.12)":"none",transform:regSec===t.id?"translateY(-1px)":"none",transition:"all 0.15s"}}>
+                    {locked&&<span style={{position:"absolute",top:4,right:4,fontSize:8,fontWeight:700,background:"#7C3AED",color:"#fff",padding:"1px 4px",borderRadius:6}}>PRO</span>}
+                    <span style={{fontSize:isAanval?32:28}}>{t.icon}</span>
+                    <span style={{fontSize:isAanval?12:11,fontWeight:isAanval?700:400}}>{t.label}</span>
+                  </button>);})}
+              </div>
             </div>
             {/* Sectie 2 — Invloeden */}
-            <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1.5,marginBottom:6}}>Invloeden</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
-              {RTABS_S2.map(t=>{
-                const locked=PRO_TABS.includes(t.id)&&!isPro;
-                return(
-                <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)}
-                  style={{padding:"12px 4px",border:"2px solid "+(regSec===t.id?C.primary:locked?"#E2D9F3":C.border),borderRadius:10,background:regSec===t.id?C.pL:locked?"#FAF8FF":C.card,color:regSec===t.id?C.primary:locked?"#9B59D6":C.muted,fontSize:11,fontWeight:regSec===t.id?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative"}}>
-                  {locked&&<span style={{position:"absolute",top:4,right:4,fontSize:8,fontWeight:700,background:"#7C3AED",color:"#fff",padding:"1px 4px",borderRadius:6}}>PRO</span>}
-                  <span style={{fontSize:28}}>{t.icon}</span>
-                  <span style={{fontSize:11}}>{t.label}</span>
-                </button>);})}
+            <div style={{background:C.pL,border:"1.5px solid #BFE0E8",borderRadius:14,padding:"12px 12px 14px",marginBottom:14}}>
+              <div style={{fontSize:10,fontWeight:700,color:C.primary,textTransform:"uppercase",letterSpacing:1.5,marginBottom:8,display:"flex",alignItems:"center",gap:5}}>
+                <span style={{width:5,height:5,borderRadius:"50%",background:C.primary,display:"inline-block"}}/>Invloeden
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+                {RTABS_S2.map(t=>{
+                  const locked=PRO_TABS.includes(t.id)&&!isPro;
+                  return(
+                  <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)}
+                    style={{padding:"12px 4px",border:"2px solid "+(regSec===t.id?C.primary:locked?"#E2D9F3":C.border),borderRadius:10,background:regSec===t.id?"#fff":locked?"#FAF8FF":C.card,color:regSec===t.id?C.primary:locked?"#9B59D6":C.muted,fontSize:11,fontWeight:regSec===t.id?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative",boxShadow:regSec===t.id?"0 2px 8px rgba(0,0,0,0.12)":"none",transform:regSec===t.id?"translateY(-1px)":"none",transition:"all 0.15s"}}>
+                    {locked&&<span style={{position:"absolute",top:4,right:4,fontSize:8,fontWeight:700,background:"#7C3AED",color:"#fff",padding:"1px 4px",borderRadius:6}}>PRO</span>}
+                    <span style={{fontSize:28}}>{t.icon}</span>
+                    <span style={{fontSize:11}}>{t.label}</span>
+                  </button>);})}
+              </div>
+            </div>
+
+            {/* Verbindende pijl naar actief paneel */}
+            <div style={{display:"flex",justifyContent:"center",marginBottom:-4}}>
+              <div style={{width:0,height:0,borderLeft:"8px solid transparent",borderRight:"8px solid transparent",borderTop:"8px solid "+(RTABS_S1.some(t=>t.id===regSec)?C.danger:C.primary)}}/>
             </div>
 
             {regSec==="eten"&&(
-              <Card title="🍽 Voeding registreren">
+              <Card title="🍽 Voeding registreren" accentColor={C.primary}>
                 <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
                   {MMT.map(m=><button key={m} onClick={()=>setEtenMom(m)} style={{padding:"5px 11px",borderRadius:16,fontSize:12,cursor:"pointer",border:"1.5px solid "+(etenMom===m?C.accent:C.border),background:etenMom===m?C.aL:C.card,color:etenMom===m?C.aT:C.muted,fontWeight:etenMom===m?700:400}}>{m}</button>)}
                 </div>
@@ -826,7 +839,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             )}
 
             {regSec==="drinken"&&isPro&&(
-              <Card title="💧 Drinken registreren">
+              <Card title="💧 Drinken registreren" accentColor={C.primary}>
                 {(()=>{ const tot=dag.drinken.logs.reduce((s,l)=>s+(l.ml||0),0);
                   const pct=Math.min(100,Math.round(tot/waterDoel*100));
                   const kleur=pct>=100?C.success:pct>=60?C.accent:C.danger;
@@ -859,7 +872,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             )}
 
             {regSec==="bewegen"&&isPro&&(
-              <Card title="🏃 Beweging registreren">
+              <Card title="🏃 Beweging registreren" accentColor={C.primary}>
                 {(dag.bewegen?.logs||[]).length>0&&(()=>{const tot=(dag.bewegen.logs).reduce((s,l)=>s+(parseInt(l.minuten)||0),0);return<div style={{background:C.pL,borderRadius:8,padding:"8px 12px",marginBottom:12,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:13,color:C.primary,fontWeight:700}}>{dag.bewegen.logs.length} sessie{dag.bewegen.logs.length>1?"s":""}</span><span style={{fontSize:12,color:C.primary}}>{tot} min totaal</span></div>;})()}
                 <div style={{display:"flex",gap:10,marginBottom:12,alignItems:"flex-end"}}>
                   <div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Tijdstip</div><input type="time" value={bTijd} onChange={e=>setBTijd(e.target.value)} style={{...inp,width:100}}/></div>
@@ -875,7 +888,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             )}
 
             {regSec==="slaap"&&isPro&&(
-              <Card title="😴 Slaap registreren">
+              <Card title="😴 Slaap registreren" accentColor={C.primary}>
                 <div style={{display:"flex",gap:12,marginBottom:16}}>
                   <div style={{flex:1}}><div style={{fontSize:12,color:C.muted,marginBottom:6,fontWeight:600}}>Wakker geworden</div><input type="time" value={dag.slaap.wektijd} onChange={e=>setDag(d=>({...d,slaap:{...d.slaap,wektijd:e.target.value}}))} style={{...inp,fontSize:17,fontWeight:700,textAlign:"center",padding:"11px"}}/></div>
                   <div style={{flex:1}}><div style={{fontSize:12,color:C.muted,marginBottom:6,fontWeight:600}}>Naar bed gegaan</div><input type="time" value={dag.slaap.bedtijd} onChange={e=>setDag(d=>({...d,slaap:{...d.slaap,bedtijd:e.target.value}}))} style={{...inp,fontSize:17,fontWeight:700,textAlign:"center",padding:"11px"}}/></div>
@@ -896,7 +909,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             )}
 
             {regSec==="pijn"&&(
-              <Card title="😣 Pijn registreren">
+              <Card title="😣 Pijn registreren" accentColor={C.danger}>
                 <div style={{fontSize:13,color:C.muted,marginBottom:14,lineHeight:1.6}}>Tijdstip wordt automatisch opgeslagen. Meerdere metingen per dag mogelijk.</div>
                 <div style={{fontSize:13,fontWeight:700,marginBottom:10}}>Ervaar je op dit moment pijn?</div>
                 <div style={{display:"flex",gap:10,marginBottom:pLevel>0?18:4}}>
@@ -940,7 +953,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             )}
 
             {regSec==="aanval"&&(
-              <Card title="⚠ Aanval registreren">
+              <Card title="⚠ Aanval registreren" accentColor={C.danger}>
                 {(dag.aanval?.logs||[]).length>0&&<div style={{background:C.dL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.danger,fontWeight:700}}>{dag.aanval.logs.length} registratie{dag.aanval.logs.length>1?"s":""} vandaag</span></div>}
                 <div style={{fontSize:12,color:C.muted,marginBottom:8,fontWeight:600}}>Situatie op dit moment:</div>
                 <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:14}}>
@@ -980,7 +993,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
 
             {regSec==="medsupp"&&isPro&&(
               <div>
-                <Card title="💊 Medicatie vandaag">
+                <Card title="💊 Medicatie vandaag" accentColor={C.primary}>
                   {(dag.med?.logs||[]).length>0&&<div style={{background:C.pL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.primary,fontWeight:700}}>{dag.med.logs.length} inname{dag.med.logs.length>1?"s":""} vandaag</span></div>}
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
                     <div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Tijdstip</div><input type="time" value={mTijd} onChange={e=>setMTijd(e.target.value)} style={{...inp,width:100}}/></div>
@@ -992,7 +1005,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                   {(dag.med?.logs||[]).length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>{dag.med.logs.map((m,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{m.tijd}</span><span style={{fontSize:11,padding:"2px 7px",borderRadius:8,fontWeight:700,background:m.type==="preventie"?C.pL:C.dL,color:m.type==="preventie"?C.primary:C.danger}}>{m.type==="preventie"?"🛡":"🚨"}</span><span style={{fontSize:12,fontWeight:600,flex:1}}>{m.naam}</span><button onClick={()=>remMed(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button></div>)}</div>}
                 </Card>
                 <div style={{marginTop:12}}>
-                <Card title="🌿 Supplementen vandaag">
+                <Card title="🌿 Supplementen vandaag" accentColor={C.primary}>
                   {(dag.suppl?.logs||[]).length>0&&<div style={{background:C.sL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.success,fontWeight:700}}>{dag.suppl.logs.length} inname{dag.suppl.logs.length>1?"s":""} vandaag</span></div>}
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}><div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Tijdstip</div><input type="time" value={sTijd} onChange={e=>setSTijd(e.target.value)} style={{...inp,width:100}}/></div></div>
                   <div style={{display:"flex",gap:8,marginBottom:10}}>
@@ -1009,7 +1022,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             )}
 
             {regSec==="urinezuur"&&isPro&&(
-              <Card title="🩸 Urinezuurwaarde">
+              <Card title="🩸 Urinezuurwaarde" accentColor={C.danger}>
                 {(dag.urinezuur?.logs||[]).length>0&&<div style={{background:"#FEE2E2",borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.danger,fontWeight:700}}>{dag.urinezuur.logs.length} meting{dag.urinezuur.logs.length>1?"en":""} vandaag</span></div>}
                 <div style={{fontSize:13,color:C.muted,marginBottom:12,lineHeight:1.6}}>Voer de waarde in na een bloedprikbeurt. Streefwaarde bij jicht: onder 0.36 mmol/L (6 mg/dL).</div>
                 <div style={{display:"flex",gap:6,marginBottom:12}}>
@@ -1057,7 +1070,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             )}
 
             {regSec==="weer"&&isPro&&(
-              <Card title="🌤 Weer registreren">
+              <Card title="🌤 Weer registreren" accentColor={C.primary}>
                 <div style={{fontSize:13,color:C.muted,marginBottom:14,lineHeight:1.6}}>
                   Registreer het huidige weer automatisch via je locatie. Weersomstandigheden kunnen een trigger zijn voor jichtaanvallen.
                 </div>
