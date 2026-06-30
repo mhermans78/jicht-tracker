@@ -112,13 +112,13 @@ function Modal({show,onClose,title,accentColor=C.primary,children}){
   },[show]);
   if(!show)return null;
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:200,display:"flex",alignItems:"flex-end"}} onClick={onClose}>
-      <div style={{background:C.card,borderRadius:"20px 20px 0 0",padding:"24px 20px 44px",width:"100%",maxWidth:680,maxHeight:"88vh",overflowY:"auto",margin:"0 auto"}} onClick={e=>e.stopPropagation()}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"env(safe-area-inset-top,0) 0 0"}} onClick={onClose}>
+      <div style={{background:C.card,borderRadius:"20px 20px 0 0",padding:"24px 20px 44px",width:"100%",maxWidth:680,maxHeight:"min(88vh, calc(100vh - 40px))",overflowY:"auto",margin:"40px auto 0",display:"flex",flexDirection:"column"}} onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,position:"sticky",top:0,background:C.card,zIndex:1,paddingTop:2}}>
           <div style={{fontWeight:700,fontSize:19,color:C.text}}>{title}</div>
-          <button onClick={onClose} style={{background:C.bg,border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:16,color:C.muted}}>✕</button>
+          <button onClick={onClose} style={{background:C.bg,border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:16,color:C.muted,flexShrink:0}}>✕</button>
         </div>
-        <div style={{width:50,height:4,background:accentColor,borderRadius:2,marginBottom:20}}/>
+        <div style={{width:50,height:4,background:accentColor,borderRadius:2,marginBottom:20,flexShrink:0}}/>
         {children}
       </div>
     </div>
