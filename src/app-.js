@@ -707,7 +707,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   ];
 
   return (
-    <div style={{fontFamily:"system-ui,-apple-system,sans-serif",background:C.bg,minHeight:"100vh",maxWidth:680,margin:"0 auto",paddingBottom:50,overflowX:"hidden",width:"100%"}}>
+    <div style={{fontFamily:"system-ui,-apple-system,sans-serif",background:C.bg,minHeight:"100vh",maxWidth:680,margin:"0 auto",paddingBottom:50}}>
 
       {/* Header */}
       <div style={{background:C.primary,padding:"16px 20px 12px",color:"#fff",display:"flex",alignItems:"center",gap:14,position:"relative"}}>
