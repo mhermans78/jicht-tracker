@@ -39,10 +39,10 @@ const DCAT=["Water","Koffie/thee","Frisdrank","Alcohol","Fruitsap","Sportdrank",
 const PORTIE={ "Water":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Groot glas",i:"glas",ml:300},{l:"Flesje",i:"fles",ml:330},{l:"Fles",i:"fles",ml:500},{l:"Grote fles",i:"fles",ml:750}], "Koffie/thee":[{l:"Espresso",i:"kop",ml:30},{l:"Kopje",i:"kop",ml:150},{l:"Groot kopje",i:"kop",ml:250},{l:"Mok",i:"mok",ml:350}], "Frisdrank":[{l:"Glas",i:"glas",ml:200},{l:"Blikje",i:"blik",ml:330},{l:"Flesje",i:"fles",ml:500},{l:"Groot glas",i:"glas",ml:400}], "Alcohol":[{l:"Borrel",i:"shot",ml:35},{l:"Wijn",i:"wijn",ml:150},{l:"Biertje",i:"bier",ml:250},{l:"Pint",i:"bier",ml:500}], "Fruitsap":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Groot glas",i:"glas",ml:300},{l:"Flesje",i:"fles",ml:250}], "Sportdrank":[{l:"Klein flesje",i:"fles",ml:250},{l:"Flesje",i:"fles",ml:500},{l:"Grote fles",i:"fles",ml:750}], "Melk":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Groot glas",i:"glas",ml:300}], "Anders":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Kopje",i:"kop",ml:150},{l:"Flesje",i:"fles",ml:330},{l:"Fles",i:"fles",ml:500}],
 };
 const MMT=["Ontbijt","Lunch","Avondeten","Tussendoor","Avondsnack"];
-const PRO_TABS=["drinken","bewegen","slaap","medsuppl","weer","urinezuur"];
+const PRO_TABS=["bewegen","slaap","medsuppl","weer","urinezuur"];
 const RTABS_S1=[{id:"aanval",icon:"⚠",label:"Aanval"},{id:"pijn",icon:"😣",label:"Pijn"},{id:"urinezuur",icon:"🩸",label:"Urinezuur"}];
 const RTABS_S2=[{id:"eten",icon:"🍽",label:"Eten"},{id:"drinken",icon:"💧",label:"Drinken"},{id:"bewegen",icon:"🏃",label:"Bewegen"},{id:"slaap",icon:"😴",label:"Slaap"},{id:"weer",icon:"🌤",label:"Weer"},{id:"medsupp",icon:"💊",label:"Med & Suppl"}];
-const MTABS=[["registreer","✏","Registreer"],["overzicht","📖","Dagboek"],["statistieken","📈","Trends"],["analyse","🧠","AI"]];
+const MTABS=[["registreer","✏","Registreer"],["overzicht","📖","Dagboek"],["statistieken","📈","Trends"],["analyse","💡","Advies"]];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function Card({title,children,accentColor}){ return (
@@ -113,13 +113,23 @@ function Modal({show,onClose,title,accentColor=C.primary,children}){
   if(!show)return null;
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"env(safe-area-inset-top,0) 0 0"}} onClick={onClose}>
-      <div style={{background:C.card,borderRadius:"20px 20px 0 0",padding:"24px 20px 44px",width:"100%",maxWidth:680,maxHeight:"min(88vh, calc(100vh - 40px))",overflowY:"auto",margin:"40px auto 0",display:"flex",flexDirection:"column"}} onClick={e=>e.stopPropagation()}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,position:"sticky",top:0,background:C.card,zIndex:1,paddingTop:2}}>
+      <div style={{background:C.card,borderRadius:"20px 20px 0 0",padding:"24px 20px 0",width:"100%",maxWidth:680,maxHeight:"min(88vh, calc(100vh - 40px))",overflowY:"auto",margin:"40px auto 0",display:"flex",flexDirection:"column"}} onClick={e=>e.stopPropagation()}>
+        {/* Header */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,position:"sticky",top:0,background:C.card,zIndex:1,paddingTop:2,paddingBottom:4}}>
           <div style={{fontWeight:700,fontSize:19,color:C.text}}>{title}</div>
           <button onClick={onClose} style={{background:C.bg,border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:16,color:C.muted,flexShrink:0}}>✕</button>
         </div>
         <div style={{width:50,height:4,background:accentColor,borderRadius:2,marginBottom:20,flexShrink:0}}/>
-        {children}
+        {/* Inhoud */}
+        <div style={{flex:1,paddingBottom:16}}>
+          {children}
+        </div>
+        {/* Sticky terug knop onderaan */}
+        <div style={{position:"sticky",bottom:0,background:C.card,paddingTop:10,paddingBottom:28,marginTop:4,borderTop:"1px solid "+C.border}}>
+          <button onClick={onClose} style={{width:"100%",padding:"12px",background:C.bg,border:"1.5px solid "+C.border,borderRadius:10,color:C.muted,fontSize:14,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <span>←</span> Terug
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -1257,12 +1267,12 @@ function JichtTracker({session,onLogout}){ const{token}=session;
         {mainTab==="analyse"&&(
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
             <div style={{background:C.pL,borderRadius:12,padding:14,border:"1px solid "+C.border}}>
-              <div style={{fontWeight:700,color:C.primary,fontSize:15,marginBottom:5}}>🧠 Persoonlijke AI-analyse</div>
-              <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>Analyseert patronen, triggers en trends in al jouw gegevens.</div>
+              <div style={{fontWeight:700,color:C.primary,fontSize:15,marginBottom:5}}>💡 Persoonlijk Jicht Advies</div>
+              <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>Analyseert jouw registraties en geeft persoonlijk advies over patronen, triggers en verbeterpunten.</div>
               <div style={{fontSize:11,color:C.muted,marginTop:6}}>📊 {entries.length} dag(en) · 💊 {profile.meds?.length||0} vaste medicatie(s)</div>
             </div>
             <button onClick={async()=>{setAiLoading(true);const r=await callAI("analyse");setAiResult(r);setAiLoading(false);}} disabled={aiLoading||entries.length<2} style={{background:entries.length>=2?C.accent:C.border,color:"#fff",border:"none",borderRadius:10,padding:"14px",fontSize:15,fontWeight:700,cursor:entries.length>=2?"pointer":"not-allowed",width:"100%",opacity:aiLoading?0.7:1}}>
-              {aiLoading?"⏳ Analyseren...":"🔍 Analyseer mijn data"}
+              {aiLoading?"⏳ Analyseren...":"💡 Genereer mijn persoonlijk advies"}
             </button>
             {entries.length<2&&<div style={{textAlign:"center",color:C.muted,fontSize:13}}>Minimaal 2 registraties nodig.</div>}
             {aiResult&&<div style={{background:C.card,borderRadius:12,padding:18,border:"1px solid "+C.border}}><div style={{fontSize:14,lineHeight:1.8,color:C.text,whiteSpace:"pre-wrap"}}>{aiResult}</div></div>}
