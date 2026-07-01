@@ -543,6 +543,12 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   const[weerLoading,setWeerLoading]=useState(false);
   const[uzEenheid,setUzEenheid]=useState("mmol");
   const[newMed,setNewMed]=useState({name:"",dose:"",frequency:""});
+  const[nieuwPw,setNieuwPw]=useState("");
+  const[nieuwPw2,setNieuwPw2]=useState("");
+  const[pwLoading,setPwLoading]=useState(false);
+  const[pwMsg,setPwMsg]=useState("");
+  const[verwijderConf,setVerwijderConf]=useState(false);
+  const[verwijderLoading,setVerwijderLoading]=useState(false);
   const[waterDoel,setWaterDoel]=useState(()=>parseInt(localStorage.getItem('waterDoel')||'2000'));
 
   function emptyDay(){return{eten:{logs:[]},drinken:{logs:[]},bewegen:{logs:[]},slaap:{uren:"",bedtijd:"",wektijd:""},pijnLogs:[],aanval:{logs:[]},med:{logs:[]},suppl:{logs:[]},urinezuur:{logs:[],eenheid:"mmol"},weer:{logs:[]}};}
@@ -627,6 +633,32 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   function addProfMed(){if(!newMed.name)return;setProfile(p=>({...p,meds:[...(p.meds||[]),{...newMed,id:Date.now()}]}));setNewMed({name:"",dose:"",frequency:""});}
   function remProfMed(id){setProfile(p=>({...p,meds:p.meds.filter(m=>m.id!==id)}));}
   async function saveProfiel(){localStorage.setItem("waterDoel",String(waterDoel));if(isDemo){setProfSaved(true);setTimeout(()=>setProfSaved(false),2000);return;}try{await upsertProfile({name:profile.name,photo:profile.photo,meds:profile.meds},token);setProfSaved(true);setTimeout(()=>setProfSaved(false),2000);}catch(e){alert("Fout: "+e.message);}}
+  async function wijzigWachtwoord(){
+    if(nieuwPw!==nieuwPw2){setPwMsg("error:Wachtwoorden komen niet overeen");return;}
+    if(nieuwPw.length<6){setPwMsg("error:Minimaal 6 tekens");return;}
+    if(isDemo){setPwMsg("ok:Wachtwoord gewijzigd!");setTimeout(()=>setPwMsg(""),3000);return;}
+    setPwLoading(true);
+    try{
+      const r=await fetch("/.netlify/functions/account-beheer",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({actie:"wachtwoord",nieuwWachtwoord:nieuwPw})});
+      const d=await r.json();
+      if(d.ok){setPwMsg("ok:Wachtwoord gewijzigd!");setNieuwPw("");setNieuwPw2("");setTimeout(()=>setPwMsg(""),3000);}
+      else{setPwMsg("error:"+(d.error||"Mislukt"));}
+    }catch(e){setPwMsg("error:"+e.message);}
+    setPwLoading(false);
+  }
+
+  async function verwijderAccount(){
+    if(isDemo){alert("Demo-modus: account verwijderen niet beschikbaar.");return;}
+    setVerwijderLoading(true);
+    try{
+      const r=await fetch("/.netlify/functions/account-beheer",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({actie:"verwijder"})});
+      const d=await r.json();
+      if(d.ok){localStorage.removeItem("jicht_session");onLogout();}
+      else{alert("Fout: "+(d.error||"Mislukt"));}
+    }catch(e){alert("Fout: "+e.message);}
+    setVerwijderLoading(false);
+  }
+
   async function wisAlleData(){if(isDemo){setEntries([]);setDag(emptyDay());setWisConf(false);return;}try{await sf("/rest/v1/entries?user_id=not.is.null","DELETE",null,token);setEntries([]);setDag(emptyDay());}catch(e){alert("Fout: "+e.message);}setWisConf(false);}
   async function genRapport(){ setRapportLoading(true);
     const t=await callAI("rapport");
@@ -737,6 +769,39 @@ function JichtTracker({session,onLogout}){ const{token}=session;
           <input type="number" value={waterDoel} onChange={e=>setWaterDoel(parseInt(e.target.value)||2000)} min={500} max={5000} style={{...inp,marginBottom:14}}/>
         </div>
         <button onClick={saveProfiel} style={{background:C.primary,color:"#fff",border:"none",borderRadius:10,padding:"13px",fontSize:15,fontWeight:700,cursor:"pointer",width:"100%"}}>💾 Profiel opslaan</button>
+
+        {/* Wachtwoord wijzigen */}
+        <div style={{borderTop:"1px solid "+C.border,paddingTop:18,marginTop:18}}>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:10}}>🔑 Wachtwoord wijzigen</div>
+          {pwMsg&&<div style={{background:pwMsg.startsWith("ok:")?C.sL:C.dL,border:"1px solid "+(pwMsg.startsWith("ok:")?"#81C784":C.danger),borderRadius:8,padding:"8px 12px",color:pwMsg.startsWith("ok:")?C.success:C.danger,fontSize:13,marginBottom:10}}>{pwMsg.startsWith("ok:")?"✅ ":""}{pwMsg.replace(/^(ok|error):/,"")}</div>}
+          <input type="password" value={nieuwPw} onChange={e=>setNieuwPw(e.target.value)} placeholder="Nieuw wachtwoord" style={{...inp,marginBottom:8}}/>
+          <input type="password" value={nieuwPw2} onChange={e=>setNieuwPw2(e.target.value)} placeholder="Herhaal nieuw wachtwoord" style={{...inp,marginBottom:10}}/>
+          <button onClick={wijzigWachtwoord} disabled={pwLoading||!nieuwPw||!nieuwPw2} style={{background:nieuwPw&&nieuwPw2?C.primary:C.border,color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:13,fontWeight:700,cursor:nieuwPw&&nieuwPw2?"pointer":"not-allowed",width:"100%",opacity:pwLoading?0.7:1}}>
+            {pwLoading?"⏳ Bezig...":"Wachtwoord wijzigen"}
+          </button>
+        </div>
+
+        {/* Account verwijderen */}
+        <div style={{borderTop:"1px solid "+C.border,paddingTop:18,marginTop:6}}>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:6,color:C.danger}}>⚠ Account verwijderen</div>
+          <div style={{fontSize:12,color:C.muted,lineHeight:1.6,marginBottom:12}}>Je account wordt verwijderd en je gegevens geanonimiseerd. Je gezondheidsdata blijft bewaard voor onderzoek maar is niet meer aan jou gekoppeld.</div>
+          {!verwijderConf?(
+            <button onClick={()=>setVerwijderConf(true)} style={{width:"100%",padding:"11px",background:"transparent",border:"2px solid "+C.danger,borderRadius:10,color:C.danger,fontSize:14,fontWeight:700,cursor:"pointer"}}>
+              Account verwijderen
+            </button>
+          ):(
+            <div style={{background:C.dL,border:"1px solid "+C.danger,borderRadius:12,padding:14}}>
+              <div style={{fontWeight:700,color:C.danger,fontSize:14,marginBottom:8}}>Weet je het zeker?</div>
+              <div style={{fontSize:13,color:C.text,lineHeight:1.7,marginBottom:14}}>Dit kan niet ongedaan worden gemaakt. Je kunt daarna niet meer inloggen.</div>
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={()=>setVerwijderConf(false)} style={{flex:1,padding:"11px",background:C.card,border:"1.5px solid "+C.border,borderRadius:8,color:C.muted,fontSize:14,fontWeight:600,cursor:"pointer"}}>Annuleer</button>
+                <button onClick={verwijderAccount} disabled={verwijderLoading} style={{flex:1,padding:"11px",background:C.danger,border:"none",borderRadius:8,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",opacity:verwijderLoading?0.7:1}}>
+                  {verwijderLoading?"⏳ Bezig...":"Verwijder account"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </Modal>
 
       <Modal show={showRapport} onClose={()=>setShowRapport(false)} title="📧 Rapport versturen">
