@@ -818,9 +818,9 @@ function JichtTracker({session,onLogout}){ const{token}=session;
       {/* Stats */}
       <div style={{display:"flex",background:C.pL,borderBottom:"1px solid "+C.border}}>
         {[{l:"Registraties",v:entries.length},{l:"Gem. pijn",v:avgPain},{l:"Aanvallen",v:totalAttacks},{l:"Maanden",v:monthly.length}].map((s,i)=>(
-          <div key={i} style={{flex:1,padding:"9px 5px",textAlign:"center",borderRight:i<3?"1px solid "+C.border:"none"}}>
-            <div style={{fontSize:17,fontWeight:700,color:C.primary}}>{s.v}</div>
-            <div style={{fontSize:9,color:C.muted,textTransform:"uppercase"}}>{s.l}</div>
+          <div key={i} style={{flex:1,padding:"10px 5px",textAlign:"center",borderRight:i<3?"1px solid "+C.border:"none"}}>
+            <div style={{fontSize:20,fontWeight:800,color:C.primary}}>{s.v}</div>
+            <div style={{fontSize:11,color:C.text,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>{s.l}</div>
           </div>
         ))}
       </div>
@@ -828,7 +828,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
       {/* Tabs */}
       <div style={{display:"flex",background:C.card,borderBottom:"1px solid "+C.border}}>
         {MTABS.map(([id,icon,lbl])=>(
-          <button key={id} onClick={()=>setMainTab(id)} style={{flex:1,padding:"11px 0",border:"none",background:"transparent",cursor:"pointer",fontSize:11,fontWeight:mainTab===id?700:400,color:mainTab===id?C.primary:C.muted,borderBottom:mainTab===id?"3px solid "+C.primary:"3px solid transparent"}}>
+          <button key={id} onClick={()=>setMainTab(id)} style={{flex:1,padding:"11px 0",border:"none",background:"transparent",cursor:"pointer",fontSize:12,fontWeight:mainTab===id?700:500,color:mainTab===id?C.primary:C.text,borderBottom:mainTab===id?"3px solid "+C.primary:"3px solid transparent"}}>
             {icon}<br/>{lbl}
           </button>
         ))}
@@ -1044,8 +1044,8 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             {regSec==="slaap"&&isPro&&(
               <Card title="😴 Slaap registreren" accentColor={C.primary}>
                 <div style={{display:"flex",gap:12,marginBottom:16}}>
-                  <div style={{flex:1}}><div style={{fontSize:12,color:C.muted,marginBottom:6,fontWeight:600}}>Wakker geworden</div><input type="time" value={dag.slaap.wektijd} onChange={e=>setDag(d=>({...d,slaap:{...d.slaap,wektijd:e.target.value}}))} style={{...inp,fontSize:17,fontWeight:700,textAlign:"center",padding:"11px"}}/></div>
-                  <div style={{flex:1}}><div style={{fontSize:12,color:C.muted,marginBottom:6,fontWeight:600}}>Naar bed gegaan</div><input type="time" value={dag.slaap.bedtijd} onChange={e=>setDag(d=>({...d,slaap:{...d.slaap,bedtijd:e.target.value}}))} style={{...inp,fontSize:17,fontWeight:700,textAlign:"center",padding:"11px"}}/></div>
+                  <div style={{flex:1}}><div style={{fontSize:12,color:C.muted,marginBottom:6,fontWeight:600}}>Gisteravond naar bed</div><input type="time" value={dag.slaap.bedtijd} onChange={e=>setDag(d=>({...d,slaap:{...d.slaap,bedtijd:e.target.value}}))} style={{...inp,fontSize:17,fontWeight:700,textAlign:"center",padding:"11px"}}/></div>
+                  <div style={{flex:1}}><div style={{fontSize:12,color:C.muted,marginBottom:6,fontWeight:600}}>Vanochtend wakker</div><input type="time" value={dag.slaap.wektijd} onChange={e=>setDag(d=>({...d,slaap:{...d.slaap,wektijd:e.target.value}}))} style={{...inp,fontSize:17,fontWeight:700,textAlign:"center",padding:"11px"}}/></div>
                 </div>
                 {slaap?(
                   <div style={{background:slaap.totaalMin>=420?C.sL:slaap.totaalMin>=360?C.aL:C.dL,border:"1px solid "+(slaap.totaalMin>=420?"#81C784":slaap.totaalMin>=360?C.accent:C.danger),borderRadius:12,padding:16,textAlign:"center"}}>
