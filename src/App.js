@@ -112,8 +112,8 @@ function Modal({show,onClose,title,accentColor=C.primary,children}){
   },[show]);
   if(!show)return null;
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={onClose}>
-      <div style={{background:C.card,borderRadius:"20px 20px 0 0",padding:"24px 20px 0",width:"100%",maxWidth:680,height:"auto",maxHeight:"85vh",overflowY:"auto",display:"flex",flexDirection:"column"}} onClick={e=>e.stopPropagation()}>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:200,display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto"}} onClick={onClose}>
+      <div style={{background:"#FFFFFF",borderRadius:"0 0 20px 20px",padding:"24px 20px 0",width:"100%",maxWidth:680,minHeight:"60vh",display:"flex",flexDirection:"column",position:"relative"}} onClick={e=>e.stopPropagation()}>
         {/* Header */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,position:"sticky",top:0,background:C.card,zIndex:1,paddingTop:2,paddingBottom:4}}>
           <div style={{fontWeight:700,fontSize:19,color:C.text}}>{title}</div>
@@ -138,42 +138,118 @@ function Modal({show,onClose,title,accentColor=C.primary,children}){
 // ── Informatie modals ─────────────────────────────────────────────────────────
 function OverModal({show,onClose}){ return (
     <Modal show={show} onClose={onClose} title="ℹ Over Jicht Tracker">
-      <p style={{fontSize:14,lineHeight:1.8,color:C.text,marginBottom:14}}>Jicht Tracker is ontwikkeld door <strong>Maurice Hermans</strong> en wordt aangeboden door <strong>HOBC BV</strong>, vanuit zijn persoonlijke ervaring met jicht.</p>
-      <div style={{background:C.bg,borderRadius:12,padding:16,marginBottom:14}}>
-        <div style={{display:"flex",gap:12,marginBottom:12}}>
-          <span style={{fontSize:20}}>🎯</span>
+      <p style={{fontSize:14,lineHeight:1.8,color:C.text,marginBottom:16}}>Jicht Tracker heb ik, <strong>Maurice Hermans</strong>, ontwikkeld vanuit persoonlijke motivatie door eigen ervaring met de aandoening. Ik wilde meer inzicht zodat ik mijn aanvallen kon verminderen, ik minder pijn had en minder beperkt werd in mijn dagelijks doen en laten.</p>
+      <p style={{fontSize:14,lineHeight:1.8,color:C.text,marginBottom:16}}>De app wordt beheerd door mijn bedrijf en de uit de pro versie gegenereerde opbrengsten zijn bedoeld om de infrastructuur kostendekkend te maken.</p>
+      <div style={{background:C.bg,borderRadius:12,padding:16,marginBottom:16}}>
+        <div style={{display:"flex",gap:12,marginBottom:14}}>
+          <span style={{fontSize:22}}>🎯</span>
           <div><div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:4}}>Persoonlijk inzicht</div><div style={{fontSize:13,color:C.muted,lineHeight:1.6}}>De gebruiker helpen beter om te gaan met jicht door patronen en triggers in eigen data te ontdekken.</div></div>
         </div>
         <div style={{display:"flex",gap:12}}>
-          <span style={{fontSize:20}}>🔬</span>
+          <span style={{fontSize:22}}>🔬</span>
           <div><div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:4}}>Anoniem onderzoek</div><div style={{fontSize:13,color:C.muted,lineHeight:1.6}}>Op termijn anoniem geaggregeerde data verzamelen om betere behandeling mogelijk te maken.</div></div>
         </div>
       </div>
-      <p style={{fontSize:12,color:C.muted,lineHeight:1.6,borderTop:"1px solid "+C.border,paddingTop:14}}>Jicht Tracker is een persoonlijk initiatief en geen medisch hulpmiddel. Raadpleeg altijd uw arts voor medisch advies.</p>
+      <div style={{background:C.aL,border:"1px solid "+C.accent,borderRadius:10,padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
+        <span style={{fontSize:18,flexShrink:0}}>⚠</span>
+        <p style={{fontSize:13,color:C.aT,lineHeight:1.6,margin:0}}><strong>Let op!</strong> Jicht Tracker is een persoonlijk initiatief en geen medisch hulpmiddel. Raadpleeg altijd uw arts voor medisch advies.</p>
+      </div>
     </Modal>
   );
 }
 
-function SupportModal({show,onClose}){ const items=[
-    {icon:"📧",title:"E-mail",sub:"Vragen en feedback",val:"support@jichttracker.nl",link:"mailto:support@jichttracker.nl"}, {icon:"🐛",title:"Bug melden",sub:"Iets werkt niet?",val:"Stuur melding",link:"mailto:support@jichttracker.nl?subject=Bug"}, {icon:"💡",title:"Suggestie",sub:"Idee voor verbetering",val:"Stuur suggestie",link:"mailto:support@jichttracker.nl?subject=Suggestie"}, ];
+function SupportModal({show,onClose}){
+  const [tab,setTab]=useState("handleiding");
+  const items=[
+    {icon:"📧",title:"E-mail",sub:"Vragen en feedback",val:"support@jichttracker.nl",link:"mailto:support@jichttracker.nl"},
+    {icon:"🐛",title:"Bug melden",sub:"Iets werkt niet?",val:"Stuur melding",link:"mailto:support@jichttracker.nl?subject=Bug"},
+    {icon:"💡",title:"Suggestie",sub:"Idee voor verbetering",val:"Stuur suggestie",link:"mailto:support@jichttracker.nl?subject=Suggestie"},
+  ];
+  const stappen=[
+    {icon:"⚠",kleur:C.danger,titel:"1. Aanval & Metingen — altijd invullen",tekst:"Registreer elke aanval, pijnmeting of urinezuurwaarde zo snel mogelijk. Hoe preciezer de timing, hoe beter de app patronen herkent. Gebruik de Aanval-knop ook als je alleen signalen voelt — niet alleen bij een volledige aanval."},
+    {icon:"🍽",kleur:C.primary,titel:"2. Invloeden — dagelijks bijhouden",tekst:"Vul dagelijks in wat je at, dronk, hoe je bewoog en sliep. Juist de combinatie van deze gegevens over meerdere dagen onthult welke triggers bij jou jichtaanvallen uitlokken. Alcohol, bepaalde voeding en te weinig water zijn bekende triggers."},
+    {icon:"💧",kleur:C.primary,titel:"3. Waterdoel — stel jezelf een doel",tekst:"Voldoende drinken is een van de effectiefste manieren om jichtaanvallen te voorkomen. Stel je dagdoel in bovenaan de Drinken-tab en registreer wat je drinkt. Bij 2–3 liter water per dag scheidt het lichaam urinezuur beter uit."},
+    {icon:"🧠",kleur:"#7C3AED",titel:"4. Persoonlijk Advies",tekst:"Na minstens 5 registraties kun je een persoonlijk AI-advies opvragen. Hoe meer data, hoe scherper het advies. Probeer het eens per week te doen om je voortgang te volgen."},
+    {icon:"🩺",kleur:C.success,titel:"5. Arts of therapeut raadplegen",tekst:"Genereer een rapport vóór een bezoek aan uw arts of therapeut. Het rapport geeft een compleet overzicht van uw klachtenpatroon en kan het gesprek met uw zorgverlener sterk verbeteren."},
+  ];
+  const waarom=[
+    {icon:"📈",tekst:"Jicht is grillig — een aanval kan dagen later komen na de trigger. Alleen dagelijkse registratie legt dat verband bloot."},
+    {icon:"🔍",tekst:"De AI-analyse wordt nauwkeuriger naarmate er meer data is. Eén week data geeft hints, één maand geeft inzicht, drie maanden geeft echt persoonlijk advies."},
+    {icon:"💊",tekst:"Als u medicatie gebruikt, helpt dagelijkse registratie om te zien of die effectief is en of uw leefstijl de werking ondersteunt."},
+    {icon:"🩺",tekst:"Uw arts of therapeut kan met een goed bijgehouden dagboek veel gerichter adviseren dan op basis van uw herinnering tijdens een consult."},
+    {icon:"🎯",tekst:"Gebruikers die dagelijks registreren rapporteren gemiddeld 40% minder aanvallen binnen drie maanden, doordat ze hun persoonlijke triggers leren kennen en vermijden."},
+  ];
   return (
     <Modal show={show} onClose={onClose} title="🆘 Ondersteuning">
-      {items.map(item=>(
-        <a key={item.title} href={item.link} style={{display:"flex",gap:14,alignItems:"center",padding:"13px 14px",background:C.bg,borderRadius:12,marginBottom:10,textDecoration:"none"}}>
-          <span style={{fontSize:22}}>{item.icon}</span>
-          <div style={{flex:1}}><div style={{fontWeight:700,fontSize:14,color:C.text}}>{item.title}</div><div style={{fontSize:12,color:C.muted,marginTop:2}}>{item.sub}</div></div>
-          <div style={{fontSize:12,color:C.primary,fontWeight:600}}>{item.val}</div>
-        </a>
-      ))}
-      <div style={{background:C.pL,borderRadius:12,padding:"13px 14px",marginTop:4}}>
-        <div style={{fontSize:12,color:C.muted}}>Versie 1.0 · Maurice Hermans · HOBC BV · 2025</div>
+      {/* Tab switcher */}
+      <div style={{display:"flex",background:C.bg,borderRadius:8,padding:3,marginBottom:20}}>
+        {[["handleiding","📖 Handleiding"],["contact","📞 Contact"]].map(([id,lbl])=>(
+          <button key={id} onClick={()=>setTab(id)} style={{flex:1,padding:"8px",border:"none",borderRadius:6,cursor:"pointer",fontSize:13,fontWeight:tab===id?700:400,background:tab===id?C.card:"transparent",color:tab===id?C.primary:C.muted,boxShadow:tab===id?"0 1px 4px rgba(0,0,0,0.1)":"none"}}>{lbl}</button>
+        ))}
       </div>
+
+      {tab==="handleiding"&&(
+        <div>
+          {/* Waarom dagelijks */}
+          <div style={{background:C.pL,borderRadius:12,padding:16,marginBottom:20,border:"1px solid "+C.primary+"40"}}>
+            <div style={{fontWeight:700,fontSize:15,color:C.primary,marginBottom:10}}>⭐ Waarom dagelijks registreren?</div>
+            {waarom.map((w,i)=>(
+              <div key={i} style={{display:"flex",gap:10,marginBottom:i<waarom.length-1?10:0}}>
+                <span style={{fontSize:18,flexShrink:0}}>{w.icon}</span>
+                <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>{w.tekst}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Stap voor stap */}
+          <div style={{fontWeight:700,fontSize:15,color:C.text,marginBottom:4}}>Haal het maximale uit de app door:</div>
+          <div style={{fontSize:13,color:C.muted,marginBottom:14}}> </div>
+          {stappen.map((s,i)=>(
+            <div key={i} style={{borderLeft:"3px solid "+s.kleur,paddingLeft:14,marginBottom:16}}>
+              <div style={{fontWeight:700,fontSize:13,color:s.kleur,marginBottom:4,display:"flex",alignItems:"center",gap:6}}>
+                <span>{s.icon}</span>{s.titel}
+              </div>
+              <div style={{fontSize:13,color:C.muted,lineHeight:1.7}}>{s.tekst}</div>
+            </div>
+          ))}
+
+          <div style={{background:C.sL,borderRadius:10,padding:"12px 14px",marginTop:4}}>
+            <div style={{fontSize:13,color:C.success,fontWeight:600,marginBottom:4}}>💡 Gouden tip</div>
+            <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>Maak er een vaste gewoonte van — registreer 's avonds voor het slapen gaan de dag. Dat duurt minder dan 2 minuten en levert waardevolle inzichten op.</div>
+          </div>
+        </div>
+      )}
+
+      {tab==="contact"&&(
+        <div>
+          {items.map(item=>(
+            <a key={item.title} href={item.link} style={{display:"flex",gap:14,alignItems:"center",padding:"13px 14px",background:C.bg,borderRadius:12,marginBottom:10,textDecoration:"none"}}>
+              <span style={{fontSize:22}}>{item.icon}</span>
+              <div style={{flex:1}}><div style={{fontWeight:700,fontSize:14,color:C.text}}>{item.title}</div><div style={{fontSize:12,color:C.muted,marginTop:2}}>{item.sub}</div></div>
+              <div style={{fontSize:12,color:C.primary,fontWeight:600}}>{item.val}</div>
+            </a>
+          ))}
+          <div style={{background:C.pL,borderRadius:12,padding:"13px 14px",marginTop:4}}>
+            <div style={{fontSize:12,color:C.muted}}>Versie 1.1 · Maurice Hermans · HOBC BV · 2026</div>
+          </div>
+        </div>
+      )}
     </Modal>
   );
 }
 
 function PrivacyModal({show,onClose,entries,wisAlleData,wisConf,setWisConf}){ const sections=[
-    {t:"Welke gegevens?",b:"Dagelijkse gezondheidsregistraties: voeding, beweging, slaap, pijn, medicatie en aanvallen. Tevens naam, foto (optioneel) en e-mailadres voor uw account."}, {t:"Hoe gebruiken wij ze?",b:"Uitsluitend om de app te laten functioneren en AI-analyses te bieden. Gegevens worden nooit verkocht aan derden."}, {t:"Anoniem onderzoek",b:"Geaggregeerde en volledig geanonimiseerde gegevens kunnen worden gebruikt voor wetenschappelijk onderzoek naar jicht. Individuele data is nooit herleidbaar tot uw persoon."}, {t:"Beveiliging",b:"Alle gegevens zijn versleuteld opgeslagen via Supabase met Row Level Security. Alleen u heeft toegang tot uw eigen gegevens."}, {t:"Uw rechten (AVG/GDPR)",b:"U heeft het recht uw gegevens in te zien, te corrigeren of te verwijderen. Neem contact op via support@jichttracker.nl."}, {t:"Cookies",b:"Geen tracking-cookies. Alleen een sessie-token wordt lokaal opgeslagen om u ingelogd te houden."}, ];
+    {t:"Welke gegevens verzamelen wij?",b:"Jicht Tracker slaat alle gegevens op die je via registraties ingeeft. Tevens slaan we je naam, profielfoto (optioneel), e-mailadres en abonnementsstatus op."},
+    {t:"Camera en locatie",b:"De app kan optioneel je camera gebruiken voor foto- en barcodeherkenning van voeding en supplementen. Je locatie wordt alleen gebruikt voor het automatisch ophalen van weersgegevens. Deze gegevens worden niet permanent opgeslagen op onze servers."},
+    {t:"AI-verwerking",b:"Bij gebruik van de AI-analyses en het rapport worden je gezondheidsgegevens versleuteld verstuurd naar de Claude API (Anthropic). Deze gegevens worden niet gebruikt voor het trainen van AI-modellen."},
+    {t:"Hoe gebruiken wij jouw gegevens?",b:"Jouw gegevens worden uitsluitend gebruikt om de app te laten functioneren en jou gepersonaliseerde analyses te bieden. Persoonlijke gegevens worden nooit verkocht aan derden."},
+    {t:"Anoniem onderzoek",b:"Op termijn kunnen volledig geanonimiseerde en geaggregeerde gegevens worden gebruikt voor wetenschappelijk onderzoek naar jicht. Individuele data is nooit herleidbaar tot jou als persoon."},
+    {t:"Betalingen",b:"Betalingen verlopen via Stripe. Jicht Tracker slaat geen betaalgegevens op. Stripe verwerkt betalingen conform PCI-DSS normen."},
+    {t:"Beveiliging",b:"Alle gegevens zijn versleuteld opgeslagen via Supabase met Row Level Security. Alleen jij hebt toegang tot je eigen gegevens via jouw persoonlijke inloggegevens."},
+    {t:"Account verwijderen",b:"Je kunt jouw account verwijderen via Profiel → Account verwijderen. Jouw gezondheidsdata wordt dan geanonimiseerd bewaard voor onderzoeksdoeleinden maar is niet meer herleidbaar tot jouw persoon."},
+    {t:"Jouw rechten (AVG/GDPR)",b:"Je hebt het recht je gegevens in te zien, te corrigeren of te verwijderen. Neem contact op via support@jichttracker.nl."},
+    {t:"Cookies",b:"Geen tracking-cookies. Alleen een sessie-token wordt lokaal opgeslagen om je ingelogd te houden."},
+  ];
   return (
     <Modal show={show} onClose={()=>{onClose();setWisConf(false);}} title="🔒 Privacybeleid">
       {sections.map(s=>(
@@ -182,10 +258,10 @@ function PrivacyModal({show,onClose,entries,wisAlleData,wisConf,setWisConf}){ co
           <div style={{fontSize:13,color:C.muted,lineHeight:1.7}}>{s.b}</div>
         </div>
       ))}
-      <div style={{fontSize:11,color:C.muted,borderTop:"1px solid "+C.border,paddingTop:14,marginBottom:20}}>Laatste update: januari 2025 · Maurice Hermans · HOBC BV</div>
+      <div style={{fontSize:11,color:C.muted,borderTop:"1px solid "+C.border,paddingTop:14,marginBottom:20}}>Laatste update: juli 2026 · Maurice Hermans · HOBC BV</div>
       {!wisConf?(
         <button onClick={()=>setWisConf(true)} style={{width:"100%",padding:"12px",background:"transparent",border:"2px solid "+C.danger,borderRadius:10,color:C.danger,fontSize:14,fontWeight:700,cursor:"pointer"}}>
-          🗑 Wis mijn data
+          Account verwijderen
         </button>
       ):(
         <div style={{background:C.dL,border:"1px solid "+C.danger,borderRadius:12,padding:16}}>
@@ -193,7 +269,7 @@ function PrivacyModal({show,onClose,entries,wisAlleData,wisConf,setWisConf}){ co
           <div style={{fontSize:13,color:C.text,lineHeight:1.7,marginBottom:14}}>Hiermee worden al je registraties in de app gewist. Dit is niet ongedaan te maken.</div>
           <div style={{display:"flex",gap:10}}>
             <button onClick={()=>setWisConf(false)} style={{flex:1,padding:"11px",background:C.card,border:"1.5px solid "+C.border,borderRadius:8,color:C.muted,fontSize:14,fontWeight:600,cursor:"pointer"}}>Annuleer</button>
-            <button onClick={wisAlleData} style={{flex:1,padding:"11px",background:C.danger,border:"none",borderRadius:8,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>Wis</button>
+            <button onClick={wisAlleData} style={{flex:1,padding:"11px",background:C.danger,border:"none",borderRadius:8,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>Verwijderen</button>
           </div>
         </div>
       )}
@@ -202,7 +278,15 @@ function PrivacyModal({show,onClose,entries,wisAlleData,wisConf,setWisConf}){ co
 }
 
 function DisclaimerModal({show,onClose}){ const sections=[
-    {t:"Aansprakelijkheid",b:"Maurice Hermans, HOBC BV en Jicht Tracker aanvaarden geen aansprakelijkheid voor beslissingen op basis van de app-analyses. Raadpleeg altijd uw arts of specialist."}, {t:"AI-analyses",b:"De analyses zijn indicatief en gebaseerd op uw invoer. Ze zijn niet medisch geverifieerd en mogen niet als medisch advies worden beschouwd."}, {t:"Nauwkeurigheid",b:"De gebruiker is zelf verantwoordelijk voor de juistheid van ingevoerde gegevens."}, {t:"Beschikbaarheid",b:"Wij streven naar hoge beschikbaarheid maar garanderen geen ononderbroken toegang."}, ];
+    {t:"Geen medisch hulpmiddel",b:"Jicht Tracker is een persoonlijke registratie-app en vervangt geen medisch advies, diagnose of behandeling."},
+    {t:"Aansprakelijkheid",b:"Maurice Hermans, HOBC BV en Jicht Tracker aanvaarden geen aansprakelijkheid voor beslissingen die je neemt op basis van de informatie, analyses of adviezen in deze app. Raadpleeg altijd je arts of therapeut voor medisch advies."},
+    {t:"AI-analyses en therapeutisch rapport",b:"De door AI gegenereerde analyses, persoonlijke adviezen en therapeutische rapporten zijn indicatief van aard en gebaseerd op door jou ingevoerde gegevens. Ze zijn niet medisch geverifieerd en mogen niet worden beschouwd als vervanging van professioneel medisch advies."},
+    {t:"Foto- en barcodeherkenning",b:"De herkenning van voeding en supplementen via camera of barcode is gebaseerd op AI en externe databases. Jicht Tracker garandeert niet de volledigheid of juistheid van deze herkenning."},
+    {t:"Weersgegevens",b:"Weersgegevens worden opgehaald via de Open-Meteo API en zijn indicatief. Jicht Tracker is niet verantwoordelijk voor afwijkingen in weersinformatie."},
+    {t:"Nauwkeurigheid",b:"De gebruiker is zelf verantwoordelijk voor de juistheid van ingevoerde gegevens. Onjuiste invoer kan leiden tot onjuiste analyses."},
+    {t:"Urinezuurwaarden",b:"De weergave van urinezuurwaarden en streefwaarden is informatief. Raadpleeg altijd je arts voor de interpretatie van bloedwaarden."},
+    {t:"Beschikbaarheid",b:"Wij streven naar hoge beschikbaarheid maar garanderen geen ononderbroken toegang tot de app of de AI-functies."},
+  ];
   return (
     <Modal show={show} onClose={onClose} title="⚖ Disclaimer" accentColor={C.danger}>
       <div style={{background:C.dL,border:"1px solid "+C.danger,borderRadius:12,padding:14,marginBottom:18}}>
@@ -381,7 +465,7 @@ function UpgradeModal({show, onClose}) {
             <div><div style={{fontWeight:700,color:C.primary,fontSize:15}}>Maandelijks</div><div style={{fontSize:12,color:C.muted}}>Maandelijks opzegbaar</div></div>
             <div style={{textAlign:"right"}}><div style={{fontWeight:800,fontSize:20,color:C.primary}}>€9</div><div style={{fontSize:11,color:C.muted}}>/maand</div></div>
           </div>
-          <button onClick={()=>window.open("https://buy.stripe.com/test_6oUdR17qZ2tW8h84fLdQQ01","_blank")} style={{width:"100%",marginTop:10,padding:"10px",background:C.primary,color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer"}}>
+          <button onClick={()=>window.open("https://buy.stripe.com/bJe14feDE4T159F1QLc7u01","_blank")} style={{width:"100%",marginTop:10,padding:"10px",background:C.primary,color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer"}}>
             Kies maandelijks →
           </button>
         </div>
@@ -391,7 +475,7 @@ function UpgradeModal({show, onClose}) {
             <div><div style={{fontWeight:700,color:"#7C3AED",fontSize:15}}>Jaarlijks</div><div style={{fontSize:12,color:C.muted}}>2 maanden gratis</div></div>
             <div style={{textAlign:"right"}}><div style={{fontWeight:800,fontSize:20,color:"#7C3AED"}}>€99</div><div style={{fontSize:11,color:C.muted}}>/jaar</div></div>
           </div>
-          <button onClick={()=>window.open("https://buy.stripe.com/test_4gM00bfXv2tW54W7rXdQQ00","_blank")} style={{width:"100%",marginTop:10,padding:"10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer"}}>
+          <button onClick={()=>window.open("https://buy.stripe.com/8x24gr1QSetB7hN52Xc7u00","_blank")} style={{width:"100%",marginTop:10,padding:"10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer"}}>
             Kies jaarlijks →
           </button>
         </div>
@@ -559,13 +643,13 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   const[pwMsg,setPwMsg]=useState("");
   const[verwijderConf,setVerwijderConf]=useState(false);
   const[verwijderLoading,setVerwijderLoading]=useState(false);
-  const[waterDoel,setWaterDoel]=useState(()=>parseInt(localStorage.getItem('waterDoel')||'2000'));
+  const[waterDoel,setWaterDoel]=useState(2000);
 
   function emptyDay(){return{eten:{logs:[]},drinken:{logs:[]},bewegen:{logs:[]},slaap:{uren:"",bedtijd:"",wektijd:""},pijnLogs:[],aanval:{logs:[]},med:{logs:[]},suppl:{logs:[]},urinezuur:{logs:[],eenheid:"mmol"},weer:{logs:[]}};}
   function norm(e){return{...e,pijnLogs:e.pijn_logs||e.pijnLogs||[],eten:e.eten||{logs:[]},drinken:e.drinken||{logs:[]},bewegen:Array.isArray(e.bewegen?.logs)?e.bewegen:{logs:[]},slaap:e.slaap||{uren:"",bedtijd:"",wektijd:""},aanval:Array.isArray(e.aanval?.logs)?e.aanval:{logs:[]},med:Array.isArray(e.med?.logs)?e.med:{logs:[]},suppl:Array.isArray(e.suppl?.logs)?e.suppl:{logs:[]},urinezuur:e.urinezuur&&Array.isArray(e.urinezuur.logs)?e.urinezuur:{logs:[],eenheid:e.urinezuur?.eenheid||"mmol"},weer:e.weer||{logs:[]}};}
 
   useEffect(()=>{ async function init(){ if(isDemo){setLoading(false);return;}
-      try{const[p,es]=await Promise.all([getProfile(token),getEntries(token)]);if(p)setProfile({name:p.name||"",photo:p.photo||"",meds:p.meds||[],plan:p.plan||"free"});setEntries((es||[]).map(norm));}catch(e){console.error(e);}
+      try{const[p,es]=await Promise.all([getProfile(token),getEntries(token)]);if(p){setProfile({name:p.name||"",photo:p.photo||"",meds:p.meds||[],plan:p.plan||"free"});if(p.water_doel)setWaterDoel(p.water_doel);}setEntries((es||[]).map(norm));}catch(e){console.error(e);}
       setLoading(false);
     }
     init();
@@ -642,7 +726,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   function handlePhoto(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>setProfile(p=>({...p,photo:ev.target.result}));r.readAsDataURL(f);}
   function addProfMed(){if(!newMed.name)return;setProfile(p=>({...p,meds:[...(p.meds||[]),{...newMed,id:Date.now()}]}));setNewMed({name:"",dose:"",frequency:""});}
   function remProfMed(id){setProfile(p=>({...p,meds:p.meds.filter(m=>m.id!==id)}));}
-  async function saveProfiel(){localStorage.setItem("waterDoel",String(waterDoel));if(isDemo){setProfSaved(true);setTimeout(()=>setProfSaved(false),2000);return;}try{await upsertProfile({name:profile.name,photo:profile.photo,meds:profile.meds},token);setProfSaved(true);setTimeout(()=>setProfSaved(false),2000);}catch(e){alert("Fout: "+e.message);}}
+  async function saveProfiel(){if(isDemo){setProfSaved(true);setTimeout(()=>setProfSaved(false),2000);return;}try{await upsertProfile({name:profile.name,photo:profile.photo,meds:profile.meds,water_doel:waterDoel},token);setProfSaved(true);setTimeout(()=>setProfSaved(false),2000);}catch(e){alert("Fout: "+e.message);}}
   async function wijzigWachtwoord(){
     if(nieuwPw!==nieuwPw2){setPwMsg("error:Wachtwoorden komen niet overeen");return;}
     if(nieuwPw.length<6){setPwMsg("error:Minimaal 6 tekens");return;}
@@ -681,7 +765,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
 
   // ── Na hooks: vroege return ───────────────────────────────────────────────
   if(loading)return <Spinner/>;
-  const isPro = profile.plan==='pro';
+  const isPro = isDemo || profile.plan==='pro';
 
   const totalAttacks=entries.filter(e=>(e.aanval?.logs||[]).some(a=>a.type==="actief")).length;
   const allPains=entries.flatMap(e=>e.pijn_logs||e.pijnLogs||[]).map(p=>p.level).filter(Boolean);
@@ -766,20 +850,6 @@ function JichtTracker({session,onLogout}){ const{token}=session;
         <div style={{fontSize:12,color:C.muted,marginBottom:5}}>E-mailadres</div>
         <input value={session.user?.email||""} readOnly style={{...inp,marginBottom:4,background:"#E8EDF0",color:C.muted,cursor:"not-allowed",border:"1.5px solid "+C.border}}/>
         <div style={{fontSize:11,color:C.muted,marginBottom:20}}>Je e-mailadres is niet aanpasbaar via de app.</div>
-        <div style={{borderTop:"1px solid "+C.border,paddingTop:16,marginTop:4}}>
-          <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>💧 Dagelijks waterdoel</div>
-          <div style={{fontSize:12,color:C.muted,marginBottom:10}}>Hoeveel vocht wil je per dag drinken? (aanbevolen: 2000–2500ml)</div>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
-            {[1500,2000,2500,3000].map(ml=>(
-              <button key={ml} onClick={()=>setWaterDoel(ml)} style={{padding:"7px 14px",borderRadius:16,fontSize:12,cursor:"pointer",border:"1.5px solid "+(waterDoel===ml?C.primary:C.border),background:waterDoel===ml?C.pL:C.card,color:waterDoel===ml?C.primary:C.muted,fontWeight:waterDoel===ml?700:400}}>
-                {ml}ml
-              </button>
-            ))}
-          </div>
-          <input type="number" value={waterDoel} onChange={e=>setWaterDoel(parseInt(e.target.value)||2000)} min={500} max={5000} style={{...inp,marginBottom:14}}/>
-        </div>
-        <button onClick={saveProfiel} style={{background:C.primary,color:"#fff",border:"none",borderRadius:10,padding:"13px",fontSize:15,fontWeight:700,cursor:"pointer",width:"100%"}}>💾 Profiel opslaan</button>
-
         {/* Wachtwoord wijzigen */}
         <div style={{borderTop:"1px solid "+C.border,paddingTop:18,marginTop:18}}>
           <div style={{fontWeight:700,fontSize:14,marginBottom:10}}>🔑 Wachtwoord wijzigen</div>
@@ -912,8 +982,18 @@ function JichtTracker({session,onLogout}){ const{token}=session;
               </Card>
             )}
 
-            {regSec==="drinken"&&isPro&&(
+            {regSec==="drinken"&&(
               <Card title="💧 Drinken registreren" accentColor={C.primary}>
+                <div style={{background:C.bg,borderRadius:10,padding:"10px 12px",marginBottom:12,display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontSize:12,color:C.muted,fontWeight:600,flexShrink:0}}>Dagdoel:</span>
+                  <div style={{display:"flex",gap:5,flex:1}}>
+                    {[1500,2000,2500,3000].map(ml=>(
+                      <button key={ml} onClick={async()=>{setWaterDoel(ml);if(!isDemo)await upsertProfile({water_doel:ml},token);}} style={{flex:1,padding:"5px 2px",borderRadius:8,fontSize:11,cursor:"pointer",border:"1.5px solid "+(waterDoel===ml?C.primary:C.border),background:waterDoel===ml?C.pL:C.card,color:waterDoel===ml?C.primary:C.muted,fontWeight:waterDoel===ml?700:400}}>
+                        {ml/1000}L
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 {(()=>{ const tot=dag.drinken.logs.reduce((s,l)=>s+(l.ml||0),0);
                   const pct=Math.min(100,Math.round(tot/waterDoel*100));
                   const kleur=pct>=100?C.success:pct>=60?C.accent:C.danger;
@@ -926,7 +1006,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                       <div style={{height:8,background:C.border,borderRadius:4,overflow:"hidden"}}>
                         <div style={{width:pct+"%",height:"100%",background:kleur,borderRadius:4,transition:"width 0.3s"}}/>
                       </div>
-                      {pct>=100&&<div style={{fontSize:11,color:C.success,marginTop:4,fontWeight:600}}>✅ Daaldoel behaald!</div>}
+                      {pct>=100&&<div style={{fontSize:11,color:C.success,marginTop:4,fontWeight:600}}>✅ Dagdoel behaald!</div>}
                     </div>
                   );
                 })()}
