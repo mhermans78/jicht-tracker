@@ -139,7 +139,7 @@ function Modal({show,onClose,title,accentColor=C.primary,children}){
 function OverModal({show,onClose}){ return (
     <Modal show={show} onClose={onClose} title="ℹ Over Jicht Tracker">
       <p style={{fontSize:14,lineHeight:1.8,color:C.text,marginBottom:16}}>Jicht Tracker heb ik, <strong>Maurice Hermans</strong>, ontwikkeld vanuit persoonlijke motivatie door eigen ervaring met de aandoening. Ik wilde meer inzicht zodat ik mijn aanvallen kon verminderen, ik minder pijn had en minder beperkt werd in mijn dagelijks doen en laten.</p>
-      <p style={{fontSize:14,lineHeight:1.8,color:C.text,marginBottom:16}}>De app wordt beheerd door mijn bedrijf en de uit de pro versie gegenereerde opbrengsten zijn bedoeld om de infrastructuur kostendekkend te maken.</p>
+      <p style={{fontSize:14,lineHeight:1.8,color:C.text,marginBottom:16}}>De app wordt beheerd door <strong>HOBC BV</strong> en de uit de pro versie gegenereerde opbrengsten zijn bedoeld om de infrastructuur kostendekkend te maken.</p>
       <div style={{background:C.bg,borderRadius:12,padding:16,marginBottom:16}}>
         <div style={{display:"flex",gap:12,marginBottom:14}}>
           <span style={{fontSize:22}}>🎯</span>
@@ -779,7 +779,6 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   const MENU_ITEMS=[
     ["🩺","Arts / Therapeut raadplegen",()=>setShowTher(true)],
     ["📧","Rapport versturen",()=>{setShowRapport(true);setRapportTekst("");}],
-    ["🛒","Naar de webshop",()=>{}],
     ["---","---",null],
     ["👤","Profiel",()=>setShowProfiel(true)],
     ["🆘","Ondersteuning",()=>setShowSupport(true)],
@@ -806,7 +805,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
               lbl==="---"
                 ? <div key={i} style={{height:1,background:C.border,margin:"4px 0"}}/>
                 : <button key={lbl} onClick={fn} style={{width:"100%",padding:"12px 16px",border:"none",background:"transparent",textAlign:"left",cursor:"pointer",fontSize:14,color:(lbl==="Uitloggen"||lbl==="↩ Terug naar login")?C.danger:C.text,display:"flex",alignItems:"center",gap:10}}>
-                    <span>{icon}</span><span style={{fontWeight:600}}>{lbl}</span>
+                    <span style={{width:22,textAlign:"center",flexShrink:0}}>{icon}</span><span style={{fontWeight:600}}>{lbl}</span>
                   </button>
             ))}
           </div>
