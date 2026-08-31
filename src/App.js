@@ -856,6 +856,11 @@ function JichtTracker({session,onLogout}){ const{token}=session;
 
       {isDemo&&<div style={{background:C.aL,borderBottom:"1px solid "+C.accent,padding:"8px 16px",textAlign:"center",fontSize:12,color:C.aT,fontWeight:600}}>👀 Demo-modus — wijzigingen worden niet opgeslagen</div>}
 
+      {/* Hero banner */}
+      <div style={{width:"100%",overflow:"hidden",borderBottom:"1px solid "+C.border}}>
+        <img src="/hero-banner.png" alt="Eindelijk meer controle over mijn jicht" style={{width:"100%",display:"block",objectFit:"cover",maxHeight:200}}/>
+      </div>
+
       {/* Stats */}
       <div style={{display:"flex",background:C.card,borderBottom:"1px solid "+C.border}}>
         {[{l:"Registraties",v:entries.length},{l:"Gem. pijn",v:avgPain},{l:"Aanvallen",v:totalAttacks},{l:"Maanden",v:monthly.length}].map((s,i)=>(
