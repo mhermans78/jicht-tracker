@@ -611,7 +611,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   const[sync,setSync]=useState("");
   const[mainTab,setMainTab]=useState("registreer");
   const[regDate,setRegDate]=useState(today());
-  const[regSec,setRegSec]=useState("eten");
+  const[regSec,setRegSec]=useState(null);
   const[aiResult,setAiResult]=useState("");
   const[aiLoading,setAiLoading]=useState(false);
   const[profSaved,setProfSaved]=useState(false);
@@ -861,7 +861,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
         {[{l:"Registraties",v:entries.length},{l:"Gem. pijn",v:avgPain},{l:"Aanvallen",v:totalAttacks},{l:"Maanden",v:monthly.length}].map((s,i)=>(
           <div key={i} style={{flex:1,padding:"10px 5px",textAlign:"center",borderRight:i<3?"1px solid "+C.border:"none"}}>
             <div style={{fontSize:22,fontWeight:800,color:C.dark}}>{s.v}</div>
-            <div style={{fontSize:9,color:C.muted,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>{s.l}</div>
+            <div style={{fontSize:10,color:C.text,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>{s.l}</div>
           </div>
         ))}
       </div>
@@ -970,7 +970,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             </div>
             {/* Sectie 1 — Aanval & Metingen */}
             <div style={{background:C.card,border:"1px solid "+C.border,borderRadius:14,padding:"12px 12px 14px",marginBottom:12}}>
-              <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1.5,marginBottom:10,display:"flex",alignItems:"center",gap:5}}>
+              <div style={{fontSize:11,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:1,marginBottom:10,display:"flex",alignItems:"center",gap:5}}>
                 <span style={{width:5,height:5,borderRadius:"50%",background:C.danger,display:"inline-block"}}/>Aanval & Metingen
               </div>
               <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
@@ -979,16 +979,16 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                   const isAanval=t.id==="aanval";
                   return(
                   <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)}
-                    style={{padding:isAanval?"14px 4px":"12px 4px",border:"1.5px solid "+(regSec===t.id?(isAanval?C.danger:C.primary):locked?C.proL:isAanval?C.border:C.border),borderRadius:14,background:regSec===t.id?(isAanval?C.dark:C.dark):locked?C.proL:C.card,color:regSec===t.id?"#fff":locked?C.pro:isAanval?C.muted:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,position:"relative",boxShadow:regSec===t.id?"0 2px 12px rgba(0,0,0,0.15)":"none",transition:"all 0.15s"}}>
+                    style={{padding:"12px 4px",border:"1.5px solid "+(regSec===t.id?(isAanval?C.danger:C.primary):locked?C.proL:C.border),borderRadius:14,background:regSec===t.id?(isAanval?C.dark:C.dark):locked?C.proL:C.card,color:regSec===t.id?"#fff":locked?C.pro:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,position:"relative",boxShadow:regSec===t.id?"0 2px 12px rgba(0,0,0,0.15)":"none",transition:"all 0.15s",height:90}}>
                     {locked&&<span style={{position:"absolute",top:5,right:5,fontSize:7,fontWeight:800,background:C.pro,color:"#fff",padding:"2px 5px",borderRadius:5}}>PRO</span>}
-                    <span style={{fontSize:isAanval?34:26}}>{t.icon}</span>
-                    <span style={{fontSize:isAanval?12:11,fontWeight:isAanval?700:400}}>{t.label}</span>
+                    <span style={{fontSize:28}}>{t.icon}</span>
+                    <span style={{fontSize:13,fontWeight:700,color:regSec===t.id?"#fff":C.text}}>{t.label}</span>
                   </button>);})}
               </div>
             </div>
             {/* Sectie 2 — Invloeden */}
             <div style={{background:C.card,border:"1px solid "+C.border,borderRadius:14,padding:"12px 12px 14px",marginBottom:14}}>
-              <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1.5,marginBottom:10,display:"flex",alignItems:"center",gap:5}}>
+              <div style={{fontSize:11,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:1,marginBottom:10,display:"flex",alignItems:"center",gap:5}}>
                 <span style={{width:5,height:5,borderRadius:"50%",background:C.primary,display:"inline-block"}}/>Invloeden
               </div>
               <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
@@ -996,18 +996,24 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                   const locked=PRO_TABS.includes(t.id)&&!isPro;
                   return(
                   <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)}
-                    style={{padding:"14px 4px",border:"1.5px solid "+(regSec===t.id?C.dark:locked?C.proL:C.border),borderRadius:14,background:regSec===t.id?C.dark:locked?C.proL:C.card,color:regSec===t.id?"#fff":locked?C.pro:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,position:"relative",boxShadow:regSec===t.id?"0 2px 12px rgba(0,0,0,0.15)":"none",transition:"all 0.15s"}}>
+                    style={{padding:"12px 4px",border:"1.5px solid "+(regSec===t.id?C.dark:locked?C.proL:C.border),borderRadius:14,background:regSec===t.id?C.dark:locked?C.proL:C.card,color:regSec===t.id?"#fff":locked?C.pro:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,position:"relative",boxShadow:regSec===t.id?"0 2px 12px rgba(0,0,0,0.15)":"none",transition:"all 0.15s",height:90}}>
                     {locked&&<span style={{position:"absolute",top:5,right:5,fontSize:7,fontWeight:800,background:C.pro,color:"#fff",padding:"2px 5px",borderRadius:5}}>PRO</span>}
                     <span style={{fontSize:28}}>{t.icon}</span>
-                    <span style={{fontSize:11}}>{t.label}</span>
+                    <span style={{fontSize:13,fontWeight:700,color:regSec===t.id?"#fff":C.text}}>{t.label}</span>
                   </button>);})}
               </div>
             </div>
 
-            {/* Verbindende pijl naar actief paneel */}
-            <div style={{display:"flex",justifyContent:"center",marginBottom:-4}}>
-              <div style={{width:0,height:0,borderLeft:"8px solid transparent",borderRight:"8px solid transparent",borderTop:"8px solid "+(RTABS_S1.some(t=>t.id===regSec)?C.danger:C.primary)}}/>
-            </div>
+            {/* Verbindende pijl + terugknop */}
+            {regSec&&(
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4,marginTop:4}}>
+                <button onClick={()=>setRegSec(null)} style={{background:"none",border:"none",color:C.muted,fontSize:13,fontWeight:600,cursor:"pointer",padding:"4px 0",display:"flex",alignItems:"center",gap:4}}>
+                  <span>←</span> Terug
+                </button>
+                <div style={{width:0,height:0,borderLeft:"8px solid transparent",borderRight:"8px solid transparent",borderTop:"8px solid "+(RTABS_S1.some(t=>t.id===regSec)?C.accent:C.primary)}}/>
+                <div style={{width:40}}/>
+              </div>
+            )}
 
             {regSec==="eten"&&(
               <Card title="🍽 Voeding registreren" accentColor={C.primary}>
