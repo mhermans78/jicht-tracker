@@ -406,7 +406,7 @@ function FotoScan({onResult}){
       const b64=ev.target.result.split(",")[1];
       setLoading(true);
       try{
-        const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:150,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:file.type,data:b64}},{type:"text",text:"Wat zie je op deze foto? Geef alleen de naam van het voedsel, drank of supplement in max 8 woorden. Geen uitleg."}]}]})});
+        const res=await fetch("/.netlify/functions/ai-proxy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:150,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:file.type,data:b64}},{type:"text",text:"Wat zie je op deze foto? Geef alleen de naam van het voedsel, drank of supplement in max 8 woorden. Geen uitleg."}]}]})});
         const d=await res.json();
         onResult(d.content?.map(b=>b.text||"").join("").trim()||"");
       }catch{onResult("");}
@@ -427,7 +427,7 @@ function BarcodeScan({onResult}){
       const b64=ev.target.result.split(",")[1];
       setLoading(true);
       try{
-        const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:50,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:file.type,data:b64}},{type:"text",text:"Lees de barcode/EAN uit deze foto. Geef alleen het getal. Als geen barcode: schrijf 'geen'."}]}]})});
+        const res=await fetch("/.netlify/functions/ai-proxy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:50,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:file.type,data:b64}},{type:"text",text:"Lees de barcode/EAN uit deze foto. Geef alleen het getal. Als geen barcode: schrijf 'geen'."}]}]})});
         const d=await res.json();
         const barcode=(d.content?.map(b=>b.text||"").join("").trim()||"").replace(/\D/g,"");
         if(!barcode||barcode.length<8){onResult(null,"Geen barcode herkend");setLoading(false);return;}
@@ -560,6 +560,19 @@ function LoginScreen({onLogin}){
             {loading?"⏳ Even geduld...":(mode==="login"?"Inloggen →":"Account aanmaken →")}
           </button>
 
+          {mode==="login"&&(
+            <div style={{textAlign:"center",marginTop:10}}>
+              <button onClick={async()=>{
+                if(!email){alert("Vul eerst je e-mailadres in.");return;}
+                const r=await fetch(SU+"/auth/v1/recover",{method:"POST",headers:{"Content-Type":"application/json","apikey":SK},body:JSON.stringify({email})});
+                if(r.ok){alert("✅ Herstelmail verstuurd naar "+email+". Controleer ook je spam.");}
+                else{alert("Fout bij versturen herstelmail. Controleer je e-mailadres.");}
+              }} style={{background:"none",border:"none",color:C.primary,fontSize:13,cursor:"pointer",textDecoration:"underline"}}>
+                Wachtwoord vergeten?
+              </button>
+            </div>
+          )}
+
           <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid "+C.border,textAlign:"center"}}>
             <div style={{fontSize:11,color:C.muted,marginBottom:10}}>Wil je eerst de app bekijken?</div>
             <button onClick={()=>onLogin({token:"demo",user:{email:"demo@demo.nl"},demo:true})} style={{width:"100%",padding:"11px",background:C.aL,color:C.aT,border:"1.5px solid "+C.accent,borderRadius:10,fontSize:14,fontWeight:700,cursor:"pointer"}}>
@@ -674,12 +687,38 @@ function JichtTracker({session,onLogout}){ const{token}=session;
     },800);
   },[dag]);// eslint-disable-line
 
-  const callAI=useCallback(async(mode)=>{ const medInfo=profile.meds?.length>0?"Vaste medicatie: "+profile.meds.map(m=>m.name+" "+m.dose).join(", "):"";
+  async function checkAndIncrementLimit(type){
+    // type: 'ai' of 'scan'
+    const today = new Date().toISOString().slice(0,10);
+    const dateCol = type==='ai' ? 'ai_calls_date' : 'scan_calls_date';
+    const countCol = type==='ai' ? 'ai_calls_count' : 'scan_calls_count';
+    const maxLimit = type==='ai' ? 1 : 5;
+
+    const r = await sf('/rest/v1/profiles?select='+dateCol+','+countCol+'&id=eq.'+session.user.id,'GET',null,token);
+    const p = r?.[0];
+    const lastDate = p?.[dateCol];
+    const count = lastDate===today ? (p?.[countCol]||0) : 0;
+
+    if(count >= maxLimit){
+      const label = type==='ai' ? 'AI-analyse' : 'foto scan';
+      throw new Error('LIMIT:Je hebt het dagelijkse maximum van '+maxLimit+' '+label+(maxLimit===1?'':'s')+' bereikt. Probeer het morgen weer.');
+    }
+    // Increment
+    await sf('/rest/v1/profiles?id=eq.'+session.user.id,'PATCH',{[dateCol]:today,[countCol]:count+1},token);
+    return true;
+  }
+
+  const callAI=useCallback(async(mode)=>{
+    if(!isDemo){
+      try{ await checkAndIncrementLimit('ai'); }
+      catch(e){ if(e.message.startsWith('LIMIT:')) return e.message.replace('LIMIT:','⚠ '); throw e; }
+    }
+    const medInfo=profile.meds?.length>0?"Vaste medicatie: "+profile.meds.map(m=>m.name+" "+m.dose).join(", "):"";
     const summary=entries.slice(0,60).map(e=>{ const pijns=e.pijn_logs||e.pijnLogs||[];
       return e.date+"|E:"+(e.eten?.logs?.map(l=>l.moment+":"+l.tekst).join(";")||"–")+"|D:"+(e.drinken?.logs?.map(l=>l.categorie+"("+l.ml+"ml)").join(",")||"–")+"|B:"+(e.bewegen?.logs?.map(l=>(l.activiteiten?.join(",")||"?")+" "+l.minuten+"min").join("+")||"–")+"|S:"+(e.slaap?.uren?e.slaap.uren+"u":"–")+"|P:"+(pijns.map(p=>p.tijd+" lvl"+p.level).join(",")||"geen")+"|A:"+((e.aanval?.logs||[]).map(a=>a.tijd+":"+a.type).join(",")||"–")+"|M:"+((e.med?.logs||[]).map(m=>m.naam).join(",")||"–");
     }).join("\n");
     const prompts={ analyse:`Je bent expert jichtmanagement. ${medInfo}\nAnalyseer:\n1.🔍PATRONEN\n2.⚠TRIGGERS\n3.✅POSITIEVE TRENDS\n4.💡TIPS(4 concreet)\n5.📈VOORTGANG\nNederlands, empathisch.\n\nDATA:\n${summary}`, rapport:`Maak beknopt medisch jicht-rapport (max 350 woorden). ${medInfo}\n1.SAMENVATTING 2.PIJNVERLOOP 3.TRIGGERS 4.MEDICATIE 5.AANBEVELINGEN\n\nDATA:\n${summary}`, therapeut:`Je bent jicht-therapeut. ${medInfo}\nStel therapeutisch adviesrapport op:\n1.KLINISCH BEELD\n2.LEEFSTIJLANALYSE\n3.TRIGGERS\n4.MEDICATIE\n5.THERAPEUTISCHE AANBEVELINGEN(min 5)\n6.VERVOLGVRAGEN(3)\nProfessioneel, empathisch, max 500 woorden.\n\nDATA:\n${summary}`, };
-    try{ const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompts[mode]}]})});
+    try{ const r=await fetch("/.netlify/functions/ai-proxy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompts[mode]}]})});
       const d=await r.json();
       return d.content?.map(b=>b.text||"").join("\n")||"Geen resultaat.";
     }catch{return"Fout bij genereren.";}
