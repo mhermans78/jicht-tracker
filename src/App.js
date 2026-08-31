@@ -21,14 +21,17 @@ async function upsertEntry(e,t){ const r=await fetch(SU+"/rest/v1/entries?on_con
 }
 
 // ── Kleuren & constanten ──────────────────────────────────────────────────────
-const C={bg:"#F0F4F8",card:"#FFFFFF",primary:"#1A7A8A",pL:"#D4EEF2",accent:"#C5611A",aL:"#FFF0E5",aT:"#9B4A17",danger:"#B03020",dL:"#FDECEA",success:"#166644",sL:"#E8F5E9",text:"#1C2B35",muted:"#4A6478",border:"#D8E4EA"};
+// Modern font via system stack met Inter als voorkeur
+const FONT = '"Inter","SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+const C={bg:"#F8F7F5",card:"#FFFFFF",dark:"#0C0A09",dark2:"#1C1917",dark3:"#292524",primary:"#F97316",pL:"#FFF7ED",pD:"#EA580C",accent:"#EF4444",aL:"#FEF2F2",aT:"#B91C1C",danger:"#EF4444",dL:"#FEF2F2",success:"#059669",sL:"#ECFDF5",text:"#1C1917",muted:"#A8A29E",border:"#E7E5E4",pro:"#7C3AED",proL:"#F5F3FF"};
 const PC=["#ccc","#4CAF50","#8BC34A","#FF9800","#F44336","#B71C1C"];
 const PL=["","Licht","Matig","Ernstig","Hevig","Ondraaglijk"];
 const MNL=["Jan","Feb","Mrt","Apr","Mei","Jun","Jul","Aug","Sep","Okt","Nov","Dec"];
 const today=()=>new Date().toISOString().slice(0,10);
 const nowT=()=>new Date().toTimeString().slice(0,5);
 const fmt=d=>new Date(d+"T12:00:00").toLocaleDateString("nl-NL",{day:"numeric",month:"short",year:"numeric"});
-const inp={width:"100%",padding:"9px 11px",borderRadius:8,border:"1.5px solid "+C.border,fontSize:14,fontFamily:"system-ui,sans-serif",color:C.text,background:C.bg,boxSizing:"border-box",outline:"none"};
+const inp={width:"100%",padding:"12px 14px",borderRadius:12,border:"1.5px solid "+C.border,fontSize:15,fontFamily:FONT,color:C.text,background:"#FFFFFF",boxSizing:"border-box",outline:"none",transition:"border-color 0.15s"};
 
 const BEWEGING=["Wandelen","Hardlopen","Fietsen","Zwemmen","Yoga","Pilates","Krachttraining","HIIT","Dansen","Golf","Tennis","Tuinieren","Traplopen","Stretchen","Aquagym","Roeien","Skien","Wandelvoetbal","Tai chi","Anders"];
 const SUPPL=["Vitamine C","Kersensap/cherry extract","Quercetine","Visolie (omega-3)","Foliumzuur","Probiotica","Curcumine/kurkuma","Magnesium","Zink","Bromelaine","Boswellia","MSM","Collageen","Vitamine D","Anders"];
@@ -46,14 +49,14 @@ const MTABS=[["registreer","✏","Registreer"],["overzicht","📖","Dagboek"],["
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function Card({title,children,accentColor}){ return (
-    <div style={{background:C.card,borderRadius:12,padding:"14px 16px",border:"1px solid "+C.border,borderTop:accentColor?"3px solid "+accentColor:"1px solid "+C.border,boxShadow:"0 2px 10px rgba(0,0,0,0.04)"}}>
-      {title&&<div style={{fontWeight:700,fontSize:14,color:C.text,marginBottom:10}}>{title}</div>}
+    <div style={{background:C.card,borderRadius:16,padding:"18px 20px",border:"1px solid "+C.border,borderTop:accentColor?"3px solid "+accentColor:"1px solid "+C.border,boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
+      {title&&<div style={{fontWeight:700,fontSize:15,color:C.text,marginBottom:12}}>{title}</div>}
       {children}
     </div>
   );
 }
 function Chips({opts,sel,onToggle,col=C.primary,bg=C.pL}){ return (
-    <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
+    <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
       {opts.map(o=>{ const on=sel.includes(o);
         return <button key={o} onClick={()=>onToggle(o)} style={{padding:"5px 11px",borderRadius:20,fontSize:12,cursor:"pointer",border:"1.5px solid "+(on?col:C.border),background:on?bg:C.card,color:on?col:C.muted,fontWeight:on?700:400}}>{o}</button>;
       })}
@@ -113,7 +116,7 @@ function Modal({show,onClose,title,accentColor=C.primary,children}){
   if(!show)return null;
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:200,display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto"}} onClick={onClose}>
-      <div style={{background:"#FFFFFF",borderRadius:"0 0 20px 20px",padding:"24px 20px 0",width:"100%",maxWidth:680,minHeight:"60vh",display:"flex",flexDirection:"column",position:"relative"}} onClick={e=>e.stopPropagation()}>
+      <div style={{background:"#FFFFFF",borderRadius:"0 0 24px 24px",padding:"24px 20px 0",width:"100%",maxWidth:680,minHeight:"60vh",display:"flex",flexDirection:"column",position:"relative"}} onClick={e=>e.stopPropagation()}>
         {/* Header */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,position:"sticky",top:0,background:C.card,zIndex:1,paddingTop:2,paddingBottom:4}}>
           <div style={{fontWeight:700,fontSize:19,color:C.text}}>{title}</div>
@@ -530,7 +533,7 @@ function LoginScreen({onLogin}){
           <h1 style={{margin:0,fontSize:24,fontWeight:700,color:C.primary}}>Jicht Tracker</h1>
           <p style={{color:C.muted,fontSize:13,marginTop:4}}>een product van <strong>HOBC BV</strong></p>
         </div>
-        <div style={{background:C.card,borderRadius:16,padding:24,border:"1px solid "+C.border,boxShadow:"0 4px 20px rgba(0,0,0,0.08)"}}>
+        <div style={{background:C.card,borderRadius:20,padding:28,border:"none",boxShadow:"0 4px 24px rgba(0,0,0,0.08),0 1px 4px rgba(0,0,0,0.04)"}}>
           {/* Tab switcher */}
           <div style={{display:"flex",background:C.bg,borderRadius:8,padding:3,marginBottom:20}}>
             {[["login","Inloggen"],["register","Registreren"]].map(([m,l])=>(
@@ -829,15 +832,15 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   ];
 
   return (
-    <div style={{fontFamily:"system-ui,-apple-system,sans-serif",background:C.bg,minHeight:"100vh",maxWidth:680,margin:"0 auto",paddingBottom:50,overflowX:"hidden",width:"100%"}}>
+    <div style={{fontFamily:FONT,background:C.bg,minHeight:"100vh",maxWidth:680,margin:"0 auto",paddingBottom:80,overflowX:"hidden",width:"100%"}}>
 
       {/* Header */}
-      <div style={{background:C.primary,padding:"16px 20px 12px",color:"#fff",display:"flex",alignItems:"center",gap:14,position:"relative"}}>
+      <div style={{background:C.dark,padding:"18px 20px 14px",color:"#fff",display:"flex",alignItems:"center",gap:14,position:"relative"}}>
         {profile.photo&&<img src={profile.photo} alt="p" style={{width:40,height:40,borderRadius:"50%",objectFit:"cover",border:"2px solid rgba(255,255,255,0.4)"}}/>}
         <div style={{flex:1}}>
-          <h1 style={{margin:0,fontSize:24,fontWeight:700}}>{profile.name?"Jicht Tracker · "+profile.name:"Jicht Tracker"}</h1>
+          <h1 style={{margin:0,fontSize:22,fontWeight:800,letterSpacing:"-0.4px"}}>Jicht<span style={{color:C.primary}}>Tracker</span></h1>
         </div>
-        <button onClick={()=>setMenuOpen(m=>!m)} style={{background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",padding:"8px 11px",borderRadius:8,cursor:"pointer",fontSize:20}}>{menuOpen?"✕":"☰"}</button>
+        <button onClick={()=>setMenuOpen(m=>!m)} style={{background:"rgba(255,255,255,0.1)",border:"none",color:"rgba(255,255,255,0.7)",padding:"8px 11px",borderRadius:8,cursor:"pointer",fontSize:20}}>{menuOpen?"✕":"☰"}</button>
         {menuOpen&&(
           <div style={{position:"absolute",top:"100%",right:16,zIndex:100,background:C.card,borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.15)",border:"1px solid "+C.border,minWidth:210,overflow:"hidden"}} onClick={()=>setMenuOpen(false)}>
             {MENU_ITEMS.map(([icon,lbl,fn],i)=>(
@@ -854,11 +857,11 @@ function JichtTracker({session,onLogout}){ const{token}=session;
       {isDemo&&<div style={{background:C.aL,borderBottom:"1px solid "+C.accent,padding:"8px 16px",textAlign:"center",fontSize:12,color:C.aT,fontWeight:600}}>👀 Demo-modus — wijzigingen worden niet opgeslagen</div>}
 
       {/* Stats */}
-      <div style={{display:"flex",background:C.pL,borderBottom:"1px solid "+C.border}}>
+      <div style={{display:"flex",background:C.card,borderBottom:"1px solid "+C.border}}>
         {[{l:"Registraties",v:entries.length},{l:"Gem. pijn",v:avgPain},{l:"Aanvallen",v:totalAttacks},{l:"Maanden",v:monthly.length}].map((s,i)=>(
           <div key={i} style={{flex:1,padding:"10px 5px",textAlign:"center",borderRight:i<3?"1px solid "+C.border:"none"}}>
-            <div style={{fontSize:20,fontWeight:800,color:C.primary}}>{s.v}</div>
-            <div style={{fontSize:11,color:C.text,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>{s.l}</div>
+            <div style={{fontSize:22,fontWeight:800,color:C.dark}}>{s.v}</div>
+            <div style={{fontSize:9,color:C.muted,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>{s.l}</div>
           </div>
         ))}
       </div>
@@ -866,8 +869,8 @@ function JichtTracker({session,onLogout}){ const{token}=session;
       {/* Tabs */}
       <div style={{display:"flex",background:C.card,borderBottom:"1px solid "+C.border}}>
         {MTABS.map(([id,icon,lbl])=>(
-          <button key={id} onClick={()=>setMainTab(id)} style={{flex:1,padding:"11px 0",border:"none",background:"transparent",cursor:"pointer",fontSize:12,fontWeight:mainTab===id?700:500,color:mainTab===id?C.primary:C.text,borderBottom:mainTab===id?"3px solid "+C.primary:"3px solid transparent"}}>
-            {icon}<br/>{lbl}
+          <button key={id} onClick={()=>setMainTab(id)} style={{flex:1,padding:"11px 0",border:"none",background:"transparent",cursor:"pointer",fontSize:12,fontWeight:mainTab===id?700:500,color:mainTab===id?C.primary:C.muted,borderBottom:mainTab===id?"3px solid "+C.primary:"3px solid transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+            <span style={{fontSize:18}}>{icon}</span><span>{lbl}</span>
           </button>
         ))}
       </div>
@@ -966,8 +969,8 @@ function JichtTracker({session,onLogout}){ const{token}=session;
               </div>
             </div>
             {/* Sectie 1 — Aanval & Metingen */}
-            <div style={{background:"#FFF8F8",border:"1.5px solid #FFE0E0",borderRadius:14,padding:"12px 12px 14px",marginBottom:12}}>
-              <div style={{fontSize:10,fontWeight:700,color:C.danger,textTransform:"uppercase",letterSpacing:1.5,marginBottom:8,display:"flex",alignItems:"center",gap:5}}>
+            <div style={{background:C.card,border:"1px solid "+C.border,borderRadius:14,padding:"12px 12px 14px",marginBottom:12}}>
+              <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1.5,marginBottom:10,display:"flex",alignItems:"center",gap:5}}>
                 <span style={{width:5,height:5,borderRadius:"50%",background:C.danger,display:"inline-block"}}/>Aanval & Metingen
               </div>
               <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
@@ -976,16 +979,16 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                   const isAanval=t.id==="aanval";
                   return(
                   <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)}
-                    style={{padding:isAanval?"14px 4px":"12px 4px",border:"2px solid "+(regSec===t.id?(isAanval?C.danger:C.primary):locked?"#E2D9F3":isAanval?"#FECACA":C.border),borderRadius:10,background:regSec===t.id?(isAanval?C.dL:C.pL):locked?"#FAF8FF":isAanval?"#FFF5F5":C.card,color:regSec===t.id?(isAanval?C.danger:C.primary):locked?"#9B59D6":isAanval?C.danger:C.muted,fontSize:11,fontWeight:regSec===t.id?700:isAanval?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative",boxShadow:regSec===t.id?"0 2px 8px rgba(0,0,0,0.12)":"none",transform:regSec===t.id?"translateY(-1px)":"none",transition:"all 0.15s"}}>
-                    {locked&&<span style={{position:"absolute",top:4,right:4,fontSize:8,fontWeight:700,background:"#7C3AED",color:"#fff",padding:"1px 4px",borderRadius:6}}>PRO</span>}
-                    <span style={{fontSize:isAanval?32:28}}>{t.icon}</span>
+                    style={{padding:isAanval?"14px 4px":"12px 4px",border:"1.5px solid "+(regSec===t.id?(isAanval?C.danger:C.primary):locked?C.proL:isAanval?C.border:C.border),borderRadius:14,background:regSec===t.id?(isAanval?C.dark:C.dark):locked?C.proL:C.card,color:regSec===t.id?"#fff":locked?C.pro:isAanval?C.muted:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,position:"relative",boxShadow:regSec===t.id?"0 2px 12px rgba(0,0,0,0.15)":"none",transition:"all 0.15s"}}>
+                    {locked&&<span style={{position:"absolute",top:5,right:5,fontSize:7,fontWeight:800,background:C.pro,color:"#fff",padding:"2px 5px",borderRadius:5}}>PRO</span>}
+                    <span style={{fontSize:isAanval?34:26}}>{t.icon}</span>
                     <span style={{fontSize:isAanval?12:11,fontWeight:isAanval?700:400}}>{t.label}</span>
                   </button>);})}
               </div>
             </div>
             {/* Sectie 2 — Invloeden */}
-            <div style={{background:C.pL,border:"1.5px solid #BFE0E8",borderRadius:14,padding:"12px 12px 14px",marginBottom:14}}>
-              <div style={{fontSize:10,fontWeight:700,color:C.primary,textTransform:"uppercase",letterSpacing:1.5,marginBottom:8,display:"flex",alignItems:"center",gap:5}}>
+            <div style={{background:C.card,border:"1px solid "+C.border,borderRadius:14,padding:"12px 12px 14px",marginBottom:14}}>
+              <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1.5,marginBottom:10,display:"flex",alignItems:"center",gap:5}}>
                 <span style={{width:5,height:5,borderRadius:"50%",background:C.primary,display:"inline-block"}}/>Invloeden
               </div>
               <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
@@ -993,8 +996,8 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                   const locked=PRO_TABS.includes(t.id)&&!isPro;
                   return(
                   <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)}
-                    style={{padding:"12px 4px",border:"2px solid "+(regSec===t.id?C.primary:locked?"#E2D9F3":C.border),borderRadius:10,background:regSec===t.id?"#fff":locked?"#FAF8FF":C.card,color:regSec===t.id?C.primary:locked?"#9B59D6":C.muted,fontSize:11,fontWeight:regSec===t.id?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative",boxShadow:regSec===t.id?"0 2px 8px rgba(0,0,0,0.12)":"none",transform:regSec===t.id?"translateY(-1px)":"none",transition:"all 0.15s"}}>
-                    {locked&&<span style={{position:"absolute",top:4,right:4,fontSize:8,fontWeight:700,background:"#7C3AED",color:"#fff",padding:"1px 4px",borderRadius:6}}>PRO</span>}
+                    style={{padding:"14px 4px",border:"1.5px solid "+(regSec===t.id?C.dark:locked?C.proL:C.border),borderRadius:14,background:regSec===t.id?C.dark:locked?C.proL:C.card,color:regSec===t.id?"#fff":locked?C.pro:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,position:"relative",boxShadow:regSec===t.id?"0 2px 12px rgba(0,0,0,0.15)":"none",transition:"all 0.15s"}}>
+                    {locked&&<span style={{position:"absolute",top:5,right:5,fontSize:7,fontWeight:800,background:C.pro,color:"#fff",padding:"2px 5px",borderRadius:5}}>PRO</span>}
                     <span style={{fontSize:28}}>{t.icon}</span>
                     <span style={{fontSize:11}}>{t.label}</span>
                   </button>);})}
