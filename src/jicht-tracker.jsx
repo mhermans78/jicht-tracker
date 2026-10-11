@@ -170,7 +170,7 @@ const DE={
 "3. Waterdoel — stel jezelf een doel": "3. Wasserziel — setze dir ein Ziel",
 "Voldoende drinken is een van de effectiefste manieren om jichtaanvallen te voorkomen. Stel je dagdoel in bovenaan de Drinken-tab en registreer wat je drinkt. Bij 2–3 liter water per dag scheidt het lichaam urinezuur beter uit.": "Ausreichend zu trinken ist eine der wirksamsten Möglichkeiten, Gichtanfälle zu verhindern. Lege dein Tagesziel oben im Tab „Trinken“ fest und erfasse, was du trinkst. Bei 2–3 Litern Wasser pro Tag scheidet der Körper Harnsäure besser aus.",
 "4. Persoonlijk Advies": "4. Persönliche Empfehlung",
-"Na minstens 2 registraties kun je een persoonlijk AI-advies opvragen, maximaal 1 keer per dag. Hoe meer data, hoe scherper het advies. Probeer het eens per week te doen om je voortgang te volgen.": "Nach mindestens 2 Einträgen kannst du eine persönliche KI-Empfehlung anfordern, höchstens einmal pro Tag. Je mehr Daten, desto präziser die Empfehlung. Versuche es einmal pro Woche, um deinen Fortschritt zu verfolgen.",
+"Na minstens 5 registraties kun je een persoonlijk AI-advies opvragen, maximaal 1 keer per dag. Hoe meer data, hoe scherper het advies. Probeer het eens per week te doen om je voortgang te volgen.": "Nach mindestens 5 Einträgen kannst du eine persönliche KI-Empfehlung anfordern, höchstens einmal pro Tag. Je mehr Daten, desto präziser die Empfehlung. Versuche es einmal pro Woche, um deinen Fortschritt zu verfolgen.",
 "5. Arts of therapeut raadplegen": "5. Arzt oder Therapeut konsultieren",
 "Genereer een rapport vóór een bezoek aan uw arts of therapeut. Het rapport geeft een compleet overzicht van uw klachtenpatroon en kan het gesprek met uw zorgverlener sterk verbeteren.": "Erstelle vor einem Besuch bei deinem Arzt oder Therapeuten einen Bericht. Er gibt einen vollständigen Überblick über dein Beschwerdebild und kann das Gespräch mit deinem Behandler deutlich verbessern.",
 "Jicht is grillig — een aanval kan dagen later komen na de trigger. Alleen dagelijkse registratie legt dat verband bloot.": "Gicht ist launisch — ein Anfall kann Tage nach dem Auslöser kommen. Nur die tägliche Erfassung deckt diesen Zusammenhang auf.",
@@ -250,6 +250,18 @@ const DE={
 "Scan mislukt": "Scan fehlgeschlagen",
 "Zoeken...": "Suche...",
 "Scan barcode": "Barcode scannen",
+"Pro-voordelen": "Pro-Vorteile",
+"Dit onderdeel is alleen beschikbaar met Pro. Bekijk hier vrijblijvend de voordelen van Pro.": "Dieser Bereich ist nur mit Pro verfügbar. Sieh dir hier unverbindlich die Vorteile von Pro an.",
+"Gratis of Pro": "Gratis oder Pro",
+"Bekijk hier vrijblijvend wat Pro je extra biedt ten opzichte van gratis.": "Sieh dir hier unverbindlich an, was Pro dir gegenüber der kostenlosen Version zusätzlich bietet.",
+"Je gebruikt al Jicht Tracker Pro.": "Du nutzt bereits GichtTracker Pro.",
+"Gratis": "Kostenlos",
+"Pro: alles van gratis, plus": "Pro: alles aus Kostenlos, plus",
+"Aanvallen en pijn registreren": "Anfälle und Schmerzen erfassen",
+"Eten en drinken bijhouden": "Essen und Trinken festhalten",
+"Dagboek en trends": "Tagebuch und Trends",
+"Persoonlijk AI-advies (na 5 registraties, 1 keer per dag)": "Persönliche KI-Empfehlung (nach 5 Einträgen, einmal pro Tag)",
+"Medicatie en supplementen": "Medikamente und Nahrungsergänzung",
 "Upgrade naar Pro": "Upgrade auf Pro",
 "Jicht Tracker Pro": "GichtTracker Pro",
 "Krijg toegang tot alle registratiemodules: beweging, slaap, weer, urinezuur, medicatie en supplementen.": "Erhalte Zugang zu allen Erfassungsmodulen: Bewegung, Schlaf, Wetter, Harnsäure, Medikamente und Nahrungsergänzung.",
@@ -454,7 +466,7 @@ const DE={
 "vaste medicatie(s)": "feste Medikament(e)",
 "Analyseren...": "Analysiere...",
 "Genereer mijn persoonlijk advies": "Meine persönliche Empfehlung erstellen",
-"Minimaal 2 registraties nodig.": "Mindestens 2 Einträge nötig.",
+"Minimaal 5 registraties nodig.": "Mindestens 5 Einträge nötig.",
 "Dagelijkse registratie": "Tägliche Erfassung",
 "Taal / Sprache": "Sprache / Taal",
 "geen": "keine",
@@ -685,7 +697,7 @@ function SupportModal({show,onClose}){
     {icon:"ti-alert-triangle",kleur:C.danger,titel:"1. Aanval & Metingen — altijd invullen",tekst:"Registreer elke aanval, pijnmeting of urinezuurwaarde zo snel mogelijk. Hoe preciezer de timing, hoe beter de app patronen herkent. Gebruik de Aanval-knop ook als je alleen signalen voelt — niet alleen bij een volledige aanval."},
     {icon:"ti-salad",kleur:C.primary,titel:"2. Invloeden — dagelijks bijhouden",tekst:"Vul dagelijks in wat je at, dronk, hoe je bewoog en sliep. Juist de combinatie van deze gegevens over meerdere dagen onthult welke triggers bij jou jichtaanvallen uitlokken. Alcohol, bepaalde voeding en te weinig water zijn bekende triggers."},
     {icon:"ti-droplets",kleur:C.primary,titel:"3. Waterdoel — stel jezelf een doel",tekst:"Voldoende drinken is een van de effectiefste manieren om jichtaanvallen te voorkomen. Stel je dagdoel in bovenaan de Drinken-tab en registreer wat je drinkt. Bij 2–3 liter water per dag scheidt het lichaam urinezuur beter uit."},
-    {icon:"ti-brain",kleur:"#7C3AED",titel:"4. Persoonlijk Advies",tekst:"Na minstens 2 registraties kun je een persoonlijk AI-advies opvragen, maximaal 1 keer per dag. Hoe meer data, hoe scherper het advies. Probeer het eens per week te doen om je voortgang te volgen."},
+    {icon:"ti-brain",kleur:"#7C3AED",titel:"4. Persoonlijk Advies",tekst:"Na minstens 5 registraties kun je een persoonlijk AI-advies opvragen, maximaal 1 keer per dag. Hoe meer data, hoe scherper het advies. Probeer het eens per week te doen om je voortgang te volgen."},
     {icon:"ti-stethoscope",kleur:C.success,titel:"5. Arts of therapeut raadplegen",tekst:"Genereer een rapport vóór een bezoek aan uw arts of therapeut. Het rapport geeft een compleet overzicht van uw klachtenpatroon en kan het gesprek met uw zorgverlener sterk verbeteren."},
   ];
   const waarom=[
@@ -963,20 +975,24 @@ function BarcodeScan({onResult}){
 }
 
 // ── Upgrade modal ────────────────────────────────────────────────────────────
-function UpgradeModal({show, onClose}) {
+function UpgradeModal({show, onClose, from, isPro}) {
+  const GRATIS=["Aanvallen en pijn registreren","Eten en drinken bijhouden","Dagboek en trends","Persoonlijk AI-advies (na 5 registraties, 1 keer per dag)"];
+  const PROF=["Beweging bijhouden","Slaap monitoren","Weer registreren","Urinezuurwaarden","Medicatie en supplementen"];
   return (
-    <Modal show={show} onClose={onClose} title="Upgrade naar Pro" icon="ti-lock-open">
-      <div style={{textAlign:"center",marginBottom:20}}>
+    <Modal show={show} onClose={onClose} title="Pro-voordelen" icon="ti-lock-open">
+      <div style={{textAlign:"center",marginBottom:16}}>
         <div style={{fontSize:40,marginBottom:8}}><i className="ti ti-heartbeat" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></div>
         <div style={{fontWeight:700,fontSize:16,color:C.text,marginBottom:6}}>Jicht Tracker Pro</div>
-        <div style={{fontSize:13,color:C.muted,lineHeight:1.7}}>Krijg toegang tot alle registratiemodules: beweging, slaap, weer, urinezuur, medicatie en supplementen.</div>
+        <div style={{fontSize:13,color:C.muted,lineHeight:1.7}}>{from&&<strong style={{color:C.pro}}>{from}: </strong>}{from?"Dit onderdeel is alleen beschikbaar met Pro. Bekijk hier vrijblijvend de voordelen van Pro.":"Bekijk hier vrijblijvend wat Pro je extra biedt ten opzichte van gratis."}</div>
       </div>
-      <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
-        {["Beweging bijhouden","Slaap monitoren","Weer registreren","Urinezuurwaarden","Medicatie logging","Supplementen tracking"].map(f=>(
-          <div key={f} style={{display:"flex",alignItems:"center",gap:8,fontSize:13,color:C.text}}>
-            <span style={{color:C.success,fontWeight:700}}><i className="ti ti-check" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></span>{f}
-          </div>
-        ))}
+      {isPro&&<div style={{background:C.sL,borderRadius:10,padding:"10px 12px",fontSize:13,color:C.success,fontWeight:600,marginBottom:14,textAlign:"center"}}>Je gebruikt al Jicht Tracker Pro.</div>}
+      <div style={{background:C.bg,borderRadius:12,padding:"12px 14px",marginBottom:10,border:"1px solid "+C.border}}>
+        <div style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Gratis</div>
+        {GRATIS.map(f=>(<div key={f} style={{display:"flex",alignItems:"flex-start",gap:8,fontSize:13,color:C.text,marginBottom:6}}><i className="ti ti-check" style={{color:C.success,marginTop:2}} aria-hidden="true"></i><span>{f}</span></div>))}
+      </div>
+      <div style={{background:"#F5F0FF",borderRadius:12,padding:"12px 14px",marginBottom:18,border:"1.5px solid "+C.pro}}>
+        <div style={{fontSize:11,fontWeight:700,color:C.pro,textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Pro: alles van gratis, plus</div>
+        {PROF.map(f=>(<div key={f} style={{display:"flex",alignItems:"flex-start",gap:8,fontSize:13,color:C.text,marginBottom:6}}><i className="ti ti-check" style={{color:C.pro,marginTop:2}} aria-hidden="true"></i><span>{f}</span></div>))}
       </div>
       <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
         <div style={{background:C.pL,borderRadius:12,padding:"14px 16px",border:"1.5px solid "+C.primary}}>
@@ -1158,6 +1174,7 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
   // eslint-disable-next-line no-unused-vars
   const[showTher,setShowTher]=useState(false);
   const[showUpgrade,setShowUpgrade]=useState(false);
+  const[upgradeFrom,setUpgradeFrom]=useState("");
   const[wisConf,setWisConf]=useState(false);
   const[dag,setDag]=useState(()=>emptyDay());
   const[skip,setSkip]=useState(true);
@@ -1352,6 +1369,7 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
   const MENU_ITEMS=[
     ["ti-mail","Rapport versturen",()=>{setShowRapport(true);setRapportTekst("");}],
     ["---","---",null],
+    ["ti-sparkles","Gratis of Pro",()=>{setUpgradeFrom("");setShowUpgrade(true);}],
     ["ti-user","Profiel",()=>setShowProfiel(true)],
     ["ti-lifebuoy","Ondersteuning",()=>setShowSupport(true)],
     ["ti-info-circle","Over Jicht Tracker",()=>setShowOver(true)],
@@ -1377,7 +1395,7 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
               lbl==="---"
                 ? <div key={i} style={{height:1,background:C.border,margin:"6px 8px"}}/>
                 : <button key={lbl} onClick={fn} style={{width:"100%",padding:"10px 12px",border:"none",borderRadius:10,background:"transparent",textAlign:"left",cursor:"pointer",fontSize:14,color:(lbl==="Uitloggen"||lbl==="Terug naar login")?C.danger:C.text,display:"flex",alignItems:"center",gap:10}}>
-                    <span style={{width:32,height:32,borderRadius:10,background:(lbl==="Uitloggen"||lbl==="Terug naar login")?C.dL:C.pL,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={"ti "+icon} style={{fontSize:18,color:(lbl==="Uitloggen"||lbl==="Terug naar login")?C.danger:C.primary}} aria-hidden="true"></i></span><span style={{fontWeight:500}}>{lbl}</span>
+                    <span style={{width:32,height:32,borderRadius:10,background:(lbl==="Uitloggen"||lbl==="Terug naar login")?C.dL:C.pL,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={"ti "+icon} style={{fontSize:18,color:(lbl==="Uitloggen"||lbl==="Terug naar login")?C.danger:C.primary}} aria-hidden="true"></i></span><span style={{fontWeight:500,flex:1}}>{lbl}</span>{icon==="ti-sparkles"&&!isPro&&<span style={{fontSize:10,fontWeight:700,background:C.pro,color:"#fff",padding:"2px 7px",borderRadius:6}}>PRO</span>}
                   </button>
             ))}
             <div style={{height:1,background:C.border,margin:"6px 8px"}}/>
@@ -1496,7 +1514,7 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
       <SupportModal show={showSupport} onClose={()=>setShowSupport(false)}/>
       <PrivacyModal show={showPrivacy} onClose={()=>setShowPrivacy(false)} entries={entries} wisAlleData={wisAlleData} wisConf={wisConf} setWisConf={setWisConf}/>
       <DisclaimerModal show={showDisc} onClose={()=>setShowDisc(false)}/>
-      <UpgradeModal show={showUpgrade} onClose={()=>setShowUpgrade(false)}/>
+      <UpgradeModal show={showUpgrade} onClose={()=>setShowUpgrade(false)} from={upgradeFrom} isPro={isPro}/>
 
       <div style={{padding:"16px 14px"}}>
 
@@ -1547,7 +1565,7 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
               <i className="ti ti-pencil-plus" style={{fontSize:20}} aria-hidden="true"></i> Registreer vandaag
             </button>
             {/* AI advies banner  */}
-            {entries.length>=2&&(
+            {entries.length>=5&&(
               <div style={{background:C.dark,borderRadius:16,padding:"13px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,marginTop:4}}>
                 <div style={{display:"flex",alignItems:"center",gap:10}}>
                   <div style={{width:34,height:34,background:"rgba(255,255,255,0.14)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -1567,7 +1585,7 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
 
         {/* ══ REGISTREER ══ */}
         {mainTab==="registreer"&&(
-          <div>
+          <div style={{display:"flex",flexDirection:"column"}}>
             <div style={{fontSize:20,fontWeight:700,color:C.text,margin:"2px 2px 14px",letterSpacing:"-0.3px"}}>Dagelijkse registratie</div>
             {syncBadge&&<div style={{background:syncBadge.bg,border:"1px solid "+syncBadge.b,borderRadius:8,padding:"7px 12px",color:syncBadge.c,fontSize:12,fontWeight:600,marginBottom:10,textAlign:"center"}}>{syncBadge.t}</div>}
 
@@ -1578,6 +1596,7 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
               <input type="date" value={regDate} onChange={e=>setRegDate(e.target.value)} style={{...inp,flex:1,padding:"5px 10px",fontSize:13}}/>
             </div>
 
+            <div style={regSec?{order:1,opacity:0.4,transition:"opacity 0.2s",marginTop:18}:{}}>
             {/* Sectie 1 — Aanval groot + grid */}
             <div style={{background:C.card,border:"1px solid "+C.border,borderRadius:14,padding:"12px 12px 14px",marginBottom:12}}>
               <div style={{fontSize:11,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:1,marginBottom:10,display:"flex",alignItems:"center",gap:5}}>
@@ -1588,9 +1607,9 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
                   const locked=PRO_TABS.includes(t.id)&&!isPro;
                   const isAanval=t.id==="aanval";
                   return(
-                  <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)}
+                  <button key={t.id} onClick={()=>locked?(setUpgradeFrom(t.label),setShowUpgrade(true)):(setRegSec(t.id),window.scrollTo({top:0,behavior:"smooth"}))}
                     style={{padding:"12px 4px",border:"1.5px solid "+(regSec===t.id?(isAanval?C.danger:C.primary):locked?C.proL:C.border),borderRadius:14,background:regSec===t.id?(t.id==="aanval"?C.danger:C.primary):locked?C.proL:C.card,color:regSec===t.id?"#fff":locked?C.pro:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,position:"relative",boxShadow:regSec===t.id?"0 4px 14px rgba(14,124,134,0.28)":"none",transition:"all 0.15s",height:90}}>
-                    {locked&&<span style={{position:"absolute",top:5,right:5,fontSize:7,fontWeight:700,background:C.pro,color:"#fff",padding:"2px 5px",borderRadius:5}}>PRO</span>}
+                    {locked&&<span style={{position:"absolute",top:5,right:5,fontSize:9,fontWeight:700,background:C.pro,color:"#fff",padding:"2px 5px",borderRadius:5}}>PRO</span>}
                     <i className={"ti "+t.icon} style={{fontSize:26,display:"block",lineHeight:1}} aria-hidden="true"></i>
                     <span style={{fontSize:13,fontWeight:700,color:regSec===t.id?"#fff":C.text}}>{t.label}</span>
                   </button>);})}
@@ -1603,15 +1622,16 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
                 {RTABS_S2.map(t=>{
                   const locked=PRO_TABS.includes(t.id)&&!isPro;
                   return(
-                  <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)}
+                  <button key={t.id} onClick={()=>locked?(setUpgradeFrom(t.label),setShowUpgrade(true)):(setRegSec(t.id),window.scrollTo({top:0,behavior:"smooth"}))}
                     style={{padding:"12px 4px",border:"1.5px solid "+(regSec===t.id?C.primary:locked?C.proL:C.border),borderRadius:14,background:regSec===t.id?(t.id==="aanval"?C.danger:C.primary):locked?C.proL:C.card,color:regSec===t.id?"#fff":locked?C.pro:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,position:"relative",boxShadow:regSec===t.id?"0 4px 14px rgba(14,124,134,0.28)":"none",transition:"all 0.15s",height:90}}>
-                    {locked&&<span style={{position:"absolute",top:5,right:5,fontSize:7,fontWeight:700,background:C.pro,color:"#fff",padding:"2px 5px",borderRadius:5}}>PRO</span>}
+                    {locked&&<span style={{position:"absolute",top:5,right:5,fontSize:9,fontWeight:700,background:C.pro,color:"#fff",padding:"2px 5px",borderRadius:5}}>PRO</span>}
                     <i className={"ti "+t.icon} style={{fontSize:26,display:"block",lineHeight:1}} aria-hidden="true"></i>
                     <span style={{fontSize:13,fontWeight:700,color:regSec===t.id?"#fff":C.text}}>{t.label}</span>
                   </button>);})}
               </div>
             </div>
 
+            </div>
             {/* Terugknop */}
             {regSec&&(
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4,marginTop:4}}>
@@ -2007,10 +2027,10 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
               <div style={{fontSize:12,color:C.pD,marginTop:6,fontWeight:500}}>Persoonlijk advies en rapporten kun je samen maximaal 1 keer per dag laten maken.</div>
               <div style={{fontSize:11,color:C.muted,marginTop:6}}><i className="ti ti-chart-bar" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>{entries.length} dag(en) · {profile.meds?.length||0} vaste medicatie(s)</div>
             </div>
-            <button onClick={async()=>{setAiLoading(true);const r=await callAI("analyse");setAiResult(r);setAiLoading(false);}} disabled={aiLoading||entries.length<2} style={{background:entries.length>=2?C.accent:C.border,color:"#fff",border:"none",borderRadius:12,padding:"14px",fontSize:15,fontWeight:700,cursor:entries.length>=2?"pointer":"not-allowed",width:"100%",opacity:aiLoading?0.7:1}}>
+            <button onClick={async()=>{setAiLoading(true);const r=await callAI("analyse");setAiResult(r);setAiLoading(false);}} disabled={aiLoading||entries.length<5} style={{background:entries.length>=5?C.accent:C.border,color:"#fff",border:"none",borderRadius:12,padding:"14px",fontSize:15,fontWeight:700,cursor:entries.length>=5?"pointer":"not-allowed",width:"100%",opacity:aiLoading?0.7:1}}>
               {aiLoading?"Analyseren...":"Genereer mijn persoonlijk advies"}
             </button>
-            {entries.length<2&&<div style={{textAlign:"center",color:C.muted,fontSize:13}}>Minimaal 2 registraties nodig.</div>}
+            {entries.length<5&&<div style={{textAlign:"center",color:C.muted,fontSize:13}}>Minimaal 5 registraties nodig.</div>}
             {aiResult&&<div style={{background:C.card,borderRadius:12,padding:18,border:"1px solid "+C.border}}><div style={{fontSize:14,lineHeight:1.8,color:C.text,whiteSpace:"pre-wrap"}}>{aiResult}</div></div>}
           </div>
         )}
