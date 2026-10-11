@@ -49,7 +49,10 @@ exports.handler = async (event) => {
       return { statusCode: 500, body: "Database fout" };
     }
 
-    const user = usersData.users.find(u => u.email === customerEmail);
+    const refId = session.client_reference_id;
+    const user =
+      (refId && usersData.users.find(u => u.id === refId)) ||
+      usersData.users.find(u => (u.email || "").toLowerCase() === (customerEmail || "").toLowerCase());
     if (!user) {
       console.error("Gebruiker niet gevonden voor email:", customerEmail);
       return { statusCode: 404, body: "Gebruiker niet gevonden" };

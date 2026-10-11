@@ -8,6 +8,29 @@ async function sf(path,method="GET",body=null,token=null){ const h={"Content-Typ
   const t=await r.text(); return t?JSON.parse(t):null;
 }
 async function signIn(e,p){return sf("/auth/v1/token?grant_type=password","POST",{email:e,password:p});}
+async function refreshSession(rt){return sf("/auth/v1/token?grant_type=refresh_token","POST",{refresh_token:rt});}
+const REMEMBER_MS=7*24*60*60*1000;
+function readSession(){
+  try{
+    let raw=localStorage.getItem("jicht_session"),store="local";
+    if(!raw){raw=sessionStorage.getItem("jicht_session");store="session";}
+    if(!raw)return null;
+    const s=JSON.parse(raw);
+    if(s.until&&Date.now()>s.until){clearSession();return null;}
+    s._store=store;return s;
+  }catch{return null;}
+}
+function writeSession(s){
+  try{
+    const{_store,...clean}=s;
+    const store=(_store==="session"||(!_store&&!clean.until&&!clean.demo))?sessionStorage:localStorage;
+    const other=store===localStorage?sessionStorage:localStorage;
+    other.removeItem("jicht_session");
+    store.setItem("jicht_session",JSON.stringify(clean));
+  }catch{}
+}
+function clearSession(){try{localStorage.removeItem("jicht_session");sessionStorage.removeItem("jicht_session");}catch{}}
+function buildSession(d,remember){return{token:d.access_token,refresh:d.refresh_token,exp:Date.now()+(d.expires_in||3600)*1000,user:d.user,until:remember?Date.now()+REMEMBER_MS:0,_store:remember?"local":"session"};}
 async function signUp(e,p){return sf("/auth/v1/signup","POST",{email:e,password:p});}
 async function signOut(t){return sf("/auth/v1/logout","POST",{},t);}
 async function getProfile(t){const r=await sf("/rest/v1/profiles?select=*","GET",null,t);return r?.[0]||null;}
@@ -52,6 +75,29 @@ const MTABS=[["home","ti-home","Home"],["registreer","ti-pencil","Registreer"],[
 let LANG="nl";
 const LOC=()=>LANG==="de"?"de-DE":"nl-NL";
 const DE={
+"De eerste maand is gratis": "Der erste Monat ist kostenlos",
+"Probeer Pro een maand zonder kosten. Je betaalt pas na die maand. Zeg je vóór het einde van de proefmaand op, dan betaal je niets.": "Teste Pro einen Monat lang kostenlos. Du zahlst erst nach diesem Monat. Wenn du vor Ende des Probemonats kündigst, zahlst du nichts.",
+"Start gratis maand →": "Kostenlosen Monat starten →",
+"E-mailherinnering": "E-Mail-Erinnerung",
+"Een vriendelijke mail als je een paar dagen niets hebt geregistreerd.": "Eine freundliche E-Mail, wenn du ein paar Tage nichts erfasst hast.",
+"Instellen mislukt. Probeer het later opnieuw.": "Einstellung fehlgeschlagen. Versuche es später erneut.",
+"E-mailherinnering als je een paar dagen niets registreert": "E-Mail-Erinnerung, wenn du ein paar Tage nichts erfasst",
+"App-pincode": "App-PIN",
+"Pincode instellen": "PIN festlegen",
+"Pincode wijzigen": "PIN ändern",
+"Pincode verwijderen": "PIN entfernen",
+"Pincode verwijderd.": "PIN entfernt.",
+"Pincode ingesteld.": "PIN festgelegt.",
+"Kies een pincode van 4 cijfers.": "Wähle eine 4-stellige PIN.",
+"Herhaal je pincode.": "Wiederhole deine PIN.",
+"De pincodes komen niet overeen. Probeer opnieuw.": "Die PINs stimmen nicht überein. Versuche es erneut.",
+"Voer je pincode in": "Gib deine PIN ein",
+"Onjuiste pincode.": "Falsche PIN.",
+"Pincode vergeten? Log opnieuw in": "PIN vergessen? Melde dich erneut an",
+"Na 5 foute pogingen word je uitgelogd.": "Nach 5 Fehlversuchen wirst du abgemeldet.",
+"Pincode is actief op dit toestel.": "Die PIN ist auf diesem Gerät aktiv.",
+"Met een pincode open je de app sneller dan met je wachtwoord. De pincode geldt alleen op dit toestel. Na 5 foute pogingen word je uitgelogd en log je opnieuw in met je wachtwoord.": "Mit einer PIN öffnest du die App schneller als mit deinem Passwort. Die PIN gilt nur auf diesem Gerät. Nach 5 Fehlversuchen wirst du abgemeldet und meldest dich erneut mit deinem Passwort an.",
+"Wissen": "Löschen",
 "Maximaal 1 keer per dag, samen met je persoonlijk advies.": "Höchstens einmal pro Tag, zusammen mit deiner persönlichen Empfehlung.",
 "Persoonlijk advies en rapporten kun je samen maximaal 1 keer per dag laten maken.": "Persönliche Empfehlungen und Berichte kannst du zusammen höchstens einmal pro Tag erstellen lassen.",
 "⚠ Je hebt je dagelijkse AI-limiet bereikt: maximaal 1 advies of rapport per dag. Probeer het morgen weer.": "⚠ Du hast dein tägliches KI-Limit erreicht: höchstens 1 Empfehlung oder Bericht pro Tag. Versuche es morgen wieder.",
@@ -263,6 +309,7 @@ const DE={
 "Persoonlijk AI-advies (na 5 registraties, 1 keer per dag)": "Persönliche KI-Empfehlung (nach 5 Einträgen, einmal pro Tag)",
 "Medicatie en supplementen": "Medikamente und Nahrungsergänzung",
 "Upgrade naar Pro": "Upgrade auf Pro",
+"Onthoud mij 7 dagen": "7 Tage angemeldet bleiben",
 "Jicht Tracker Pro": "GichtTracker Pro",
 "Krijg toegang tot alle registratiemodules: beweging, slaap, weer, urinezuur, medicatie en supplementen.": "Erhalte Zugang zu allen Erfassungsmodulen: Bewegung, Schlaf, Wetter, Harnsäure, Medikamente und Nahrungsergänzung.",
 "Drinken registreren": "Trinken erfassen",
@@ -276,7 +323,7 @@ const DE={
 "Kies maandelijks →": "Monatlich wählen →",
 "BESTE DEAL": "BESTES ANGEBOT",
 "Jaarlijks": "Jährlich",
-"2 maanden gratis": "2 Monate gratis",
+"Je bespaart €9 per jaar": "Du sparst 9 € pro Jahr",
 "/jaar": "/Jahr",
 "Kies jaarlijks →": "Jährlich wählen →",
 "Betaling via iDEAL, creditcard of SEPA · Veilig via Stripe · Op elk moment opzegbaar": "Zahlung per iDEAL, Kreditkarte oder SEPA · Sicher über Stripe · Jederzeit kündbar",
@@ -975,9 +1022,12 @@ function BarcodeScan({onResult}){
 }
 
 // ── Upgrade modal ────────────────────────────────────────────────────────────
-function UpgradeModal({show, onClose, from, isPro}) {
+const LINK_MAAND="https://buy.stripe.com/bJe14feDE4T159F1QLc7u01";
+const LINK_JAAR="https://buy.stripe.com/8x24gr1QSetB7hN52Xc7u00";
+function payUrl(u,user){if(!user||!user.id)return u;return u+(u.includes("?")?"&":"?")+"prefilled_email="+encodeURIComponent(user.email||"")+"&client_reference_id="+encodeURIComponent(user.id);}
+function UpgradeModal({show, onClose, from, isPro, user}) {
   const GRATIS=["Aanvallen en pijn registreren","Eten en drinken bijhouden","Dagboek en trends","Persoonlijk AI-advies (na 5 registraties, 1 keer per dag)"];
-  const PROF=["Beweging bijhouden","Slaap monitoren","Weer registreren","Urinezuurwaarden","Medicatie en supplementen"];
+  const PROF=["Beweging bijhouden","Slaap monitoren","Weer registreren","Urinezuurwaarden","Medicatie en supplementen","E-mailherinnering als je een paar dagen niets registreert"];
   return (
     <Modal show={show} onClose={onClose} title="Pro-voordelen" icon="ti-lock-open">
       <div style={{textAlign:"center",marginBottom:16}}>
@@ -994,24 +1044,28 @@ function UpgradeModal({show, onClose, from, isPro}) {
         <div style={{fontSize:11,fontWeight:700,color:C.pro,textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Pro: alles van gratis, plus</div>
         {PROF.map(f=>(<div key={f} style={{display:"flex",alignItems:"flex-start",gap:8,fontSize:13,color:C.text,marginBottom:6}}><i className="ti ti-check" style={{color:C.pro,marginTop:2}} aria-hidden="true"></i><span>{f}</span></div>))}
       </div>
+      {!isPro&&<div style={{background:C.aL,border:"1.5px solid "+C.accent,borderRadius:12,padding:"12px 14px",marginBottom:14,textAlign:"center"}}>
+        <div style={{fontWeight:700,fontSize:14,color:C.aT,marginBottom:4}}>De eerste maand is gratis</div>
+        <div style={{fontSize:12,color:C.text,lineHeight:1.6}}>Probeer Pro een maand zonder kosten. Je betaalt pas na die maand. Zeg je vóór het einde van de proefmaand op, dan betaal je niets.</div>
+      </div>}
       <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
         <div style={{background:C.pL,borderRadius:12,padding:"14px 16px",border:"1.5px solid "+C.primary}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div><div style={{fontWeight:700,color:C.primary,fontSize:15}}>Maandelijks</div><div style={{fontSize:12,color:C.muted}}>Maandelijks opzegbaar</div></div>
             <div style={{textAlign:"right"}}><div style={{fontWeight:700,fontSize:20,color:C.primary}}>€9</div><div style={{fontSize:11,color:C.muted}}>/maand</div></div>
           </div>
-          <button onClick={()=>window.open("https://buy.stripe.com/bJe14feDE4T159F1QLc7u01","_blank")} style={{width:"100%",marginTop:10,padding:"10px",background:C.primary,color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer"}}>
-            Kies maandelijks →
+          <button onClick={()=>window.open(payUrl(LINK_MAAND,user),"_blank")} style={{width:"100%",marginTop:10,padding:"10px",background:C.primary,color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer"}}>
+            Start gratis maand →
           </button>
         </div>
         <div style={{background:"#F5F0FF",borderRadius:12,padding:"14px 16px",border:"1.5px solid #7C3AED",position:"relative"}}>
           <div style={{position:"absolute",top:-10,right:12,background:"#7C3AED",color:"#fff",fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:10}}>BESTE DEAL</div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div><div style={{fontWeight:700,color:"#7C3AED",fontSize:15}}>Jaarlijks</div><div style={{fontSize:12,color:C.muted}}>2 maanden gratis</div></div>
+            <div><div style={{fontWeight:700,color:"#7C3AED",fontSize:15}}>Jaarlijks</div><div style={{fontSize:12,color:C.muted}}>Je bespaart €9 per jaar</div></div>
             <div style={{textAlign:"right"}}><div style={{fontWeight:700,fontSize:20,color:"#7C3AED"}}>€99</div><div style={{fontSize:11,color:C.muted}}>/jaar</div></div>
           </div>
-          <button onClick={()=>window.open("https://buy.stripe.com/8x24gr1QSetB7hN52Xc7u00","_blank")} style={{width:"100%",marginTop:10,padding:"10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer"}}>
-            Kies jaarlijks →
+          <button onClick={()=>window.open(payUrl(LINK_JAAR,user),"_blank")} style={{width:"100%",marginTop:10,padding:"10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer"}}>
+            Start gratis maand →
           </button>
         </div>
       </div>
@@ -1025,6 +1079,7 @@ function UpgradeModal({show, onClose, from, isPro}) {
 // ── Login ─────────────────────────────────────────────────────────────────────
 function LoginScreen({onLogin,lang,setLang}){
   const[mode,setMode]=useState("login");
+  const[remember,setRemember]=useState(true);
   const[email,setEmail]=useState("");
   const[pw,setPw]=useState("");
   const[pw2,setPw2]=useState("");
@@ -1051,7 +1106,7 @@ function LoginScreen({onLogin,lang,setLang}){
       } else {
         const d=await signIn(email,pw);
         if(!d?.access_token)throw new Error("Inloggen mislukt — controleer je gegevens");
-        onLogin({token:d.access_token,user:d.user});
+        onLogin(buildSession(d,remember));
       }
     }catch(e){setErr(e.message);}
     setLoading(false);
@@ -1093,6 +1148,7 @@ function LoginScreen({onLogin,lang,setLang}){
             </div>
           )}
 
+          {mode==="login"&&<label style={{display:"flex",alignItems:"center",gap:8,fontSize:13,color:C.text,margin:"-8px 0 16px",cursor:"pointer"}}><input type="checkbox" checked={remember} onChange={e=>setRemember(e.target.checked)} style={{width:18,height:18,accentColor:C.primary}}/>Onthoud mij 7 dagen</label>}
           <button onClick={handle} disabled={loading||!email||!pw||(mode==="register"&&!pw2)} style={{width:"100%",padding:"13px",background:(email&&pw&&(mode==="login"||pw2))?C.primary:C.border,color:"#fff",border:"none",borderRadius:10,fontSize:15,fontWeight:700,cursor:(email&&pw)?"pointer":"default"}}>
             {loading?"Even geduld...":(mode==="login"?"Inloggen →":"Account aanmaken →")}
           </button>
@@ -1122,12 +1178,108 @@ function LoginScreen({onLogin,lang,setLang}){
   );
 }
 
+// ── App-pincode (optioneel, alleen op dit toestel) ───────────────────────────
+async function hashPin(pin,salt){const b=new TextEncoder().encode(salt+":"+pin);const h=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,"0")).join("");}
+function getPin(){try{return JSON.parse(localStorage.getItem("jicht_pin")||"null");}catch{return null;}}
+async function savePin(pin){const salt=Math.random().toString(36).slice(2)+Date.now();const hash=await hashPin(pin,salt);try{localStorage.setItem("jicht_pin",JSON.stringify({salt,hash}));}catch{}}
+function clearPin(){try{localStorage.removeItem("jicht_pin");}catch{}}
+async function checkPin(pin){const p=getPin();if(!p)return true;return (await hashPin(pin,p.salt))===p.hash;}
+
+function PinPad({onComplete,error,reset}){
+  const[v,setV]=useState("");
+  useEffect(()=>{setV("");},[reset]);
+  function press(d){if(v.length>=4)return;const n=v+d;setV(n);if(n.length===4)setTimeout(()=>onComplete(n),120);}
+  const keys=["1","2","3","4","5","6","7","8","9","","0","⌫"];
+  return(
+    <div style={{textAlign:"center"}}>
+      <div style={{display:"flex",justifyContent:"center",gap:14,margin:"6px 0 8px"}}>
+        {[0,1,2,3].map(i=><span key={i} style={{width:16,height:16,borderRadius:"50%",background:i<v.length?C.primary:"transparent",border:"2px solid "+(error?C.danger:C.primary)}}/>)}
+      </div>
+      <div style={{minHeight:20,fontSize:13,color:C.danger,fontWeight:600,marginBottom:10}}>{error||""}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,maxWidth:260,margin:"0 auto"}}>
+        {keys.map((k,i)=>k===""?<span key={i}/>:(
+          <button key={i} onClick={()=>k==="⌫"?setV(v.slice(0,-1)):press(k)} aria-label={k==="⌫"?"Wissen":k} style={{height:56,borderRadius:16,border:"1.5px solid "+C.border,background:C.card,fontSize:22,fontWeight:600,color:C.text,cursor:"pointer",fontFamily:FONT}}>{k}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LockScreen({onUnlock,onForgot}){
+  const[err,setErr]=useState("");const[tries,setTries]=useState(0);const[rs,setRs]=useState(0);
+  async function done(pin){
+    if(await checkPin(pin)){onUnlock();return;}
+    const t=tries+1;setTries(t);setRs(r=>r+1);
+    if(t>=5){onForgot();return;}
+    setErr("Onjuiste pincode.");
+  }
+  return(
+    <div style={{fontFamily:FONT,background:"linear-gradient(180deg,#E3F3F4 0%,#F3F8FB 45%)",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+      <div style={{width:"100%",maxWidth:340,textAlign:"center"}}>
+        <div style={{width:56,height:56,borderRadius:18,background:C.primary,display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:10}}><i className="ti ti-lock" style={{fontSize:28,color:"#fff"}} aria-hidden="true"></i></div>
+        <h1 style={{margin:"0 0 4px",fontSize:22,fontWeight:700,color:C.text}}>Jicht<span style={{color:C.primary}}>Tracker</span></h1>
+        <p style={{color:C.muted,fontSize:14,margin:"0 0 18px"}}>Voer je pincode in</p>
+        <PinPad onComplete={done} error={err} reset={rs}/>
+        <button onClick={onForgot} style={{marginTop:22,background:"none",border:"none",color:C.primary,fontSize:13,cursor:"pointer",textDecoration:"underline",fontFamily:FONT}}>Pincode vergeten? Log opnieuw in</button>
+        <div style={{fontSize:11,color:C.muted,marginTop:10}}>Na 5 foute pogingen word je uitgelogd.</div>
+      </div>
+    </div>
+  );
+}
+
+function PinModal({show,onClose}){
+  const[step,setStep]=useState("start");const[first,setFirst]=useState("");const[err,setErr]=useState("");const[rs,setRs]=useState(0);const[msg,setMsg]=useState("");
+  const has=!!getPin();
+  useEffect(()=>{if(show){setStep("start");setFirst("");setErr("");setMsg("");}},[show]);
+  function begin(){setStep("new");setErr("");setFirst("");setRs(r=>r+1);}
+  async function onNew(p){setFirst(p);setStep("confirm");setErr("");setRs(r=>r+1);}
+  async function onConfirm(p){
+    if(p!==first){setErr("De pincodes komen niet overeen. Probeer opnieuw.");setStep("new");setFirst("");setRs(r=>r+1);return;}
+    await savePin(p);setMsg("Pincode ingesteld.");setStep("start");
+  }
+  return(
+    <Modal show={show} onClose={onClose} title="App-pincode" icon="ti-dialpad">
+      {step==="start"&&(<div>
+        {msg&&<div style={{background:C.sL,borderRadius:10,padding:"10px 12px",fontSize:13,color:C.success,fontWeight:600,marginBottom:12,textAlign:"center"}}>{msg}</div>}
+        <div style={{fontSize:13,color:C.muted,lineHeight:1.7,marginBottom:16}}>Met een pincode open je de app sneller dan met je wachtwoord. De pincode geldt alleen op dit toestel. Na 5 foute pogingen word je uitgelogd en log je opnieuw in met je wachtwoord.</div>
+        {has&&<div style={{fontSize:13,color:C.success,fontWeight:600,marginBottom:12}}><i className="ti ti-circle-check" style={{marginRight:6}} aria-hidden="true"></i>Pincode is actief op dit toestel.</div>}
+        <button onClick={begin} style={{width:"100%",padding:"12px",background:C.primary,color:"#fff",border:"none",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",marginBottom:8}}>{has?"Pincode wijzigen":"Pincode instellen"}</button>
+        {has&&<button onClick={()=>{clearPin();setMsg("Pincode verwijderd.");setStep("start");}} style={{width:"100%",padding:"12px",background:C.card,color:C.danger,border:"1.5px solid "+C.danger,borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer"}}>Pincode verwijderen</button>}
+      </div>)}
+      {step==="new"&&(<div><div style={{textAlign:"center",fontSize:14,color:C.text,fontWeight:600,marginBottom:8}}>Kies een pincode van 4 cijfers.</div><PinPad onComplete={onNew} error={err} reset={rs}/></div>)}
+      {step==="confirm"&&(<div><div style={{textAlign:"center",fontSize:14,color:C.text,fontWeight:600,marginBottom:8}}>Herhaal je pincode.</div><PinPad onComplete={onConfirm} error={err} reset={rs}/></div>)}
+    </Modal>
+  );
+}
+
 // ── App root ──────────────────────────────────────────────────────────────────
 export default function App(){ const[session,setSession]=useState(null);
+  const[locked,setLocked]=useState(()=>!!getPin());
+  useEffect(()=>{let t=0;const f=()=>{if(document.hidden)t=Date.now();else if(t&&Date.now()-t>5*60*1000&&getPin())setLocked(true);};document.addEventListener("visibilitychange",f);return()=>document.removeEventListener("visibilitychange",f);},[]);
   const[ready,setReady]=useState(false);
-  useEffect(()=>{ try{const s=localStorage.getItem("jicht_session");if(s)setSession(JSON.parse(s));}catch{}
-    setReady(true);
+  useEffect(()=>{
+    (async()=>{
+      const s=readSession();
+      if(s&&!s.demo&&s.refresh&&(!s.exp||s.exp<Date.now()+60000)){
+        try{const d=await refreshSession(s.refresh);
+          if(d?.access_token){const n={...s,token:d.access_token,refresh:d.refresh_token||s.refresh,exp:Date.now()+(d.expires_in||3600)*1000,user:d.user||s.user};writeSession(n);setSession(n);}
+          else clearSession();
+        }catch{clearSession();}
+      } else if(s)setSession(s);
+      setReady(true);
+    })();
   },[]);
+  useEffect(()=>{ // token vernieuwen terwijl de app open staat
+    if(!session||session.demo||!session.refresh)return;
+    const wait=Math.max(30000,(session.exp||Date.now()+3600000)-Date.now()-120000);
+    const t=setTimeout(async()=>{
+      try{const d=await refreshSession(session.refresh);
+        if(d?.access_token){const n={...session,token:d.access_token,refresh:d.refresh_token||session.refresh,exp:Date.now()+(d.expires_in||3600)*1000};writeSession(n);setSession(n);}
+        else{clearSession();setSession(null);}
+      }catch{}
+    },wait);
+    return()=>clearTimeout(t);
+  },[session]);
   const[lang,setLangState]=useState(()=>{try{return localStorage.getItem("jicht_lang")==="de"?"de":"nl";}catch{return"nl";}});
   LANG=lang;
   const setLang=l=>{try{localStorage.setItem("jicht_lang",l);}catch{}setLangState(l);};
@@ -1141,8 +1293,9 @@ export default function App(){ const[session,setSession]=useState(null);
     trTree(document.body);
   },[lang,session,ready]);
   if(!ready)return <Spinner/>;
-  if(!session)return <LoginScreen lang={lang} setLang={setLang} onLogin={s=>{localStorage.setItem("jicht_session",JSON.stringify(s));setSession(s);}}/>;
-  return <JichtTracker lang={lang} setLang={setLang} session={session} onLogout={()=>{localStorage.removeItem("jicht_session");setSession(null);}}/>;
+  if(session&&!session.demo&&locked&&getPin())return <LockScreen onUnlock={()=>setLocked(false)} onForgot={()=>{clearSession();clearPin();setLocked(false);setSession(null);}}/>;
+  if(!session)return <LoginScreen lang={lang} setLang={setLang} onLogin={s=>{writeSession(s);setLocked(false);setSession(s);}}/>;
+  return <JichtTracker lang={lang} setLang={setLang} session={session} onLogout={()=>{clearSession();clearPin();setSession(null);}}/>;
 }
 
 // ── Hoofd app ─────────────────────────────────────────────────────────────────
@@ -1154,6 +1307,7 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
   const[entries,setEntries]=useState([]);
   const[profile,setProfile]=useState({name:"",photo:"",meds:[]});
   const[loading,setLoading]=useState(true);
+  useEffect(()=>{if(isDemo||loading)return;upsertProfile({lang:lang},token).catch(()=>{});},[lang,loading]);// eslint-disable-line
   const[sync,setSync]=useState("");
   const[mainTab,setMainTab]=useState("home");
   const[regDate,setRegDate]=useState(today());
@@ -1169,6 +1323,7 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
   const[rapportLoading,setRapportLoading]=useState(false);
   const[showOver,setShowOver]=useState(false);
   const[showSupport,setShowSupport]=useState(false);
+  const[showPin,setShowPin]=useState(false);
   const[showPrivacy,setShowPrivacy]=useState(false);
   const[showDisc,setShowDisc]=useState(false);
   // eslint-disable-next-line no-unused-vars
@@ -1213,7 +1368,7 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
   function norm(e){return{...e,pijnLogs:e.pijn_logs||e.pijnLogs||[],eten:e.eten||{logs:[]},drinken:e.drinken||{logs:[]},bewegen:Array.isArray(e.bewegen?.logs)?e.bewegen:{logs:[]},slaap:e.slaap||{uren:"",bedtijd:"",wektijd:""},aanval:Array.isArray(e.aanval?.logs)?e.aanval:{logs:[]},med:Array.isArray(e.med?.logs)?e.med:{logs:[]},suppl:Array.isArray(e.suppl?.logs)?e.suppl:{logs:[]},urinezuur:e.urinezuur&&Array.isArray(e.urinezuur.logs)?e.urinezuur:{logs:[],eenheid:e.urinezuur?.eenheid||"mmol"},weer:e.weer||{logs:[]}};}
 
   useEffect(()=>{ async function init(){ if(isDemo){setLoading(false);return;}
-      try{const[p,es]=await Promise.all([getProfile(token),getEntries(token)]);if(p){setProfile({name:p.name||"",photo:p.photo||"",meds:p.meds||[],plan:p.plan||"free"});if(p.water_doel)setWaterDoel(p.water_doel);}setEntries((es||[]).map(norm));}catch(e){console.error(e);}
+      try{const[p,es]=await Promise.all([getProfile(token),getEntries(token)]);if(p){setProfile({name:p.name||"",photo:p.photo||"",meds:p.meds||[],plan:p.plan||"free",reminder:p.reminder_enabled!==false});if(p.water_doel)setWaterDoel(p.water_doel);}setEntries((es||[]).map(norm));}catch(e){console.error(e);}
       setLoading(false);
     }
     init();
@@ -1276,19 +1431,20 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
   },[entries,profile]);
 
   // ── Mutaties ──────────────────────────────────────────────────────────────
-  function addEten(){if(!etenTxt.trim())return;setDag(d=>({...d,eten:{logs:[...d.eten.logs,{moment:etenMom,tekst:etenTxt.trim()}]}}));setEtenTxt("");}
+  function closeReg(){setRegSec(null);window.scrollTo({top:0,behavior:"smooth"});}
+  function addEten(){if(!etenTxt.trim())return;setDag(d=>({...d,eten:{logs:[...d.eten.logs,{moment:etenMom,tekst:etenTxt.trim()}]}}));setEtenTxt("");closeReg();}
   function remEten(i){setDag(d=>({...d,eten:{logs:d.eten.logs.filter((_,j)=>j!==i)}}));}
-  function addDrinken(){setDag(d=>({...d,drinken:{logs:[...d.drinken.logs,{categorie:dCat,tekst:dTxt.trim(),ml:dMl,portie:dPortie,tijd:nowT()}]}}));setDTxt("");}
+  function addDrinken(){setDag(d=>({...d,drinken:{logs:[...d.drinken.logs,{categorie:dCat,tekst:dTxt.trim(),ml:dMl,portie:dPortie,tijd:nowT()}]}}));setDTxt("");closeReg();}
   function remDrinken(i){setDag(d=>({...d,drinken:{logs:d.drinken.logs.filter((_,j)=>j!==i)}}));}
-  function addBewegen(){if(!bMin&&bAct.length===0)return;setDag(d=>({...d,bewegen:{logs:[...(d.bewegen?.logs||[]),{tijd:bTijd,minuten:bMin,activiteiten:[...bAct]}]}}));setBMin("");setBAct([]);setBTijd(nowT());}
+  function addBewegen(){if(!bMin&&bAct.length===0)return;setDag(d=>({...d,bewegen:{logs:[...(d.bewegen?.logs||[]),{tijd:bTijd,minuten:bMin,activiteiten:[...bAct]}]}}));setBMin("");setBAct([]);setBTijd(nowT());closeReg();}
   function remBewegen(i){setDag(d=>({...d,bewegen:{logs:(d.bewegen?.logs||[]).filter((_,j)=>j!==i)}}));}
-  function addPijn(){if(pLevel===0)return;setDag(d=>({...d,pijnLogs:[...d.pijnLogs,{tijd:nowT(),level:pLevel,label:PL[pLevel]}]}));setPLevel(0);}
+  function addPijn(){if(pLevel===0)return;setDag(d=>({...d,pijnLogs:[...d.pijnLogs,{tijd:nowT(),level:pLevel,label:PL[pLevel]}]}));setPLevel(0);closeReg();}
   function remPijn(i){setDag(d=>({...d,pijnLogs:d.pijnLogs.filter((_,j)=>j!==i)}));}
-  function addAanval(){setDag(d=>({...d,aanval:{logs:[...(d.aanval?.logs||[]),{tijd:nowT(),type:aType,symptomen:[...aSymp]}]}}));setASymp([]);}
+  function addAanval(){setDag(d=>({...d,aanval:{logs:[...(d.aanval?.logs||[]),{tijd:nowT(),type:aType,symptomen:[...aSymp]}]}}));setASymp([]);closeReg();}
   function remAanval(i){setDag(d=>({...d,aanval:{logs:(d.aanval?.logs||[]).filter((_,j)=>j!==i)}}));}
-  function addMed(){const n=mNaam||mAnders;if(!n)return;setDag(d=>({...d,med:{logs:[...(d.med?.logs||[]),{tijd:mTijd,type:mType,naam:n}]}}));setMNaam("");setMAnders("");setMTijd(nowT());}
+  function addMed(){const n=mNaam||mAnders;if(!n)return;setDag(d=>({...d,med:{logs:[...(d.med?.logs||[]),{tijd:mTijd,type:mType,naam:n}]}}));setMNaam("");setMAnders("");setMTijd(nowT());closeReg();}
   function remMed(i){setDag(d=>({...d,med:{logs:(d.med?.logs||[]).filter((_,j)=>j!==i)}}));}
-  function addSuppl(){const n=sNaam||sAnders;if(!n)return;setDag(d=>({...d,suppl:{logs:[...(d.suppl?.logs||[]),{tijd:sTijd,naam:n}]}}));setSNaam("");setSAnders("");setSTijd(nowT());}
+  function addSuppl(){const n=sNaam||sAnders;if(!n)return;setDag(d=>({...d,suppl:{logs:[...(d.suppl?.logs||[]),{tijd:sTijd,naam:n}]}}));setSNaam("");setSAnders("");setSTijd(nowT());closeReg();}
   function remSuppl(i){setDag(d=>({...d,suppl:{logs:(d.suppl?.logs||[]).filter((_,j)=>j!==i)}}));}
   async function fetchWeer(){
     setWeerLoading(true);
@@ -1310,13 +1466,13 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
     const v=parseFloat(uzWaarde);
     const inMmol=uzEenheid==="mmol"?v:v/16.8;
     setDag(d=>({...d,urinezuur:{...d.urinezuur,logs:[...(d.urinezuur?.logs||[]),{tijd:nowT(),waarde:uzWaarde,eenheid:uzEenheid,mmol:inMmol.toFixed(3)}]}}));
-    setUzWaarde("");
+    setUzWaarde("");closeReg();
   }
   function remUZ(i){setDag(d=>({...d,urinezuur:{...d.urinezuur,logs:(d.urinezuur?.logs||[]).filter((_,j)=>j!==i)}}));}
   function handlePhoto(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>setProfile(p=>({...p,photo:ev.target.result}));r.readAsDataURL(f);}
   function addProfMed(){if(!newMed.name)return;setProfile(p=>({...p,meds:[...(p.meds||[]),{...newMed,id:Date.now()}]}));setNewMed({name:"",dose:"",frequency:""});}
   function remProfMed(id){setProfile(p=>({...p,meds:p.meds.filter(m=>m.id!==id)}));}
-  async function saveProfiel(){if(isDemo){setProfSaved(true);setTimeout(()=>setProfSaved(false),2000);return;}try{await upsertProfile({name:profile.name,photo:profile.photo,meds:profile.meds,water_doel:waterDoel},token);setProfSaved(true);setTimeout(()=>setProfSaved(false),2000);}catch(e){dialog("Fout: "+e.message);}}
+  async function saveProfiel(){if(isDemo){setProfSaved(true);setTimeout(()=>{setProfSaved(false);setShowProfiel(false);},900);return;}try{await upsertProfile({name:profile.name,photo:profile.photo,meds:profile.meds,water_doel:waterDoel},token);setProfSaved(true);setTimeout(()=>{setProfSaved(false);setShowProfiel(false);},900);}catch(e){dialog("Fout: "+e.message);}}
   async function wijzigWachtwoord(){
     if(nieuwPw!==nieuwPw2){setPwMsg("error:Wachtwoorden komen niet overeen");return;}
     if(nieuwPw.length<6){setPwMsg("error:Minimaal 6 tekens");return;}
@@ -1337,7 +1493,7 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
     try{
       const r=await fetch("/.netlify/functions/account-beheer",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({actie:"verwijder"})});
       const d=await r.json();
-      if(d.ok){localStorage.removeItem("jicht_session");onLogout();}
+      if(d.ok){clearSession();onLogout();}
       else{dialog("Fout: "+(d.error||"Mislukt"));}
     }catch(e){dialog("Fout: "+e.message);}
     setVerwijderLoading(false);
@@ -1371,6 +1527,7 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
     ["---","---",null],
     ["ti-sparkles","Gratis of Pro",()=>{setUpgradeFrom("");setShowUpgrade(true);}],
     ["ti-user","Profiel",()=>setShowProfiel(true)],
+    ...(isDemo?[]:[["ti-dialpad","App-pincode",()=>setShowPin(true)]]),
     ["ti-lifebuoy","Ondersteuning",()=>setShowSupport(true)],
     ["ti-info-circle","Over Jicht Tracker",()=>setShowOver(true)],
     ["---","---",null],
@@ -1384,10 +1541,12 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
 
       {/* Header */}
       <div style={{background:C.card,padding:"14px 18px",color:C.text,display:"flex",alignItems:"center",gap:12,position:"relative",borderBottom:"1px solid "+C.border}}>
+        <button onClick={()=>{setMenuOpen(false);setRegSec(null);setMainTab("home");window.scrollTo({top:0,behavior:"smooth"});}} aria-label="Home" style={{flex:1,display:"flex",alignItems:"center",gap:12,background:"none",border:"none",padding:0,margin:0,cursor:"pointer",textAlign:"left",fontFamily:FONT}}>
         {profile.photo?<img src={profile.photo} alt="p" style={{width:38,height:38,borderRadius:"50%",objectFit:"cover",border:"2px solid "+C.pL}}/>:<div style={{width:38,height:38,borderRadius:12,background:C.primary,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-heartbeat" style={{fontSize:21,color:"#fff"}} aria-hidden="true"></i></div>}
         <div style={{flex:1}}>
           <h1 style={{margin:0,fontSize:20,fontWeight:700,letterSpacing:"-0.3px",color:C.text}}>Jicht<span style={{color:C.primary}}>Tracker</span></h1>
         </div>
+        </button>
         <button onClick={()=>setMenuOpen(m=>!m)} aria-label="Menu" style={{background:C.pL,border:"none",color:C.primary,width:40,height:40,borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><i className={"ti "+(menuOpen?"ti-x":"ti-menu-2")} style={{fontSize:22}} aria-hidden="true"></i></button>
         {menuOpen&&(
           <div style={{position:"absolute",top:"100%",right:16,zIndex:100,background:C.card,borderRadius:12,boxShadow:"0 12px 32px rgba(18,48,61,0.16)",border:"1px solid "+C.border,minWidth:250,overflow:"hidden",padding:6}} onClick={()=>setMenuOpen(false)}>
@@ -1437,6 +1596,16 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
       {/* Modals */}
       <Modal show={showProfiel} onClose={()=>setShowProfiel(false)} title="Profiel">
         {profSaved&&<div style={{background:C.sL,border:"1px solid #9ED8BC",borderRadius:8,padding:"9px 13px",color:C.success,fontWeight:600,fontSize:13,marginBottom:12}}><i className="ti ti-circle-check" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Profiel opgeslagen!</div>}
+        {!isDemo&&(<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,padding:"12px 14px",background:isPro?C.bg:C.proL,borderRadius:12,border:"1px solid "+(isPro?C.border:C.proL)}}>
+          <i className="ti ti-bell" style={{fontSize:22,color:isPro?C.primary:C.pro}} aria-hidden="true"></i>
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:700,color:C.text}}>E-mailherinnering{!isPro&&<span style={{marginLeft:8,fontSize:9,fontWeight:700,background:C.pro,color:"#fff",padding:"2px 6px",borderRadius:5,verticalAlign:"1px"}}>PRO</span>}</div>
+            <div style={{fontSize:12,color:C.muted,lineHeight:1.5}}>Een vriendelijke mail als je een paar dagen niets hebt geregistreerd.</div>
+          </div>
+          <button onClick={async()=>{if(!isPro){setShowProfiel(false);setUpgradeFrom("E-mailherinnering");setShowUpgrade(true);return;}const nv=!profile.reminder;const r=await upsertProfile({reminder_enabled:nv},token);if(r){setProfile(p=>({...p,reminder:nv}));}else{dialog("Instellen mislukt. Probeer het later opnieuw.");}}} role="switch" aria-checked={isPro&&profile.reminder} aria-label="E-mailherinnering" style={{width:46,height:26,borderRadius:13,border:"none",cursor:"pointer",background:(isPro&&profile.reminder)?C.primary:C.border,position:"relative",flexShrink:0,transition:"background 0.15s"}}>
+            <span style={{position:"absolute",top:3,left:(isPro&&profile.reminder)?23:3,width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left 0.15s",boxShadow:"0 1px 3px rgba(0,0,0,0.25)"}}/>
+          </button>
+        </div>)}
         <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:16,padding:14,background:C.bg,borderRadius:12}}>
           {profile.photo?<img src={profile.photo} alt="p" style={{width:64,height:64,borderRadius:"50%",objectFit:"cover"}}/>:<div style={{width:64,height:64,borderRadius:"50%",background:C.pL,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24}}><i className="ti ti-user" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></div>}
           <div>
@@ -1511,10 +1680,11 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
 
       <TherapeutModal show={showTher} onClose={()=>setShowTher(false)} entries={entries} profile={profile} genRapport={callAI}/>
       <OverModal show={showOver} onClose={()=>setShowOver(false)}/>
+      <PinModal show={showPin} onClose={()=>setShowPin(false)}/>
       <SupportModal show={showSupport} onClose={()=>setShowSupport(false)}/>
       <PrivacyModal show={showPrivacy} onClose={()=>setShowPrivacy(false)} entries={entries} wisAlleData={wisAlleData} wisConf={wisConf} setWisConf={setWisConf}/>
       <DisclaimerModal show={showDisc} onClose={()=>setShowDisc(false)}/>
-      <UpgradeModal show={showUpgrade} onClose={()=>setShowUpgrade(false)} from={upgradeFrom} isPro={isPro}/>
+      <UpgradeModal show={showUpgrade} onClose={()=>setShowUpgrade(false)} from={upgradeFrom} isPro={isPro} user={session.user}/>
 
       <div style={{padding:"16px 14px"}}>
 
