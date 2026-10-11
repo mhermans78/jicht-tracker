@@ -46,7 +46,7 @@ const MMT=["Ontbijt","Lunch","Avondeten","Tussendoor","Avondsnack"];
 const PRO_TABS=["bewegen","slaap","medsuppl","weer","urinezuur"];
 const RTABS_S1=[{id:"aanval",icon:"ti-alert-triangle",label:"Aanval"},{id:"pijn",icon:"ti-mood-sad",label:"Pijn"},{id:"urinezuur",icon:"ti-droplet",label:"Urinezuur"}];
 const RTABS_S2=[{id:"eten",icon:"ti-salad",label:"Eten"},{id:"drinken",icon:"ti-droplets",label:"Drinken"},{id:"bewegen",icon:"ti-run",label:"Bewegen"},{id:"slaap",icon:"ti-moon",label:"Slaap"},{id:"weer",icon:"ti-cloud-sun",label:"Weer"},{id:"medsupp",icon:"ti-pill",label:"Med & Suppl"}];
-const MTABS=[["registreer","ti-pencil","Registreer"],["overzicht","ti-book","Dagboek"],["statistieken","ti-chart-line","Trends"],["analyse","ti-bulb","Advies"]];
+const MTABS=[["home","ti-home","Home"],["registreer","ti-pencil","Registreer"],["overzicht","ti-book","Dagboek"],["statistieken","ti-chart-line","Trends"],["analyse","ti-bulb","Advies"]];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function Card({title,children,accentColor,icon}){ const ac=accentColor||C.primary; return (
@@ -614,7 +614,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   const[profile,setProfile]=useState({name:"",photo:"",meds:[]});
   const[loading,setLoading]=useState(true);
   const[sync,setSync]=useState("");
-  const[mainTab,setMainTab]=useState("registreer");
+  const[mainTab,setMainTab]=useState("home");
   const[regDate,setRegDate]=useState(today());
   const[regSec,setRegSec]=useState(null);
   const[aiResult,setAiResult]=useState("");
@@ -861,6 +861,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
 
       {isDemo&&<div style={{background:C.pL,borderBottom:"1px solid "+C.border,padding:"8px 16px",textAlign:"center",fontSize:12,color:C.pD,fontWeight:600}}><i className="ti ti-eye" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Demo-modus — wijzigingen worden niet opgeslagen</div>}
 
+      {mainTab==="home"&&(<>
       {/* Hero banner */}
       <div style={{padding:"16px 18px 0",fontSize:13,color:C.muted,fontWeight:500}}>Eindelijk meer controle over je jicht</div>
 
@@ -875,11 +876,12 @@ function JichtTracker({session,onLogout}){ const{token}=session;
           <div style={{fontSize:9,fontWeight:600,color:"rgba(255,255,255,0.9)",textTransform:"uppercase",marginTop:3,letterSpacing:0.4}}>Dagen actief</div>
         </div>
       </div>
+      </>)}
 
       {/* Onderste navigatiebalk */}
       <nav aria-label="Hoofdmenu" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:680,zIndex:90,display:"flex",background:C.card,borderTop:"1px solid "+C.border,padding:"8px 8px calc(10px + env(safe-area-inset-bottom))",boxShadow:"0 -4px 18px rgba(18,48,61,0.07)",boxSizing:"border-box"}}>
         {MTABS.map(([id,icon,lbl])=>{const on=mainTab===id;return(
-          <button key={id} onClick={()=>{setMainTab(id);window.scrollTo({top:0,behavior:"smooth"});}} aria-current={on?"page":undefined} style={{flex:1,border:"none",background:on?C.pL:"transparent",borderRadius:14,padding:"7px 2px",cursor:"pointer",fontSize:11,fontWeight:on?600:500,color:on?C.primary:C.muted,display:"flex",flexDirection:"column",alignItems:"center",gap:3,margin:"0 2px",fontFamily:FONT}}>
+          <button key={id} onClick={()=>{setMainTab(id);if(id==="registreer")setRegSec(null);window.scrollTo({top:0,behavior:"smooth"});}} aria-current={on?"page":undefined} style={{flex:1,border:"none",background:on?C.pL:"transparent",borderRadius:14,padding:"7px 2px",cursor:"pointer",fontSize:11,fontWeight:on?600:500,color:on?C.primary:C.muted,display:"flex",flexDirection:"column",alignItems:"center",gap:3,margin:"0 2px",fontFamily:FONT}}>
             <i className={"ti "+icon} style={{fontSize:22,display:"block",lineHeight:1,color:on?C.primary:C.muted}} aria-hidden="true"></i><span>{lbl}</span>
           </button>);})}
       </nav>
@@ -967,11 +969,10 @@ function JichtTracker({session,onLogout}){ const{token}=session;
 
       <div style={{padding:"16px 14px"}}>
 
-        {/* ══ REGISTREER ══ */}
-        {mainTab==="registreer"&&(
+        {/* ══ HOME ══ */}
+        {mainTab==="home"&&(
           <div>
             {syncBadge&&<div style={{background:syncBadge.bg,border:"1px solid "+syncBadge.b,borderRadius:8,padding:"7px 12px",color:syncBadge.c,fontSize:12,fontWeight:600,marginBottom:10,textAlign:"center"}}>{syncBadge.t}</div>}
-
             {/* Dashboard kaarten */}
             <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1.5,marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <span>Deze maand</span>
@@ -1010,6 +1011,34 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                 <div style={{fontSize:16,fontWeight:700,color:C.primary}}>{(wd/1000).toFixed(1)}L</div>
               </div>
             )})()}
+
+            <button onClick={()=>{setRegSec(null);setMainTab("registreer");window.scrollTo({top:0});}} style={{width:"100%",background:C.card,border:"1.5px solid "+C.primary,color:C.primary,borderRadius:16,padding:"14px",fontSize:14,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:14,fontFamily:FONT}}>
+              <i className="ti ti-pencil-plus" style={{fontSize:20}} aria-hidden="true"></i> Registreer vandaag
+            </button>
+            {/* AI advies banner  */}
+            {entries.length>=2&&(
+              <div style={{background:C.dark,borderRadius:16,padding:"13px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,marginTop:4}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <div style={{width:34,height:34,background:"rgba(255,255,255,0.14)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <i className="ti ti-sparkles" style={{fontSize:18,color:"#7FE0D0"}} aria-hidden="true"></i>
+                  </div>
+                  <div>
+                    <div style={{fontSize:12,fontWeight:700,color:"#fff"}}>Persoonlijk advies klaar</div>
+                    <div style={{fontSize:9,color:"rgba(255,255,255,0.7)",marginTop:1}}>{entries.length} registraties als basis</div>
+                  </div>
+                </div>
+                <button onClick={()=>setMainTab("analyse")} style={{background:C.primary,color:"#fff",fontSize:10,fontWeight:700,padding:"7px 12px",borderRadius:9,border:"none",cursor:"pointer",flexShrink:0}}>Bekijk</button>
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {/* ══ REGISTREER ══ */}
+        {mainTab==="registreer"&&(
+          <div>
+            <div style={{fontSize:20,fontWeight:700,color:C.text,margin:"2px 2px 14px",letterSpacing:"-0.3px"}}>Registreren</div>
+            {syncBadge&&<div style={{background:syncBadge.bg,border:"1px solid "+syncBadge.b,borderRadius:8,padding:"7px 12px",color:syncBadge.c,fontSize:12,fontWeight:600,marginBottom:10,textAlign:"center"}}>{syncBadge.t}</div>}
 
             {/* Datumkiezer compact */}
             <div style={{background:C.card,borderRadius:12,padding:"10px 14px",border:"1px solid "+C.border,marginBottom:12,display:"flex",alignItems:"center",gap:10}}>
@@ -1060,22 +1089,6 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                 </button>
                 <div style={{width:0,height:0,borderLeft:"8px solid transparent",borderRight:"8px solid transparent",borderTop:"8px solid "+(RTABS_S1.some(t=>t.id===regSec)?C.accent:C.primary)}}/>
                 <div style={{width:40}}/>
-              </div>
-            )}
-
-            {/* AI advies banner — alleen zichtbaar als geen sectie open */}
-            {!regSec&&entries.length>=2&&(
-              <div style={{background:C.dark,borderRadius:16,padding:"13px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,marginTop:4}}>
-                <div style={{display:"flex",alignItems:"center",gap:10}}>
-                  <div style={{width:34,height:34,background:"rgba(255,255,255,0.14)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <i className="ti ti-sparkles" style={{fontSize:18,color:"#7FE0D0"}} aria-hidden="true"></i>
-                  </div>
-                  <div>
-                    <div style={{fontSize:12,fontWeight:700,color:"#fff"}}>Persoonlijk advies klaar</div>
-                    <div style={{fontSize:9,color:"rgba(255,255,255,0.7)",marginTop:1}}>{entries.length} registraties als basis</div>
-                  </div>
-                </div>
-                <button onClick={()=>setMainTab("analyse")} style={{background:C.primary,color:"#fff",fontSize:10,fontWeight:700,padding:"7px 12px",borderRadius:9,border:"none",cursor:"pointer",flexShrink:0}}>Bekijk</button>
               </div>
             )}
 
