@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
 
 // ── Supabase ──────────────────────────────────────────────────────────────────
 const SU = "https://vblvtkykrcgjaovhqqlg.supabase.co";
@@ -31,7 +31,7 @@ const PL=["","Licht","Matig","Ernstig","Hevig","Ondraaglijk"];
 const MNL=["Jan","Feb","Mrt","Apr","Mei","Jun","Jul","Aug","Sep","Okt","Nov","Dec"];
 const today=()=>new Date().toISOString().slice(0,10);
 const nowT=()=>new Date().toTimeString().slice(0,5);
-const fmt=d=>new Date(d+"T12:00:00").toLocaleDateString("nl-NL",{day:"numeric",month:"short",year:"numeric"});
+const fmt=d=>new Date(d+"T12:00:00").toLocaleDateString(LOC(),{day:"numeric",month:"short",year:"numeric"});
 const inp={width:"100%",padding:"12px 14px",borderRadius:12,border:"1.5px solid "+C.border,fontSize:15,fontFamily:FONT,color:C.text,background:"#FFFFFF",boxSizing:"border-box",outline:"none",transition:"border-color 0.15s"};
 
 const BEWEGING=["Wandelen","Hardlopen","Fietsen","Zwemmen","Yoga","Pilates","Krachttraining","HIIT","Dansen","Golf","Tennis","Tuinieren","Traplopen","Stretchen","Aquagym","Roeien","Skien","Wandelvoetbal","Tai chi","Anders"];
@@ -43,10 +43,519 @@ const DCAT=["Water","Koffie/thee","Frisdrank","Alcohol","Fruitsap","Sportdrank",
 const PORTIE={ "Water":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Groot glas",i:"glas",ml:300},{l:"Flesje",i:"fles",ml:330},{l:"Fles",i:"fles",ml:500},{l:"Grote fles",i:"fles",ml:750}], "Koffie/thee":[{l:"Espresso",i:"kop",ml:30},{l:"Kopje",i:"kop",ml:150},{l:"Groot kopje",i:"kop",ml:250},{l:"Mok",i:"mok",ml:350}], "Frisdrank":[{l:"Glas",i:"glas",ml:200},{l:"Blikje",i:"blik",ml:330},{l:"Flesje",i:"fles",ml:500},{l:"Groot glas",i:"glas",ml:400}], "Alcohol":[{l:"Borrel",i:"shot",ml:35},{l:"Wijn",i:"wijn",ml:150},{l:"Biertje",i:"bier",ml:250},{l:"Pint",i:"bier",ml:500}], "Fruitsap":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Groot glas",i:"glas",ml:300},{l:"Flesje",i:"fles",ml:250}], "Sportdrank":[{l:"Klein flesje",i:"fles",ml:250},{l:"Flesje",i:"fles",ml:500},{l:"Grote fles",i:"fles",ml:750}], "Melk":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Groot glas",i:"glas",ml:300}], "Anders":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:200},{l:"Kopje",i:"kop",ml:150},{l:"Flesje",i:"fles",ml:330},{l:"Fles",i:"fles",ml:500}],
 };
 const MMT=["Ontbijt","Lunch","Avondeten","Tussendoor","Avondsnack"];
-const PRO_TABS=["bewegen","slaap","medsuppl","weer","urinezuur"];
+const PRO_TABS=["bewegen","slaap","medsupp","weer","urinezuur"]; // alleen voor Pro-gebruikers
 const RTABS_S1=[{id:"aanval",icon:"ti-alert-triangle",label:"Aanval"},{id:"pijn",icon:"ti-mood-sad",label:"Pijn"},{id:"urinezuur",icon:"ti-droplet",label:"Urinezuur"}];
 const RTABS_S2=[{id:"eten",icon:"ti-salad",label:"Eten"},{id:"drinken",icon:"ti-droplets",label:"Drinken"},{id:"bewegen",icon:"ti-run",label:"Bewegen"},{id:"slaap",icon:"ti-moon",label:"Slaap"},{id:"weer",icon:"ti-cloud-sun",label:"Weer"},{id:"medsupp",icon:"ti-pill",label:"Med & Suppl"}];
 const MTABS=[["home","ti-home","Home"],["registreer","ti-pencil","Registreer"],["overzicht","ti-book","Dagboek"],["statistieken","ti-chart-line","Trends"],["analyse","ti-bulb","Advies"]];
+
+// ── Taal / i18n (NL standaard, DE via vlag) ───────────────────────────────────
+let LANG="nl";
+const LOC=()=>LANG==="de"?"de-DE":"nl-NL";
+const DE={
+"Maximaal 1 keer per dag, samen met je persoonlijk advies.": "Höchstens einmal pro Tag, zusammen mit deiner persönlichen Empfehlung.",
+"Persoonlijk advies en rapporten kun je samen maximaal 1 keer per dag laten maken.": "Persönliche Empfehlungen und Berichte kannst du zusammen höchstens einmal pro Tag erstellen lassen.",
+"⚠ Je hebt je dagelijkse AI-limiet bereikt: maximaal 1 advies of rapport per dag. Probeer het morgen weer.": "⚠ Du hast dein tägliches KI-Limit erreicht: höchstens 1 Empfehlung oder Bericht pro Tag. Versuche es morgen wieder.",
+"Je locatie wordt alleen gebruikt voor het automatisch ophalen van weersgegevens. Deze gegevens worden niet permanent opgeslagen op onze servers.": "Dein Standort wird nur zum automatischen Abrufen von Wetterdaten verwendet. Diese Daten werden nicht dauerhaft auf unseren Servern gespeichert.",
+"Licht": "Leicht",
+"Matig": "Mäßig",
+"Ernstig": "Stark",
+"Hevig": "Sehr stark",
+"Ondraaglijk": "Unerträglich",
+"Ondraag.": "Unerträgl.",
+"Wandelen": "Wandern",
+"Hardlopen": "Laufen",
+"Fietsen": "Radfahren",
+"Zwemmen": "Schwimmen",
+"Krachttraining": "Krafttraining",
+"Dansen": "Tanzen",
+"Tuinieren": "Gartenarbeit",
+"Traplopen": "Treppensteigen",
+"Stretchen": "Dehnen",
+"Aquagym": "Aquagymnastik",
+"Roeien": "Rudern",
+"Skien": "Skifahren",
+"Wandelvoetbal": "Walking Football",
+"Tai chi": "Tai-Chi",
+"Anders": "Andere",
+"Vitamine C": "Vitamin C",
+"Kersensap/cherry extract": "Kirschsaft/Kirschextrakt",
+"Quercetine": "Quercetin",
+"Visolie (omega-3)": "Fischöl (Omega-3)",
+"Foliumzuur": "Folsäure",
+"Probiotica": "Probiotika",
+"Curcumine/kurkuma": "Curcumin/Kurkuma",
+"Bromelaine": "Bromelain",
+"Collageen": "Kollagen",
+"Vitamine D": "Vitamin D",
+"Benzbromarone": "Benzbromaron",
+"Colchicine (laag)": "Colchicin (niedrig)",
+"Colchicine (hoog)": "Colchicin (hoch)",
+"Indomethacine": "Indometacin",
+"Triamcinolon (inj.)": "Triamcinolon (Inj.)",
+"Zwelling": "Schwellung",
+"Roodheid": "Rötung",
+"Warmte": "Wärme",
+"Moeite lopen": "Gehbeschwerden",
+"Moeite bewegen": "Bewegungseinschränkung",
+"Tintelingen": "Kribbeln",
+"Nachtpijn": "Nachtschmerz",
+"Koorts": "Fieber",
+"Stijfheid": "Steifheit",
+"Water": "Wasser",
+"Koffie/thee": "Kaffee/Tee",
+"Frisdrank": "Softdrink",
+"Alcohol": "Alkohol",
+"Fruitsap": "Fruchtsaft",
+"Sportdrank": "Sportgetränk",
+"Melk": "Milch",
+"Klein glas": "Kleines Glas",
+"Groot glas": "Großes Glas",
+"Flesje": "Fläschchen",
+"Fles": "Flasche",
+"Grote fles": "Große Flasche",
+"Kopje": "Tasse",
+"Groot kopje": "Große Tasse",
+"Mok": "Becher",
+"Blikje": "Dose",
+"Borrel": "Schnaps",
+"Wijn": "Wein",
+"Biertje": "Bier",
+"Pint": "Großes Bier",
+"Klein flesje": "Kleine Flasche",
+"Ontbijt": "Frühstück",
+"Lunch": "Mittagessen",
+"Avondeten": "Abendessen",
+"Tussendoor": "Zwischendurch",
+"Avondsnack": "Abendsnack",
+"Aanval": "Anfall",
+"Pijn": "Schmerz",
+"Urinezuur": "Harnsäure",
+"Eten": "Essen",
+"Drinken": "Trinken",
+"Bewegen": "Bewegung",
+"Slaap": "Schlaf",
+"Weer": "Wetter",
+"Med & Suppl": "Med. & Suppl.",
+"Home": "Start",
+"Registreer": "Erfassen",
+"Dagboek": "Tagebuch",
+"Trends": "Trends",
+"Advies": "Empfehlung",
+"Laden...": "Laden...",
+"Sluiten": "Schließen",
+"Terug": "Zurück",
+"Over Jicht Tracker": "Über GichtTracker",
+"Jicht Tracker heb ik,": "GichtTracker habe ich,",
+", ontwikkeld vanuit persoonlijke motivatie door eigen ervaring met de aandoening. Ik wilde meer inzicht zodat ik mijn aanvallen kon verminderen, ik minder pijn had en minder beperkt werd in mijn dagelijks doen en laten.": ", aus persönlicher Motivation aufgrund eigener Erfahrung mit der Erkrankung entwickelt. Ich wollte mehr Einblick, um meine Anfälle zu verringern, weniger Schmerzen zu haben und im Alltag weniger eingeschränkt zu sein.",
+"De app wordt beheerd door": "Die App wird betrieben von",
+"en de uit de pro versie gegenereerde opbrengsten zijn bedoeld om de infrastructuur kostendekkend te maken.": "und die Einnahmen aus der Pro-Version dienen dazu, die Infrastruktur kostendeckend zu betreiben.",
+"Persoonlijk inzicht": "Persönliche Einblicke",
+"De gebruiker helpen beter om te gaan met jicht door patronen en triggers in eigen data te ontdekken.": "Nutzern helfen, besser mit Gicht umzugehen, indem sie Muster und Auslöser in ihren eigenen Daten entdecken.",
+"Anoniem onderzoek": "Anonyme Forschung",
+"Op termijn anoniem geaggregeerde data verzamelen om betere behandeling mogelijk te maken.": "Langfristig anonym aggregierte Daten sammeln, um eine bessere Behandlung zu ermöglichen.",
+"Let op!": "Achtung!",
+"Jicht Tracker is een persoonlijk initiatief en geen medisch hulpmiddel. Raadpleeg altijd uw arts voor medisch advies.": "GichtTracker ist eine persönliche Initiative und kein Medizinprodukt. Konsultiere für medizinischen Rat immer deinen Arzt.",
+"E-mail": "E-Mail",
+"Vragen en feedback": "Fragen und Feedback",
+"Bug melden": "Fehler melden",
+"Iets werkt niet?": "Etwas funktioniert nicht?",
+"Stuur melding": "Meldung senden",
+"Suggestie": "Vorschlag",
+"Idee voor verbetering": "Idee zur Verbesserung",
+"Stuur suggestie": "Vorschlag senden",
+"1. Aanval & Metingen — altijd invullen": "1. Anfall & Messungen — immer erfassen",
+"Registreer elke aanval, pijnmeting of urinezuurwaarde zo snel mogelijk. Hoe preciezer de timing, hoe beter de app patronen herkent. Gebruik de Aanval-knop ook als je alleen signalen voelt — niet alleen bij een volledige aanval.": "Erfasse jeden Anfall, jede Schmerzmessung und jeden Harnsäurewert so schnell wie möglich. Je genauer der Zeitpunkt, desto besser erkennt die App Muster. Nutze die Schaltfläche „Anfall“ auch, wenn du nur Warnsignale spürst — nicht nur bei einem vollständigen Anfall.",
+"2. Invloeden — dagelijks bijhouden": "2. Einflüsse — täglich festhalten",
+"Vul dagelijks in wat je at, dronk, hoe je bewoog en sliep. Juist de combinatie van deze gegevens over meerdere dagen onthult welke triggers bij jou jichtaanvallen uitlokken. Alcohol, bepaalde voeding en te weinig water zijn bekende triggers.": "Trage täglich ein, was du gegessen und getrunken hast, wie du dich bewegt und geschlafen hast. Gerade die Kombination dieser Daten über mehrere Tage zeigt, welche Auslöser bei dir Gichtanfälle hervorrufen. Alkohol, bestimmte Lebensmittel und zu wenig Wasser sind bekannte Auslöser.",
+"3. Waterdoel — stel jezelf een doel": "3. Wasserziel — setze dir ein Ziel",
+"Voldoende drinken is een van de effectiefste manieren om jichtaanvallen te voorkomen. Stel je dagdoel in bovenaan de Drinken-tab en registreer wat je drinkt. Bij 2–3 liter water per dag scheidt het lichaam urinezuur beter uit.": "Ausreichend zu trinken ist eine der wirksamsten Möglichkeiten, Gichtanfälle zu verhindern. Lege dein Tagesziel oben im Tab „Trinken“ fest und erfasse, was du trinkst. Bei 2–3 Litern Wasser pro Tag scheidet der Körper Harnsäure besser aus.",
+"4. Persoonlijk Advies": "4. Persönliche Empfehlung",
+"Na minstens 2 registraties kun je een persoonlijk AI-advies opvragen, maximaal 1 keer per dag. Hoe meer data, hoe scherper het advies. Probeer het eens per week te doen om je voortgang te volgen.": "Nach mindestens 2 Einträgen kannst du eine persönliche KI-Empfehlung anfordern, höchstens einmal pro Tag. Je mehr Daten, desto präziser die Empfehlung. Versuche es einmal pro Woche, um deinen Fortschritt zu verfolgen.",
+"5. Arts of therapeut raadplegen": "5. Arzt oder Therapeut konsultieren",
+"Genereer een rapport vóór een bezoek aan uw arts of therapeut. Het rapport geeft een compleet overzicht van uw klachtenpatroon en kan het gesprek met uw zorgverlener sterk verbeteren.": "Erstelle vor einem Besuch bei deinem Arzt oder Therapeuten einen Bericht. Er gibt einen vollständigen Überblick über dein Beschwerdebild und kann das Gespräch mit deinem Behandler deutlich verbessern.",
+"Jicht is grillig — een aanval kan dagen later komen na de trigger. Alleen dagelijkse registratie legt dat verband bloot.": "Gicht ist launisch — ein Anfall kann Tage nach dem Auslöser kommen. Nur die tägliche Erfassung deckt diesen Zusammenhang auf.",
+"De AI-analyse wordt nauwkeuriger naarmate er meer data is. Eén week data geeft hints, één maand geeft inzicht, drie maanden geeft echt persoonlijk advies.": "Die KI-Analyse wird genauer, je mehr Daten vorliegen. Eine Woche Daten liefert Hinweise, ein Monat Einblicke, drei Monate echte persönliche Empfehlungen.",
+"Als u medicatie gebruikt, helpt dagelijkse registratie om te zien of die effectief is en of uw leefstijl de werking ondersteunt.": "Wenn du Medikamente nimmst, hilft die tägliche Erfassung zu erkennen, ob sie wirken und ob dein Lebensstil die Wirkung unterstützt.",
+"Uw arts of therapeut kan met een goed bijgehouden dagboek veel gerichter adviseren dan op basis van uw herinnering tijdens een consult.": "Dein Arzt oder Therapeut kann mit einem gut geführten Tagebuch viel gezielter beraten als allein anhand deiner Erinnerung im Gespräch.",
+"Gebruikers die dagelijks registreren rapporteren gemiddeld 40% minder aanvallen binnen drie maanden, doordat ze hun persoonlijke triggers leren kennen en vermijden.": "Nutzer, die täglich erfassen, berichten im Schnitt von 40 % weniger Anfällen innerhalb von drei Monaten, weil sie ihre persönlichen Auslöser kennenlernen und vermeiden.",
+"Ondersteuning": "Support",
+"Handleiding": "Anleitung",
+"Contact": "Kontakt",
+"Waarom dagelijks registreren?": "Warum täglich erfassen?",
+"Haal het maximale uit de app door:": "Hole das Maximum aus der App heraus:",
+"Gouden tip": "Goldener Tipp",
+"Maak er een vaste gewoonte van — registreer 's avonds voor het slapen gaan de dag. Dat duurt minder dan 2 minuten en levert waardevolle inzichten op.": "Mach es zur festen Gewohnheit — erfasse den Tag abends vor dem Schlafengehen. Das dauert weniger als 2 Minuten und liefert wertvolle Erkenntnisse.",
+"Versie 1.1 · Maurice Hermans · HOBC BV · 2026": "Version 1.1 · Maurice Hermans · HOBC BV · 2026",
+"Welke gegevens verzamelen wij?": "Welche Daten erheben wir?",
+"Jicht Tracker slaat alle gegevens op die je via registraties ingeeft. Tevens slaan we je naam, profielfoto (optioneel), e-mailadres en abonnementsstatus op.": "GichtTracker speichert alle Daten, die du bei der Erfassung eingibst. Außerdem speichern wir deinen Namen, dein Profilfoto (optional), deine E-Mail-Adresse und deinen Abonnementstatus.",
+"Locatie": "Standort",
+"De app kan optioneel je camera gebruiken voor foto- en barcodeherkenning van voeding en supplementen. Je locatie wordt alleen gebruikt voor het automatisch ophalen van weersgegevens. Deze gegevens worden niet permanent opgeslagen op onze servers.": "Die App kann optional deine Kamera für die Foto- und Barcode-Erkennung von Lebensmitteln und Nahrungsergänzungsmitteln nutzen. Dein Standort wird nur zum automatischen Abrufen von Wetterdaten verwendet. Diese Daten werden nicht dauerhaft auf unseren Servern gespeichert.",
+"AI-verwerking": "KI-Verarbeitung",
+"Bij gebruik van de AI-analyses en het rapport worden je gezondheidsgegevens versleuteld verstuurd naar de Claude API (Anthropic). Deze gegevens worden niet gebruikt voor het trainen van AI-modellen.": "Bei Nutzung der KI-Analysen und des Berichts werden deine Gesundheitsdaten verschlüsselt an die Claude API (Anthropic) gesendet. Diese Daten werden nicht zum Training von KI-Modellen verwendet.",
+"Hoe gebruiken wij jouw gegevens?": "Wie verwenden wir deine Daten?",
+"Jouw gegevens worden uitsluitend gebruikt om de app te laten functioneren en jou gepersonaliseerde analyses te bieden. Persoonlijke gegevens worden nooit verkocht aan derden.": "Deine Daten werden ausschließlich verwendet, damit die App funktioniert und um dir personalisierte Analysen zu bieten. Persönliche Daten werden niemals an Dritte verkauft.",
+"Op termijn kunnen volledig geanonimiseerde en geaggregeerde gegevens worden gebruikt voor wetenschappelijk onderzoek naar jicht. Individuele data is nooit herleidbaar tot jou als persoon.": "Langfristig können vollständig anonymisierte und aggregierte Daten für die wissenschaftliche Gichtforschung verwendet werden. Individuelle Daten sind niemals auf dich als Person zurückführbar.",
+"Betalingen": "Zahlungen",
+"Betalingen verlopen via Stripe. Jicht Tracker slaat geen betaalgegevens op. Stripe verwerkt betalingen conform PCI-DSS normen.": "Zahlungen laufen über Stripe. GichtTracker speichert keine Zahlungsdaten. Stripe verarbeitet Zahlungen gemäß den PCI-DSS-Standards.",
+"Beveiliging": "Sicherheit",
+"Alle gegevens zijn versleuteld opgeslagen via Supabase met Row Level Security. Alleen jij hebt toegang tot je eigen gegevens via jouw persoonlijke inloggegevens.": "Alle Daten werden verschlüsselt über Supabase mit Row Level Security gespeichert. Nur du hast mit deinen persönlichen Zugangsdaten Zugriff auf deine eigenen Daten.",
+"Account verwijderen": "Konto löschen",
+"Je kunt jouw account verwijderen via Profiel → Account verwijderen. Jouw gezondheidsdata wordt dan geanonimiseerd bewaard voor onderzoeksdoeleinden maar is niet meer herleidbaar tot jouw persoon.": "Du kannst dein Konto über Profil → Konto löschen entfernen. Deine Gesundheitsdaten werden dann anonymisiert für Forschungszwecke aufbewahrt, sind aber nicht mehr auf dich zurückführbar.",
+"Jouw rechten (AVG/GDPR)": "Deine Rechte (DSGVO)",
+"Je hebt het recht je gegevens in te zien, te corrigeren of te verwijderen. Neem contact op via support@jichttracker.nl.": "Du hast das Recht, deine Daten einzusehen, zu berichtigen oder zu löschen. Kontaktiere uns unter support@jichttracker.nl.",
+"Cookies": "Cookies",
+"Geen tracking-cookies. Alleen een sessie-token wordt lokaal opgeslagen om je ingelogd te houden.": "Keine Tracking-Cookies. Lediglich ein Sitzungs-Token wird lokal gespeichert, damit du angemeldet bleibst.",
+"Privacybeleid": "Datenschutzerklärung",
+"Laatste update: juli 2026 · Maurice Hermans · HOBC BV": "Letzte Aktualisierung: Juli 2026 · Maurice Hermans · HOBC BV",
+"Weet je het zeker?": "Bist du sicher?",
+"Hiermee worden al je registraties in de app gewist. Dit is niet ongedaan te maken.": "Damit werden alle deine Einträge in der App gelöscht. Das lässt sich nicht rückgängig machen.",
+"Annuleer": "Abbrechen",
+"Verwijderen": "Löschen",
+"Geen medisch hulpmiddel": "Kein Medizinprodukt",
+"Jicht Tracker is een persoonlijke registratie-app en vervangt geen medisch advies, diagnose of behandeling.": "GichtTracker ist eine persönliche Erfassungs-App und ersetzt keine medizinische Beratung, Diagnose oder Behandlung.",
+"Aansprakelijkheid": "Haftung",
+"Maurice Hermans, HOBC BV en Jicht Tracker aanvaarden geen aansprakelijkheid voor beslissingen die je neemt op basis van de informatie, analyses of adviezen in deze app. Raadpleeg altijd je arts of therapeut voor medisch advies.": "Maurice Hermans, HOBC BV und GichtTracker übernehmen keine Haftung für Entscheidungen, die du auf Grundlage der Informationen, Analysen oder Empfehlungen in dieser App triffst. Konsultiere für medizinischen Rat immer deinen Arzt oder Therapeuten.",
+"AI-analyses en therapeutisch rapport": "KI-Analysen und Therapiebericht",
+"De door AI gegenereerde analyses, persoonlijke adviezen en therapeutische rapporten zijn indicatief van aard en gebaseerd op door jou ingevoerde gegevens. Ze zijn niet medisch geverifieerd en mogen niet worden beschouwd als vervanging van professioneel medisch advies.": "Die von der KI erstellten Analysen, persönlichen Empfehlungen und Therapieberichte sind lediglich indikativ und beruhen auf den von dir eingegebenen Daten. Sie sind medizinisch nicht überprüft und dürfen nicht als Ersatz für professionellen medizinischen Rat betrachtet werden.",
+"Foto- en barcodeherkenning": "Foto- und Barcode-Erkennung",
+"De herkenning van voeding en supplementen via camera of barcode is gebaseerd op AI en externe databases. Jicht Tracker garandeert niet de volledigheid of juistheid van deze herkenning.": "Die Erkennung von Lebensmitteln und Nahrungsergänzungsmitteln per Kamera oder Barcode basiert auf KI und externen Datenbanken. GichtTracker garantiert nicht die Vollständigkeit oder Richtigkeit dieser Erkennung.",
+"Weersgegevens": "Wetterdaten",
+"Weersgegevens worden opgehaald via de Open-Meteo API en zijn indicatief. Jicht Tracker is niet verantwoordelijk voor afwijkingen in weersinformatie.": "Wetterdaten werden über die Open-Meteo-API abgerufen und sind unverbindlich. GichtTracker ist nicht für Abweichungen in den Wetterinformationen verantwortlich.",
+"Nauwkeurigheid": "Genauigkeit",
+"De gebruiker is zelf verantwoordelijk voor de juistheid van ingevoerde gegevens. Onjuiste invoer kan leiden tot onjuiste analyses.": "Der Nutzer ist selbst für die Richtigkeit der eingegebenen Daten verantwortlich. Falsche Eingaben können zu falschen Analysen führen.",
+"Urinezuurwaarden": "Harnsäurewerte",
+"De weergave van urinezuurwaarden en streefwaarden is informatief. Raadpleeg altijd je arts voor de interpretatie van bloedwaarden.": "Die Anzeige von Harnsäure- und Zielwerten dient nur der Information. Lass die Interpretation von Blutwerten immer von deinem Arzt vornehmen.",
+"Beschikbaarheid": "Verfügbarkeit",
+"Wij streven naar hoge beschikbaarheid maar garanderen geen ononderbroken toegang tot de app of de AI-functies.": "Wir streben eine hohe Verfügbarkeit an, garantieren aber keinen unterbrechungsfreien Zugang zur App oder zu den KI-Funktionen.",
+"Disclaimer": "Haftungsausschluss",
+"Jicht Tracker · HOBC BV · Maurice Hermans · Alle rechten voorbehouden": "GichtTracker · HOBC BV · Maurice Hermans · Alle Rechte vorbehalten",
+"Grote teen rechts": "Großzeh rechts",
+"Enkel rechts": "Sprunggelenk rechts",
+"Knie rechts": "Knie rechts",
+"Heup rechts": "Hüfte rechts",
+"Grote teen links": "Großzeh links",
+"Enkel links": "Sprunggelenk links",
+"Knie links": "Knie links",
+"Heup links": "Hüfte links",
+"Pols rechts": "Handgelenk rechts",
+"Pols links": "Handgelenk links",
+"Elleboog rechts": "Ellenbogen rechts",
+"Elleboog links": "Ellenbogen links",
+"Tik op een gewricht om het te selecteren": "Tippe auf ein Gelenk, um es auszuwählen",
+"Herkennen...": "Erkenne...",
+"Scan foto": "Foto scannen",
+"Geen barcode herkend": "Kein Barcode erkannt",
+"Onbekend product": "Unbekanntes Produkt",
+"Product niet gevonden": "Produkt nicht gefunden",
+"Scan mislukt": "Scan fehlgeschlagen",
+"Zoeken...": "Suche...",
+"Scan barcode": "Barcode scannen",
+"Upgrade naar Pro": "Upgrade auf Pro",
+"Jicht Tracker Pro": "GichtTracker Pro",
+"Krijg toegang tot alle registratiemodules: beweging, slaap, weer, urinezuur, medicatie en supplementen.": "Erhalte Zugang zu allen Erfassungsmodulen: Bewegung, Schlaf, Wetter, Harnsäure, Medikamente und Nahrungsergänzung.",
+"Drinken registreren": "Trinken erfassen",
+"Beweging bijhouden": "Bewegung festhalten",
+"Slaap monitoren": "Schlaf überwachen",
+"Medicatie logging": "Medikamentenprotokoll",
+"Supplementen tracking": "Nahrungsergänzung verfolgen",
+"Maandelijks": "Monatlich",
+"Maandelijks opzegbaar": "Monatlich kündbar",
+"/maand": "/Monat",
+"Kies maandelijks →": "Monatlich wählen →",
+"BESTE DEAL": "BESTES ANGEBOT",
+"Jaarlijks": "Jährlich",
+"2 maanden gratis": "2 Monate gratis",
+"/jaar": "/Jahr",
+"Kies jaarlijks →": "Jährlich wählen →",
+"Betaling via iDEAL, creditcard of SEPA · Veilig via Stripe · Op elk moment opzegbaar": "Zahlung per iDEAL, Kreditkarte oder SEPA · Sicher über Stripe · Jederzeit kündbar",
+"Wachtwoorden komen niet overeen.": "Passwörter stimmen nicht überein.",
+"Wachtwoorden komen niet overeen": "Passwörter stimmen nicht überein",
+"Wachtwoord moet minimaal 6 tekens zijn.": "Das Passwort muss mindestens 6 Zeichen lang sein.",
+"Account aangemaakt! Je kunt nu inloggen.": "Konto erstellt! Du kannst dich jetzt anmelden.",
+"Registreren mislukt": "Registrierung fehlgeschlagen",
+"Inloggen mislukt — controleer je gegevens": "Anmeldung fehlgeschlagen — überprüfe deine Angaben",
+"Jicht": "Gicht",
+"Begrijp je jicht. Verminder je aanvallen.": "Verstehe deine Gicht. Reduziere deine Anfälle.",
+"een product van": "ein Produkt von",
+"Inloggen": "Anmelden",
+"Registreren": "Registrieren",
+"E-mailadres": "E-Mail-Adresse",
+"jouw@email.nl": "deine@email.de",
+"Wachtwoord": "Passwort",
+"Minimaal 6 tekens": "Mindestens 6 Zeichen",
+"Wachtwoord herhalen": "Passwort wiederholen",
+"Herhaal wachtwoord": "Passwort wiederholen",
+"Even geduld...": "Einen Moment...",
+"Inloggen →": "Anmelden →",
+"Account aanmaken →": "Konto erstellen →",
+"Vul eerst je e-mailadres in.": "Gib zuerst deine E-Mail-Adresse ein.",
+"Fout bij versturen herstelmail. Controleer je e-mailadres.": "Fehler beim Senden der E-Mail. Überprüfe deine E-Mail-Adresse.",
+"Wachtwoord vergeten?": "Passwort vergessen?",
+"Wil je eerst de app bekijken?": "Möchtest du dir die App zuerst ansehen?",
+"Bekijk demo (zonder opslag)": "Demo ansehen (ohne Speicherung)",
+"Geen resultaat.": "Kein Ergebnis.",
+"Fout bij genereren.": "Fehler beim Generieren.",
+"Helder": "Klar",
+"Bewolkt": "Bewölkt",
+"Mist": "Nebel",
+"Regen": "Regen",
+"Sneeuw": "Schnee",
+"Buien": "Schauer",
+"Onweer": "Gewitter",
+"Wachtwoord gewijzigd!": "Passwort geändert!",
+"Mislukt": "Fehlgeschlagen",
+"Demo-modus: account verwijderen niet beschikbaar.": "Demo-Modus: Konto löschen nicht verfügbar.",
+"Opslaan...": "Speichern...",
+"Opgeslagen": "Gespeichert",
+"Rapport versturen": "Bericht senden",
+"Profiel": "Profil",
+"Privacy": "Datenschutz",
+"Terug naar login": "Zurück zur Anmeldung",
+"Uitloggen": "Abmelden",
+"Menu": "Menü",
+"Demo-modus — wijzigingen worden niet opgeslagen": "Demo-Modus — Änderungen werden nicht gespeichert",
+"Eindelijk meer controle over je jicht": "Endlich mehr Kontrolle über deine Gicht",
+"Goedemorgen": "Guten Morgen",
+"Dagen actief": "Aktive Tage",
+"Hoofdmenu": "Hauptmenü",
+"Profiel opgeslagen!": "Profil gespeichert!",
+"Foto kiezen": "Foto auswählen",
+"Naam": "Name",
+"Jouw naam": "Dein Name",
+"Je e-mailadres is niet aanpasbaar via de app.": "Deine E-Mail-Adresse kann in der App nicht geändert werden.",
+"Wachtwoord wijzigen": "Passwort ändern",
+"Nieuw wachtwoord": "Neues Passwort",
+"Herhaal nieuw wachtwoord": "Neues Passwort wiederholen",
+"Bezig...": "Bitte warten...",
+"Je account wordt verwijderd en je gegevens geanonimiseerd. Je gezondheidsdata blijft bewaard voor onderzoek maar is niet meer aan jou gekoppeld.": "Dein Konto wird gelöscht und deine Daten werden anonymisiert. Deine Gesundheitsdaten bleiben für die Forschung erhalten, sind aber nicht mehr mit dir verknüpft.",
+"Dit kan niet ongedaan worden gemaakt. Je kunt daarna niet meer inloggen.": "Das lässt sich nicht rückgängig machen. Danach kannst du dich nicht mehr anmelden.",
+"Verwijder account": "Konto löschen",
+"De AI genereert een beknopt rapport. Daarna kun je het e-mailen via je": "Die KI erstellt einen kurzen Bericht. Danach kannst du ihn über deine",
+"standaard mail-app": "Standard-Mail-App",
+"Rapport genereren...": "Bericht wird erstellt...",
+"Rapport genereren door AI": "Bericht per KI erstellen",
+"Voeg eerst registraties toe.": "Füge zuerst Einträge hinzu.",
+"Opnieuw genereren": "Neu erstellen",
+"Verstuur naar:": "Senden an:",
+"ontvanger@email.nl": "empfaenger@email.de",
+"Openen in mail-app": "In Mail-App öffnen",
+"Deze maand": "Dieser Monat",
+"Aanvallen": "Anfälle",
+"Gem. pijn": "Ø Schmerz",
+"Registraties": "Einträge",
+"Water vandaag": "Wasser heute",
+"L van": "L von",
+"L doel —": "L Ziel —",
+"Registreer vandaag": "Heute erfassen",
+"Persoonlijk advies klaar": "Persönliche Empfehlung bereit",
+"registraties als basis": "Einträge als Grundlage",
+"Bekijk": "Ansehen",
+"Datum": "Datum",
+"Aanval & Metingen": "Anfall & Messungen",
+"Invloeden": "Einflüsse",
+"Voeding registreren": "Ernährung erfassen",
+"Wat heb je gegeten?": "Was hast du gegessen?",
+"+ Toevoegen": "+ Hinzufügen",
+"Dagdoel:": "Tagesziel:",
+"ml dagdoel": "ml Tagesziel",
+"Dagdoel behaald!": "Tagesziel erreicht!",
+"Bijv. bier, rode wijn...": "Z. B. Bier, Rotwein...",
+"Omschrijving": "Beschreibung",
+"+ Registreren": "+ Erfassen",
+"Beweging registreren": "Bewegung erfassen",
+"sessie": "Einheit",
+"sessies": "Einheiten",
+"min totaal": "Min. gesamt",
+"Tijdstip": "Uhrzeit",
+"Minuten": "Minuten",
+"+ Sessie toevoegen": "+ Einheit hinzufügen",
+"Activiteit": "Aktivität",
+"Slaap registreren": "Schlaf erfassen",
+"Gisteravond naar bed": "Gestern Abend ins Bett",
+"Vanochtend wakker": "Heute Morgen aufgewacht",
+"Goede nachtrust": "Guter Schlaf",
+"Redelijke nachtrust": "Akzeptabler Schlaf",
+"Te weinig slaap": "Zu wenig Schlaf",
+"Vul beide tijden in om de slaapduur te berekenen": "Gib beide Zeiten ein, um die Schlafdauer zu berechnen",
+"Slaapduur wordt automatisch berekend en opgeslagen": "Die Schlafdauer wird automatisch berechnet und gespeichert",
+"Pijn registreren": "Schmerz erfassen",
+"Tijdstip wordt automatisch opgeslagen. Meerdere metingen per dag mogelijk.": "Die Uhrzeit wird automatisch gespeichert. Mehrere Messungen pro Tag sind möglich.",
+"Ervaar je op dit moment pijn?": "Hast du gerade Schmerzen?",
+"Ja, pijn": "Ja, Schmerzen",
+"Geen pijn": "Keine Schmerzen",
+"+ Pijnmeting opslaan (": "+ Schmerzmessung speichern (",
+"Log vandaag:": "Protokoll heute:",
+"Aanval registreren": "Anfall erfassen",
+"registratie": "Eintrag",
+"registraties": "Einträge",
+"vandaag": "heute",
+"Situatie op dit moment:": "Aktuelle Situation:",
+"Waarschuwingssignalen": "Warnsignale",
+"Mogelijk aanval op komst": "Möglicherweise kündigt sich ein Anfall an",
+"Actieve aanval": "Akuter Anfall",
+"Nu een actieve aanval": "Gerade ein akuter Anfall",
+"Aanval neemt af": "Anfall klingt ab",
+"Ergste pijn voorbij": "Schlimmste Schmerzen vorbei",
+"Aanval voorbij": "Anfall vorbei",
+"Geen klachten meer": "Keine Beschwerden mehr",
+"Symptomen (optioneel)": "Symptome (optional)",
+"Aangetast gewricht (tik om te selecteren)": "Betroffenes Gelenk (zum Auswählen tippen)",
+"+ Registratie opslaan": "+ Eintrag speichern",
+"Medicatie vandaag": "Medikamente heute",
+"inname": "Einnahme",
+"innames": "Einnahmen",
+"Type": "Typ",
+"Preventief": "Vorbeugend",
+"Aanval/pijn": "Anfall/Schmerz",
+"Of typ een ander medicijn...": "Oder gib ein anderes Medikament ein...",
+"+ Inname registreren": "+ Einnahme erfassen",
+"Supplementen vandaag": "Nahrungsergänzung heute",
+"Of typ een supplement...": "Oder gib ein Supplement ein...",
+"Urinezuurwaarde": "Harnsäurewert",
+"meting": "Messung",
+"metingen": "Messungen",
+"Voer de waarde in na een bloedprikbeurt. Streefwaarde bij jicht: onder 0.36 mmol/L (6 mg/dL).": "Gib den Wert nach einer Blutabnahme ein. Zielwert bei Gicht: unter 0,36 mmol/L (6 mg/dL).",
+"bijv. 0.42": "z. B. 0.42",
+"bijv. 7.2": "z. B. 7.2",
+"Onder streefwaarde": "Unter dem Zielwert",
+"Verhoogd": "Erhöht",
+"Fors verhoogd": "Stark erhöht",
+"+ Meting opslaan (": "+ Messung speichern (",
+"Hoog": "Hoch",
+"Weer registreren": "Wetter erfassen",
+"Registreer het huidige weer automatisch via je locatie. Weersomstandigheden kunnen een trigger zijn voor jichtaanvallen.": "Erfasse das aktuelle Wetter automatisch über deinen Standort. Wetterbedingungen können ein Auslöser für Gichtanfälle sein.",
+"Locatie ophalen...": "Standort wird abgerufen...",
+"Registreer huidig weer": "Aktuelles Wetter erfassen",
+"% vochtig · wind": "% Luftfeuchtigkeit · Wind",
+"km/u": "km/h",
+"Data wordt automatisch opgeslagen": "Daten werden automatisch gespeichert",
+"Een overzicht van al je dagregistraties. Tik op een dag voor alle details.": "Eine Übersicht aller deiner Tageseinträge. Tippe auf einen Tag für alle Details.",
+"Nog geen registraties. Start met de Registreer tab!": "Noch keine Einträge. Starte mit dem Tab „Erfassen“!",
+"AANVAL": "ANFALL",
+"Beweging": "Bewegung",
+"Meds": "Medikamente",
+"Supplementen": "Nahrungsergänzung",
+"Maandelijkse samenvattingen en grafieken van je aanvallen, pijnscores en slaappatroon.": "Monatliche Zusammenfassungen und Diagramme zu deinen Anfällen, Schmerzwerten und deinem Schlafmuster.",
+"Voeg registraties toe om trends te zien.": "Füge Einträge hinzu, um Trends zu sehen.",
+"Maandoverzicht": "Monatsübersicht",
+"Maand": "Monat",
+"Gem. slaap": "Ø Schlaf",
+"Aanvallen per maand": "Anfälle pro Monat",
+"Gem. pijn per maand": "Ø Schmerz pro Monat",
+"Gem. urinezuur per maand (mmol/L)": "Ø Harnsäure pro Monat (mmol/L)",
+"Streefwaarde: onder 0.36 mmol/L": "Zielwert: unter 0,36 mmol/L",
+"Doel: 0.36": "Ziel: 0.36",
+"Totaal aanvallen": "Anfälle gesamt",
+"Gem. pijnscore": "Ø Schmerzwert",
+"Maanden gevolgd": "Monate erfasst",
+"Persoonlijk Jicht Advies": "Persönliche Gicht-Empfehlung",
+"Analyseert jouw registraties en geeft persoonlijk advies over patronen, triggers en verbeterpunten.": "Analysiert deine Einträge und gibt persönliche Empfehlungen zu Mustern, Auslösern und Verbesserungen.",
+"dag(en) ·": "Tag(e) ·",
+"vaste medicatie(s)": "feste Medikament(e)",
+"Analyseren...": "Analysiere...",
+"Genereer mijn persoonlijk advies": "Meine persönliche Empfehlung erstellen",
+"Minimaal 2 registraties nodig.": "Mindestens 2 Einträge nötig.",
+"Dagelijkse registratie": "Tägliche Erfassung",
+"Taal / Sprache": "Sprache / Taal",
+"geen": "keine",
+"min": "Min."
+};
+const MONTH_DE={Jan:"Jan",Feb:"Feb",Mrt:"Mär",Apr:"Apr",Mei:"Mai",Jun:"Jun",Jul:"Jul",Aug:"Aug",Sep:"Sep",Okt:"Okt",Nov:"Nov",Dec:"Dez"};
+const I18N_RULES=[
+  [/^(Jan|Feb|Mrt|Apr|Mei|Jun|Jul|Aug|Sep|Okt|Nov|Dec)( \d{2})?$/,m=>MONTH_DE[m[1]]+(m[2]||"")],
+  [/^(\d+)u(?: (\d+)min)?$/,m=>m[1]+" Std."+(m[2]?" "+m[2]+" Min.":"")],
+  [/^([\d.,]+)u$/,m=>m[1]+" Std."],
+  [/^(\d+)min$/,m=>m[1]+" Min."],
+  [/^(\d{1,2}:\d{2}) (actief|voorbij|afnemend|signalen)$/,m=>m[1]+" "+({actief:"akut",voorbij:"vorbei",afnemend:"klingt ab",signalen:"Warnsignale"})[m[2]]],
+  [/^⚠ Je hebt het dagelijkse maximum van (\d+) (AI-analyse|foto scan)(s?) bereikt\. Probeer het morgen weer\.$/,m=>"⚠ Du hast das Tageslimit von "+m[1]+" "+(m[2]==="AI-analyse"?"KI-Analyse":"Foto-Scan")+(m[3]?(m[2]==="AI-analyse"?"n":"s"):"")+" erreicht. Versuche es morgen wieder."],
+  [/^Herstelmail verstuurd naar (.+)\. Controleer ook je spam\.$/,m=>"Wiederherstellungs-E-Mail an "+m[1]+" gesendet. Prüfe auch deinen Spam-Ordner."],
+  [/^Kan weersdata niet ophalen: ([\s\S]*)$/,m=>"Wetterdaten konnten nicht abgerufen werden: "+m[1]],
+  [/^Fout bij opslaan: ([\s\S]*)$/,m=>"Fehler beim Speichern: "+m[1]],
+  [/^Fout: ([\s\S]*)$/,m=>"Fehler: "+m[1]],
+];
+function trPiece(p){
+  if(typeof DE[p]==="string"&&Object.prototype.hasOwnProperty.call(DE,p))return DE[p];
+  for(const [re,fn] of I18N_RULES){const m=p.match(re);if(m)return fn(m);}
+  return p;
+}
+function trCore(core){
+  const whole=trPiece(core);
+  if(whole!==core)return whole;
+  const parts=core.split(/(, | · |: )/);
+  if(parts.length>1){let ch=false;const out=parts.map((x,i)=>{if(i%2===1)return x;const r=trPiece(x);if(r!==x)ch=true;return r;});if(ch)return out.join("");}
+  return core;
+}
+function tt(str){
+  if(LANG!=="de"||typeof str!=="string")return str;
+  const m=str.match(/^(\s*)([\s\S]*?)(\s*)$/);
+  if(!m[2])return str;
+  const core=m[2].replace(/\s+/g," ");
+  const out=trCore(core);
+  return out===core?str:m[1]+out+m[3];
+}
+const dialog=msg=>window.alert(tt(msg));
+const TR_ATTRS=["placeholder","title","aria-label","alt"];
+const nodeRec=new WeakMap(),elRec=new WeakMap();
+function trNode(n){
+  const p=n.parentNode;if(!p)return;
+  const tag=p.nodeName;if(tag==="SCRIPT"||tag==="STYLE"||tag==="TEXTAREA")return;
+  let rec=nodeRec.get(n);
+  if(!rec||n.nodeValue!==rec.out)rec={src:n.nodeValue,out:n.nodeValue};
+  const out=LANG==="de"?tt(rec.src):rec.src;
+  rec.out=out;nodeRec.set(n,rec);
+  if(n.nodeValue!==out)n.nodeValue=out;
+}
+function trEl(el){
+  if(!el||el.nodeType!==1)return;
+  for(const a of TR_ATTRS){
+    if(!el.hasAttribute(a))continue;
+    let m=elRec.get(el);if(!m){m={};elRec.set(el,m);}
+    const cur=el.getAttribute(a);
+    let rec=m[a];if(!rec||cur!==rec.out)rec={src:cur,out:cur};
+    const out=LANG==="de"?tt(rec.src):rec.src;
+    rec.out=out;m[a]=rec;
+    if(cur!==out)el.setAttribute(a,out);
+  }
+}
+function trTree(root){
+  if(!root)return;
+  if(root.nodeType===3){trNode(root);return;}
+  if(root.nodeType!==1)return;
+  trEl(root);
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT);
+  let n;while((n=w.nextNode())){if(n.nodeType===3)trNode(n);else trEl(n);}
+}
+function startI18nObserver(){
+  const mo=new MutationObserver(ms=>{
+    if(LANG!=="de")return;
+    for(const m of ms){
+      if(m.type==="characterData")trNode(m.target);
+      else if(m.type==="attributes")trEl(m.target);
+      else m.addedNodes.forEach(trTree);
+    }
+  });
+  mo.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:TR_ATTRS});
+  return mo;
+}
+function Flag({code,w=34}){
+  const h=Math.round(w*2/3);
+  return(
+    <svg width={w} height={h} viewBox="0 0 30 20" aria-hidden="true" style={{display:"block",borderRadius:5}}>
+      {code==="nl"?<><rect width="30" height="7" y="0" fill="#AE1C28"/><rect width="30" height="6.5" y="6.5" fill="#FFFFFF"/><rect width="30" height="7" y="13" fill="#21468B"/></>
+      :<><rect width="30" height="7" y="0" fill="#111111"/><rect width="30" height="6.5" y="6.5" fill="#DD0000"/><rect width="30" height="7" y="13" fill="#FFCE00"/></>}
+    </svg>
+  );
+}
+function LangSwitch({lang,setLang}){
+  return(
+    <div style={{display:"inline-flex",gap:10,alignItems:"center"}}>
+      {[["nl","Nederlands"],["de","Deutsch"]].map(([c,lbl])=>{const on=lang===c;return(
+        <button key={c} type="button" onClick={e=>{e.stopPropagation();setLang(c);}} aria-label={lbl} aria-pressed={on} title={lbl} style={{border:"none",background:"transparent",padding:3,cursor:"pointer",borderRadius:9,outline:on?"2px solid "+C.primary:"2px solid transparent",outlineOffset:1,opacity:on?1:0.55,transition:"opacity 0.15s"}}>
+          <Flag code={c}/>
+        </button>);})}
+    </div>
+  );
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function Card({title,children,accentColor,icon}){ const ac=accentColor||C.primary; return (
@@ -176,7 +685,7 @@ function SupportModal({show,onClose}){
     {icon:"ti-alert-triangle",kleur:C.danger,titel:"1. Aanval & Metingen — altijd invullen",tekst:"Registreer elke aanval, pijnmeting of urinezuurwaarde zo snel mogelijk. Hoe preciezer de timing, hoe beter de app patronen herkent. Gebruik de Aanval-knop ook als je alleen signalen voelt — niet alleen bij een volledige aanval."},
     {icon:"ti-salad",kleur:C.primary,titel:"2. Invloeden — dagelijks bijhouden",tekst:"Vul dagelijks in wat je at, dronk, hoe je bewoog en sliep. Juist de combinatie van deze gegevens over meerdere dagen onthult welke triggers bij jou jichtaanvallen uitlokken. Alcohol, bepaalde voeding en te weinig water zijn bekende triggers."},
     {icon:"ti-droplets",kleur:C.primary,titel:"3. Waterdoel — stel jezelf een doel",tekst:"Voldoende drinken is een van de effectiefste manieren om jichtaanvallen te voorkomen. Stel je dagdoel in bovenaan de Drinken-tab en registreer wat je drinkt. Bij 2–3 liter water per dag scheidt het lichaam urinezuur beter uit."},
-    {icon:"ti-brain",kleur:"#7C3AED",titel:"4. Persoonlijk Advies",tekst:"Na minstens 5 registraties kun je een persoonlijk AI-advies opvragen. Hoe meer data, hoe scherper het advies. Probeer het eens per week te doen om je voortgang te volgen."},
+    {icon:"ti-brain",kleur:"#7C3AED",titel:"4. Persoonlijk Advies",tekst:"Na minstens 2 registraties kun je een persoonlijk AI-advies opvragen, maximaal 1 keer per dag. Hoe meer data, hoe scherper het advies. Probeer het eens per week te doen om je voortgang te volgen."},
     {icon:"ti-stethoscope",kleur:C.success,titel:"5. Arts of therapeut raadplegen",tekst:"Genereer een rapport vóór een bezoek aan uw arts of therapeut. Het rapport geeft een compleet overzicht van uw klachtenpatroon en kan het gesprek met uw zorgverlener sterk verbeteren."},
   ];
   const waarom=[
@@ -247,7 +756,7 @@ function SupportModal({show,onClose}){
 
 function PrivacyModal({show,onClose,entries,wisAlleData,wisConf,setWisConf}){ const sections=[
     {t:"Welke gegevens verzamelen wij?",b:"Jicht Tracker slaat alle gegevens op die je via registraties ingeeft. Tevens slaan we je naam, profielfoto (optioneel), e-mailadres en abonnementsstatus op."},
-    {t:"Camera en locatie",b:"De app kan optioneel je camera gebruiken voor foto- en barcodeherkenning van voeding en supplementen. Je locatie wordt alleen gebruikt voor het automatisch ophalen van weersgegevens. Deze gegevens worden niet permanent opgeslagen op onze servers."},
+    {t:"Locatie",b:"Je locatie wordt alleen gebruikt voor het automatisch ophalen van weersgegevens. Deze gegevens worden niet permanent opgeslagen op onze servers."},
     {t:"AI-verwerking",b:"Bij gebruik van de AI-analyses en het rapport worden je gezondheidsgegevens versleuteld verstuurd naar de Claude API (Anthropic). Deze gegevens worden niet gebruikt voor het trainen van AI-modellen."},
     {t:"Hoe gebruiken wij jouw gegevens?",b:"Jouw gegevens worden uitsluitend gebruikt om de app te laten functioneren en jou gepersonaliseerde analyses te bieden. Persoonlijke gegevens worden nooit verkocht aan derden."},
     {t:"Anoniem onderzoek",b:"Op termijn kunnen volledig geanonimiseerde en geaggregeerde gegevens worden gebruikt voor wetenschappelijk onderzoek naar jicht. Individuele data is nooit herleidbaar tot jou als persoon."},
@@ -288,7 +797,6 @@ function DisclaimerModal({show,onClose}){ const sections=[
     {t:"Geen medisch hulpmiddel",b:"Jicht Tracker is een persoonlijke registratie-app en vervangt geen medisch advies, diagnose of behandeling."},
     {t:"Aansprakelijkheid",b:"Maurice Hermans, HOBC BV en Jicht Tracker aanvaarden geen aansprakelijkheid voor beslissingen die je neemt op basis van de informatie, analyses of adviezen in deze app. Raadpleeg altijd je arts of therapeut voor medisch advies."},
     {t:"AI-analyses en therapeutisch rapport",b:"De door AI gegenereerde analyses, persoonlijke adviezen en therapeutische rapporten zijn indicatief van aard en gebaseerd op door jou ingevoerde gegevens. Ze zijn niet medisch geverifieerd en mogen niet worden beschouwd als vervanging van professioneel medisch advies."},
-    {t:"Foto- en barcodeherkenning",b:"De herkenning van voeding en supplementen via camera of barcode is gebaseerd op AI en externe databases. Jicht Tracker garandeert niet de volledigheid of juistheid van deze herkenning."},
     {t:"Weersgegevens",b:"Weersgegevens worden opgehaald via de Open-Meteo API en zijn indicatief. Jicht Tracker is niet verantwoordelijk voor afwijkingen in weersinformatie."},
     {t:"Nauwkeurigheid",b:"De gebruiker is zelf verantwoordelijk voor de juistheid van ingevoerde gegevens. Onjuiste invoer kan leiden tot onjuiste analyses."},
     {t:"Urinezuurwaarden",b:"De weergave van urinezuurwaarden en streefwaarden is informatief. Raadpleeg altijd je arts voor de interpretatie van bloedwaarden."},
@@ -324,7 +832,7 @@ function TherapeutModal({show,onClose,entries,profile,genRapport}){ const [email
   function verstuur(){ if(!email||!rapport)return;
     const naam=profile.name||"de patient";
     const intro="Geachte therapeut,\n\nHierbij het therapeutisch rapport van "+naam+", op basis van "+entries.length+" dagregistraties in Jicht Tracker.\n\n";
-    const footer="\n\n---\nGegenereerd door Jicht Tracker op "+new Date().toLocaleDateString("nl-NL")+"\nDit rapport vervangt geen professionele diagnose.";
+    const footer="\n\n---\nGegenereerd door Jicht Tracker op "+new Date().toLocaleDateString(LOC())+"\nDit rapport vervangt geen professionele diagnose.";
     window.location.href="mailto:"+email+"?subject="+encodeURIComponent("Jicht Tracker – Therapeutisch rapport")+"&body="+encodeURIComponent(intro+rapport+footer);
   }
 
@@ -399,10 +907,12 @@ function GewrichtsKaart({sel, onToggle}) {
         <path d="M147,65 Q155,70 164,72" stroke={SK} strokeWidth="1" fill="none" opacity="0.5"/>
 
         {GEWRICHTEN.map(g=>{const on=sel.includes(g.id),r=g.r||9;return(<g key={g.id} onClick={()=>onToggle(g.id)} style={{cursor:"pointer"}}><circle cx={g.cx} cy={g.cy} r={r+4} fill="transparent"/><circle cx={g.cx} cy={g.cy} r={r} fill={on?C.danger:"white"} stroke={on?C.danger:C.primary} strokeWidth={on?2.5:1.5}/>{on&&<text x={g.cx} y={g.cy+1} textAnchor="middle" dominantBaseline="middle" fontSize="8" fill="white" fontWeight="bold">!</text>}{!on&&<circle cx={g.cx} cy={g.cy} r={3} fill={C.primary} opacity="0.6"/>}</g>);})}
-        {sel.map(id=>{const g=GEWRICHTEN.find(x=>x.id===id);if(!g)return null;const isL=g.cx>130;return(<text key={id+"_l"} x={isL?g.cx+(g.r||9)+3:g.cx-(g.r||9)-3} y={g.cy} textAnchor={isL?"start":"end"} dominantBaseline="middle" fontSize="7" fill={C.danger} fontWeight="600">{g.label.replace(" rechts","R").replace(" links","L")}</text>);})}
+        {sel.map(id=>{const g=GEWRICHTEN.find(x=>x.id===id);if(!g)return null;const isL=g.cx>130;return(<text key={id+"_l"} x={isL?g.cx+(g.r||9)+3:g.cx-(g.r||9)-3} y={g.cy} textAnchor={isL?"start":"end"} dominantBaseline="middle" fontSize="7" fill={C.danger} fontWeight="600">{tt(g.label).replace(" rechts","R").replace(" links","L")}</text>);})}
       </svg><div style={{fontSize:12,textAlign:"center",marginTop:6,color:sel.length>0?C.danger:C.muted,fontWeight:sel.length>0?600:400}}>{sel.length>0?sel.map(id=>GEWRICHTEN.find(g=>g.id===id)?.label).filter(Boolean).join(", "):"Tik op een gewricht om het te selecteren"}</div></div>);}
 
 // ── Scan componenten ────────────────────────────────────────────────────────
+// Foto- en barcodescan staan uit (te duur aan de achterkant). Zet SCAN_AAN op true om terug te zetten.
+const SCAN_AAN=false;
 function FotoScan({onResult}){
   const[loading,setLoading]=useState(false);
   const ref=useRef(null);
@@ -421,6 +931,7 @@ function FotoScan({onResult}){
     };
     reader.readAsDataURL(file);
   }
+  if(!SCAN_AAN)return null;
   return(<div style={{display:"inline"}}><input ref={ref} type="file" accept="image/*" capture="environment" onChange={handle} style={{display:"none"}}/><button onClick={()=>ref.current?.click()} disabled={loading} style={{padding:"6px 12px",borderRadius:8,border:"1.5px solid "+C.primary,background:C.pL,color:C.primary,fontSize:12,fontWeight:600,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:5}}>{loading?"Herkennen...":"Scan foto"}</button></div>);
 }
 
@@ -447,6 +958,7 @@ function BarcodeScan({onResult}){
     };
     reader.readAsDataURL(file);
   }
+  if(!SCAN_AAN)return null;
   return(<div style={{display:"inline"}}><input ref={ref} type="file" accept="image/*" capture="environment" onChange={handle} style={{display:"none"}}/><button onClick={()=>ref.current?.click()} disabled={loading} style={{padding:"6px 12px",borderRadius:8,border:"1.5px solid "+C.accent,background:C.aL,color:C.aT,fontSize:12,fontWeight:600,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:5}}>{loading?"Zoeken...":"Scan barcode"}</button></div>);
 }
 
@@ -457,10 +969,10 @@ function UpgradeModal({show, onClose}) {
       <div style={{textAlign:"center",marginBottom:20}}>
         <div style={{fontSize:40,marginBottom:8}}><i className="ti ti-heartbeat" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></div>
         <div style={{fontWeight:700,fontSize:16,color:C.text,marginBottom:6}}>Jicht Tracker Pro</div>
-        <div style={{fontSize:13,color:C.muted,lineHeight:1.7}}>Krijg toegang tot alle 9 registratie-modules en onbeperkte AI-analyses.</div>
+        <div style={{fontSize:13,color:C.muted,lineHeight:1.7}}>Krijg toegang tot alle registratiemodules: beweging, slaap, weer, urinezuur, medicatie en supplementen.</div>
       </div>
       <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
-        {["Drinken registreren","Beweging bijhouden","Slaap monitoren","Medicatie logging","Supplementen tracking","Urinezuurwaarden"].map(f=>(
+        {["Beweging bijhouden","Slaap monitoren","Weer registreren","Urinezuurwaarden","Medicatie logging","Supplementen tracking"].map(f=>(
           <div key={f} style={{display:"flex",alignItems:"center",gap:8,fontSize:13,color:C.text}}>
             <span style={{color:C.success,fontWeight:700}}><i className="ti ti-check" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></span>{f}
           </div>
@@ -495,7 +1007,7 @@ function UpgradeModal({show, onClose}) {
 }
 
 // ── Login ─────────────────────────────────────────────────────────────────────
-function LoginScreen({onLogin}){
+function LoginScreen({onLogin,lang,setLang}){
   const[mode,setMode]=useState("login");
   const[email,setEmail]=useState("");
   const[pw,setPw]=useState("");
@@ -536,6 +1048,7 @@ function LoginScreen({onLogin}){
           <div style={{width:56,height:56,borderRadius:18,background:C.primary,display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:10,boxShadow:"0 6px 16px rgba(14,124,134,0.28)"}}><i className="ti ti-heartbeat" style={{fontSize:30,color:"#fff"}} aria-hidden="true"></i></div>
           <h1 style={{margin:0,fontSize:26,fontWeight:700,color:C.text,letterSpacing:"-0.4px"}}>Jicht<span style={{color:C.primary}}>Tracker</span></h1>
           <p style={{color:C.text,fontSize:14,marginTop:6,fontWeight:500}}>Begrijp je jicht. Verminder je aanvallen.</p>
+          <div style={{marginTop:12}}><LangSwitch lang={lang} setLang={setLang}/></div>
           <p style={{color:C.muted,fontSize:13,marginTop:4}}>een product van <strong>HOBC BV</strong></p>
         </div>
         <div style={{background:C.card,borderRadius:24,padding:28,border:"1px solid "+C.border,boxShadow:"0 10px 32px rgba(18,48,61,0.08)"}}>
@@ -571,10 +1084,10 @@ function LoginScreen({onLogin}){
           {mode==="login"&&(
             <div style={{textAlign:"center",marginTop:10}}>
               <button onClick={async()=>{
-                if(!email){alert("Vul eerst je e-mailadres in.");return;}
+                if(!email){dialog("Vul eerst je e-mailadres in.");return;}
                 const r=await fetch(SU+"/auth/v1/recover",{method:"POST",headers:{"Content-Type":"application/json","apikey":SK},body:JSON.stringify({email})});
-                if(r.ok){alert("Herstelmail verstuurd naar "+email+". Controleer ook je spam.");}
-                else{alert("Fout bij versturen herstelmail. Controleer je e-mailadres.");}
+                if(r.ok){dialog("Herstelmail verstuurd naar "+email+". Controleer ook je spam.");}
+                else{dialog("Fout bij versturen herstelmail. Controleer je e-mailadres.");}
               }} style={{background:"none",border:"none",color:C.primary,fontSize:13,cursor:"pointer",textDecoration:"underline"}}>
                 Wachtwoord vergeten?
               </button>
@@ -599,13 +1112,25 @@ export default function App(){ const[session,setSession]=useState(null);
   useEffect(()=>{ try{const s=localStorage.getItem("jicht_session");if(s)setSession(JSON.parse(s));}catch{}
     setReady(true);
   },[]);
+  const[lang,setLangState]=useState(()=>{try{return localStorage.getItem("jicht_lang")==="de"?"de":"nl";}catch{return"nl";}});
+  LANG=lang;
+  const setLang=l=>{try{localStorage.setItem("jicht_lang",l);}catch{}setLangState(l);};
+  useLayoutEffect(()=>{const mo=startI18nObserver();return()=>mo.disconnect();},[]);
+  useLayoutEffect(()=>{
+    LANG=lang;
+    document.documentElement.lang=lang;
+    document.title=lang==="de"?"GichtTracker — Verstehe deine Gicht, reduziere deine Anfälle":"Jicht Tracker — Begrijp je jicht, verminder je aanvallen";
+    const md=document.querySelector('meta[name="description"]');
+    if(md)md.setAttribute("content",lang==="de"?"GichtTracker hilft dir, täglich zu erfassen, was du isst, trinkst und wie du dich bewegst — damit du deine persönlichen Auslöser entdeckst und Anfälle reduzierst.":"Jicht Tracker helpt je dagelijks registreren wat je eet, drinkt en beweegt — zodat je jouw persoonlijke triggers ontdekt en aanvallen vermindert.");
+    trTree(document.body);
+  },[lang,session,ready]);
   if(!ready)return <Spinner/>;
-  if(!session)return <LoginScreen onLogin={s=>{localStorage.setItem("jicht_session",JSON.stringify(s));setSession(s);}}/>;
-  return <JichtTracker session={session} onLogout={()=>{localStorage.removeItem("jicht_session");setSession(null);}}/>;
+  if(!session)return <LoginScreen lang={lang} setLang={setLang} onLogin={s=>{localStorage.setItem("jicht_session",JSON.stringify(s));setSession(s);}}/>;
+  return <JichtTracker lang={lang} setLang={setLang} session={session} onLogout={()=>{localStorage.removeItem("jicht_session");setSession(null);}}/>;
 }
 
 // ── Hoofd app ─────────────────────────────────────────────────────────────────
-function JichtTracker({session,onLogout}){ const{token}=session;
+function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
   const isDemo=session.demo===true;
   const saveTimer=useRef(null);
 
@@ -630,6 +1155,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   const[showSupport,setShowSupport]=useState(false);
   const[showPrivacy,setShowPrivacy]=useState(false);
   const[showDisc,setShowDisc]=useState(false);
+  // eslint-disable-next-line no-unused-vars
   const[showTher,setShowTher]=useState(false);
   const[showUpgrade,setShowUpgrade]=useState(false);
   const[wisConf,setWisConf]=useState(false);
@@ -708,8 +1234,8 @@ function JichtTracker({session,onLogout}){ const{token}=session;
     const count = lastDate===today ? (p?.[countCol]||0) : 0;
 
     if(count >= maxLimit){
-      const label = type==='ai' ? 'AI-analyse' : 'foto scan';
-      throw new Error('LIMIT:Je hebt het dagelijkse maximum van '+maxLimit+' '+label+(maxLimit===1?'':'s')+' bereikt. Probeer het morgen weer.');
+      const msg = type==='ai' ? 'LIMIT:Je hebt je dagelijkse AI-limiet bereikt: maximaal 1 advies of rapport per dag. Probeer het morgen weer.' : 'LIMIT:Je hebt het dagelijkse maximum aan fotoscans bereikt. Probeer het morgen weer.';
+      throw new Error(msg);
     }
     // Increment
     await sf('/rest/v1/profiles?id=eq.'+session.user.id,'PATCH',{[dateCol]:today,[countCol]:count+1},token);
@@ -726,7 +1252,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
       return e.date+"|E:"+(e.eten?.logs?.map(l=>l.moment+":"+l.tekst).join(";")||"–")+"|D:"+(e.drinken?.logs?.map(l=>l.categorie+"("+l.ml+"ml)").join(",")||"–")+"|B:"+(e.bewegen?.logs?.map(l=>(l.activiteiten?.join(",")||"?")+" "+l.minuten+"min").join("+")||"–")+"|S:"+(e.slaap?.uren?e.slaap.uren+"u":"–")+"|P:"+(pijns.map(p=>p.tijd+" lvl"+p.level).join(",")||"geen")+"|A:"+((e.aanval?.logs||[]).map(a=>a.tijd+":"+a.type).join(",")||"–")+"|M:"+((e.med?.logs||[]).map(m=>m.naam).join(",")||"–");
     }).join("\n");
     const prompts={ analyse:`Je bent expert jichtmanagement. ${medInfo}\nAnalyseer:\n1.🔍PATRONEN\n2.⚠TRIGGERS\n3.✅POSITIEVE TRENDS\n4.💡TIPS(4 concreet)\n5.📈VOORTGANG\nNederlands, empathisch.\n\nDATA:\n${summary}`, rapport:`Maak beknopt medisch jicht-rapport (max 350 woorden). ${medInfo}\n1.SAMENVATTING 2.PIJNVERLOOP 3.TRIGGERS 4.MEDICATIE 5.AANBEVELINGEN\n\nDATA:\n${summary}`, therapeut:`Je bent jicht-therapeut. ${medInfo}\nStel therapeutisch adviesrapport op:\n1.KLINISCH BEELD\n2.LEEFSTIJLANALYSE\n3.TRIGGERS\n4.MEDICATIE\n5.THERAPEUTISCHE AANBEVELINGEN(min 5)\n6.VERVOLGVRAGEN(3)\nProfessioneel, empathisch, max 500 woorden.\n\nDATA:\n${summary}`, };
-    try{ const r=await fetch("/.netlify/functions/ai-proxy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompts[mode]}]})});
+    try{ const r=await fetch("/.netlify/functions/ai-proxy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompts[mode]+(LANG==="de"?"\n\nAntworte ausschließlich auf Deutsch (du-Form, empathisch). Das Wort für jicht ist Gicht.":"")}]})});
       const d=await r.json();
       return d.content?.map(b=>b.text||"").join("\n")||"Geen resultaat.";
     }catch{return"Fout bij genereren.";}
@@ -759,7 +1285,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
       const omschrijving=weerCode<=1?"Helder":weerCode<=3?"Bewolkt":weerCode<=48?"Mist":weerCode<=67?"Regen":weerCode<=77?"Sneeuw":weerCode<=82?"Buien":"Onweer";
       const icon=weerCode<=1?"☀":weerCode<=3?"⛅":weerCode<=48?"🌫":weerCode<=67?"🌧":weerCode<=77?"❄":weerCode<=82?"🌦":"⛈";
       setDag(dg=>({...dg,weer:{...dg.weer,logs:[...( dg.weer?.logs||[]),{tijd:nowT(),temp:c.temperature_2m,vochtigheid:c.relative_humidity_2m,wind:c.wind_speed_10m,omschrijving,icon}]}}));
-    }catch(e){alert("Kan weersdata niet ophalen: "+e.message);}
+    }catch(e){dialog("Kan weersdata niet ophalen: "+e.message);}
     setWeerLoading(false);
   }
   function addUZ(){
@@ -773,7 +1299,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   function handlePhoto(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>setProfile(p=>({...p,photo:ev.target.result}));r.readAsDataURL(f);}
   function addProfMed(){if(!newMed.name)return;setProfile(p=>({...p,meds:[...(p.meds||[]),{...newMed,id:Date.now()}]}));setNewMed({name:"",dose:"",frequency:""});}
   function remProfMed(id){setProfile(p=>({...p,meds:p.meds.filter(m=>m.id!==id)}));}
-  async function saveProfiel(){if(isDemo){setProfSaved(true);setTimeout(()=>setProfSaved(false),2000);return;}try{await upsertProfile({name:profile.name,photo:profile.photo,meds:profile.meds,water_doel:waterDoel},token);setProfSaved(true);setTimeout(()=>setProfSaved(false),2000);}catch(e){alert("Fout: "+e.message);}}
+  async function saveProfiel(){if(isDemo){setProfSaved(true);setTimeout(()=>setProfSaved(false),2000);return;}try{await upsertProfile({name:profile.name,photo:profile.photo,meds:profile.meds,water_doel:waterDoel},token);setProfSaved(true);setTimeout(()=>setProfSaved(false),2000);}catch(e){dialog("Fout: "+e.message);}}
   async function wijzigWachtwoord(){
     if(nieuwPw!==nieuwPw2){setPwMsg("error:Wachtwoorden komen niet overeen");return;}
     if(nieuwPw.length<6){setPwMsg("error:Minimaal 6 tekens");return;}
@@ -789,25 +1315,25 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   }
 
   async function verwijderAccount(){
-    if(isDemo){alert("Demo-modus: account verwijderen niet beschikbaar.");return;}
+    if(isDemo){dialog("Demo-modus: account verwijderen niet beschikbaar.");return;}
     setVerwijderLoading(true);
     try{
       const r=await fetch("/.netlify/functions/account-beheer",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({actie:"verwijder"})});
       const d=await r.json();
       if(d.ok){localStorage.removeItem("jicht_session");onLogout();}
-      else{alert("Fout: "+(d.error||"Mislukt"));}
-    }catch(e){alert("Fout: "+e.message);}
+      else{dialog("Fout: "+(d.error||"Mislukt"));}
+    }catch(e){dialog("Fout: "+e.message);}
     setVerwijderLoading(false);
   }
 
-  async function wisAlleData(){if(isDemo){setEntries([]);setDag(emptyDay());setWisConf(false);return;}try{await sf("/rest/v1/entries?user_id=not.is.null","DELETE",null,token);setEntries([]);setDag(emptyDay());}catch(e){alert("Fout: "+e.message);}setWisConf(false);}
+  async function wisAlleData(){if(isDemo){setEntries([]);setDag(emptyDay());setWisConf(false);return;}try{await sf("/rest/v1/entries?user_id=not.is.null","DELETE",null,token);setEntries([]);setDag(emptyDay());}catch(e){dialog("Fout: "+e.message);}setWisConf(false);}
   async function genRapport(){ setRapportLoading(true);
     const t=await callAI("rapport");
     setRapportTekst(t);
     setRapportLoading(false);
   }
   function verstuurRapport(){ if(!rapportEmail||!rapportTekst)return;
-    window.location.href="mailto:"+rapportEmail+"?subject="+encodeURIComponent("Export Jicht Tracker")+"&body="+encodeURIComponent("Jicht Tracker Rapport\n"+"=".repeat(40)+"\n\n"+rapportTekst+"\n\n"+"=".repeat(40)+"\nGegenereerd: "+new Date().toLocaleDateString("nl-NL")+"\nRegistraties: "+entries.length);
+    window.location.href="mailto:"+rapportEmail+"?subject="+encodeURIComponent("Export Jicht Tracker")+"&body="+encodeURIComponent("Jicht Tracker Rapport\n"+"=".repeat(40)+"\n\n"+rapportTekst+"\n\n"+"=".repeat(40)+"\nGegenereerd: "+new Date().toLocaleDateString(LOC())+"\nRegistraties: "+entries.length);
   }
 
   // ── Na hooks: vroege return ───────────────────────────────────────────────
@@ -824,7 +1350,6 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   const PG="linear-gradient(90deg,#4CAF50 0%,#8BC34A 25%,#FF9800 50%,#F44336 75%,#B71C1C 100%)";
 
   const MENU_ITEMS=[
-    ["ti-stethoscope","Arts / Therapeut raadplegen",()=>setShowTher(true)],
     ["ti-mail","Rapport versturen",()=>{setShowRapport(true);setRapportTekst("");}],
     ["---","---",null],
     ["ti-user","Profiel",()=>setShowProfiel(true)],
@@ -855,6 +1380,11 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                     <span style={{width:32,height:32,borderRadius:10,background:(lbl==="Uitloggen"||lbl==="Terug naar login")?C.dL:C.pL,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={"ti "+icon} style={{fontSize:18,color:(lbl==="Uitloggen"||lbl==="Terug naar login")?C.danger:C.primary}} aria-hidden="true"></i></span><span style={{fontWeight:500}}>{lbl}</span>
                   </button>
             ))}
+            <div style={{height:1,background:C.border,margin:"6px 8px"}}/>
+            <div onClick={e=>e.stopPropagation()} style={{padding:"8px 12px 8px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+              <span style={{fontSize:13,color:C.muted,fontWeight:500}}>Taal / Sprache</span>
+              <LangSwitch lang={lang} setLang={setLang}/>
+            </div>
           </div>
         )}
       </div>
@@ -869,7 +1399,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
       <div style={{background:"linear-gradient(135deg,"+C.primary+" 0%,#2F9E6E 100%)",margin:"14px 14px 0",borderRadius:20,padding:"16px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",color:"#fff",boxShadow:"0 6px 18px rgba(14,124,134,0.22)"}}>
         <div>
           <div style={{fontSize:12,fontWeight:500,color:"rgba(255,255,255,0.85)",marginBottom:3}}>Goedemorgen{profile.name?", "+profile.name.split(" ")[0]:""}</div>
-          <div style={{fontSize:18,fontWeight:700,letterSpacing:"-0.3px"}}>{new Date().toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"}).replace(/^\w/,c=>c.toUpperCase())}</div>
+          <div style={{fontSize:18,fontWeight:700,letterSpacing:"-0.3px"}}>{new Date().toLocaleDateString(LOC(),{weekday:"long",day:"numeric",month:"long"}).replace(/^\w/,c=>c.toUpperCase())}</div>
         </div>
         <div style={{background:"rgba(255,255,255,0.18)",borderRadius:14,padding:"10px 14px",textAlign:"center"}}>
           <div style={{fontSize:22,fontWeight:700,lineHeight:1}}>{entries.length}</div>
@@ -939,6 +1469,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
       <Modal show={showRapport} onClose={()=>setShowRapport(false)} title="Rapport versturen">
         <div style={{background:C.pL,borderRadius:10,padding:"12px 14px",marginBottom:16,fontSize:13,color:C.text,lineHeight:1.6}}>
           De AI genereert een beknopt rapport. Daarna kun je het e-mailen via je <strong>standaard mail-app</strong>.
+          <div style={{fontSize:12,color:C.pD,marginTop:6,fontWeight:500}}>Maximaal 1 keer per dag, samen met je persoonlijk advies.</div>
         </div>
         {!rapportTekst&&(
           <button onClick={genRapport} disabled={rapportLoading||entries.length===0} style={{background:entries.length>0?C.primary:C.border,color:"#fff",border:"none",borderRadius:12,padding:"13px",fontSize:14,fontWeight:700,cursor:entries.length>0?"pointer":"not-allowed",width:"100%",marginBottom:12,opacity:rapportLoading?0.7:1}}>
@@ -1037,7 +1568,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
         {/* ══ REGISTREER ══ */}
         {mainTab==="registreer"&&(
           <div>
-            <div style={{fontSize:20,fontWeight:700,color:C.text,margin:"2px 2px 14px",letterSpacing:"-0.3px"}}>Registreren</div>
+            <div style={{fontSize:20,fontWeight:700,color:C.text,margin:"2px 2px 14px",letterSpacing:"-0.3px"}}>Dagelijkse registratie</div>
             {syncBadge&&<div style={{background:syncBadge.bg,border:"1px solid "+syncBadge.b,borderRadius:8,padding:"7px 12px",color:syncBadge.c,fontSize:12,fontWeight:600,marginBottom:10,textAlign:"center"}}>{syncBadge.t}</div>}
 
             {/* Datumkiezer compact */}
@@ -1097,10 +1628,10 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                 <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
                   {MMT.map(m=><button key={m} onClick={()=>setEtenMom(m)} style={{padding:"5px 11px",borderRadius:16,fontSize:12,cursor:"pointer",border:"1.5px solid "+(etenMom===m?C.primary:C.border),background:etenMom===m?C.pL:C.card,color:etenMom===m?C.primary:C.muted,fontWeight:etenMom===m?700:400}}>{m}</button>)}
                 </div>
-                <div style={{display:"flex",gap:8,marginBottom:8}}>
+                {SCAN_AAN&&(<div style={{display:"flex",gap:8,marginBottom:8}}>
                   <FotoScan onResult={tekst=>{if(tekst)setEtenTxt(tekst);}}/>
-                </div>
-                <textarea value={etenTxt} onChange={e=>setEtenTxt(e.target.value)} placeholder="Wat heb je gegeten? Of scan een foto..." rows={2} style={{...inp,resize:"vertical",marginBottom:8}}/>
+                </div>)}
+                <textarea value={etenTxt} onChange={e=>setEtenTxt(e.target.value)} placeholder="Wat heb je gegeten?" rows={2} style={{...inp,resize:"vertical",marginBottom:8}}/>
                 <button onClick={addEten} disabled={!etenTxt.trim()} style={{background:etenTxt.trim()?C.primary:C.border,color:"#fff",border:"none",borderRadius:8,padding:"8px",fontSize:13,fontWeight:600,cursor:etenTxt.trim()?"pointer":"default",width:"100%"}}>+ Toevoegen</button>
                 {dag.eten.logs.length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:10}}>{dag.eten.logs.map((l,i)=><div key={i} style={{display:"flex",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,fontWeight:700,color:C.primary,minWidth:70}}>{l.moment}</span><span style={{fontSize:12,flex:1}}>{l.tekst}</span><button onClick={()=>remEten(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}><i className="ti ti-x" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></button></div>)}</div>}
               </Card>
@@ -1141,9 +1672,9 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                 <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:10}}>
                   {(PORTIE[dCat]||PORTIE["Anders"]).map(p=><button key={p.l} onClick={()=>{setDMl(p.ml);setDPortie(p.l);}} style={{padding:"7px 3px",borderRadius:10,border:"2px solid "+(dMl===p.ml&&dPortie===p.l?C.primary:C.border),background:dMl===p.ml&&dPortie===p.l?C.pL:C.card,color:dMl===p.ml&&dPortie===p.l?C.primary:C.muted,fontSize:10,fontWeight:dMl===p.ml&&dPortie===p.l?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:1}}><i className={"ti "+(p.i==="kop"?"ti-cup":p.i==="mok"?"ti-coffee":p.i==="bier"?"ti-beer":p.i==="wijn"?"ti-glass-full":p.i==="fles"?"ti-bottle":p.i==="shot"?"ti-glass-cocktail":"ti-glass")} style={{fontSize:20}} aria-hidden="true"></i><span>{p.l}</span><span style={{fontSize:9,color:C.muted}}>{p.ml}ml</span></button>)}
                 </div>
-                <div style={{display:"flex",gap:8,marginBottom:10}}>
+                {SCAN_AAN&&(<div style={{display:"flex",gap:8,marginBottom:10}}>
                   <FotoScan onResult={tekst=>{if(tekst)setDTxt(tekst);}}/>
-                </div>
+                </div>)}
                 <button onClick={addDrinken} style={{background:C.primary,color:"#fff",border:"none",borderRadius:12,padding:"10px",fontSize:13,fontWeight:700,cursor:"pointer",width:"100%",marginBottom:10}}>+ Registreren</button>
                 {dag.drinken.logs.length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10}}>{dag.drinken.logs.map((l,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{l.tijd}</span><span style={{fontSize:12,fontWeight:700,color:C.primary,flex:1}}>{l.categorie}{l.tekst?" · "+l.tekst:""}</span><span style={{fontSize:11,color:C.muted,background:C.pL,padding:"2px 7px",borderRadius:8}}>{l.portie} · {l.ml}ml</span><button onClick={()=>remDrinken(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}><i className="ti ti-x" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></button></div>)}</div>}
               </Card>
@@ -1151,7 +1682,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
 
             {regSec==="bewegen"&&isPro&&(
               <Card title="Beweging registreren" icon="ti-run" accentColor={C.primary}>
-                {(dag.bewegen?.logs||[]).length>0&&(()=>{const tot=(dag.bewegen.logs).reduce((s,l)=>s+(parseInt(l.minuten)||0),0);return<div style={{background:C.pL,borderRadius:8,padding:"8px 12px",marginBottom:12,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:13,color:C.primary,fontWeight:700}}>{dag.bewegen.logs.length} sessie{dag.bewegen.logs.length>1?"s":""}</span><span style={{fontSize:12,color:C.primary}}>{tot} min totaal</span></div>;})()}
+                {(dag.bewegen?.logs||[]).length>0&&(()=>{const tot=(dag.bewegen.logs).reduce((s,l)=>s+(parseInt(l.minuten)||0),0);return<div style={{background:C.pL,borderRadius:8,padding:"8px 12px",marginBottom:12,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:13,color:C.primary,fontWeight:700}}>{dag.bewegen.logs.length} {dag.bewegen.logs.length>1?"sessies":"sessie"}</span><span style={{fontSize:12,color:C.primary}}>{tot} min totaal</span></div>;})()}
                 <div style={{display:"flex",gap:10,marginBottom:12,alignItems:"flex-end"}}>
                   <div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Tijdstip</div><input type="time" value={bTijd} onChange={e=>setBTijd(e.target.value)} style={{...inp,width:100}}/></div>
                   <div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Minuten</div><input type="number" value={bMin} onChange={e=>setBMin(e.target.value)} placeholder="0" min={0} style={{...inp,width:75,textAlign:"center",fontSize:17,fontWeight:700}}/></div>
@@ -1232,7 +1763,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
 
             {regSec==="aanval"&&(
               <Card title="Aanval registreren" icon="ti-alert-triangle" accentColor={C.danger}>
-                {(dag.aanval?.logs||[]).length>0&&<div style={{background:C.dL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.danger,fontWeight:700}}>{dag.aanval.logs.length} registratie{dag.aanval.logs.length>1?"s":""} vandaag</span></div>}
+                {(dag.aanval?.logs||[]).length>0&&<div style={{background:C.dL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.danger,fontWeight:700}}>{dag.aanval.logs.length} {dag.aanval.logs.length>1?"registraties":"registratie"} vandaag</span></div>}
                 <div style={{fontSize:12,color:C.muted,marginBottom:8,fontWeight:600}}>Situatie op dit moment:</div>
                 <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:14}}>
                   {[["signalen","Waarschuwingssignalen","Mogelijk aanval op komst",C.accent,C.aL],["actief","Actieve aanval","Nu een actieve aanval",C.danger,C.dL],["afnemend","Aanval neemt af","Ergste pijn voorbij",C.accent,C.aL],["voorbij","Aanval voorbij","Geen klachten meer",C.success,C.sL]].map(([v,lbl,sub,col,bg])=>(
@@ -1272,7 +1803,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             {regSec==="medsupp"&&isPro&&(
               <div>
                 <Card title="Medicatie vandaag" icon="ti-pill" accentColor={C.primary}>
-                  {(dag.med?.logs||[]).length>0&&<div style={{background:C.pL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.primary,fontWeight:700}}>{dag.med.logs.length} inname{dag.med.logs.length>1?"s":""} vandaag</span></div>}
+                  {(dag.med?.logs||[]).length>0&&<div style={{background:C.pL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.primary,fontWeight:700}}>{dag.med.logs.length} {dag.med.logs.length>1?"innames":"inname"} vandaag</span></div>}
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
                     <div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Tijdstip</div><input type="time" value={mTijd} onChange={e=>setMTijd(e.target.value)} style={{...inp,width:100}}/></div>
                     <div style={{flex:1}}><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Type</div><div style={{display:"flex",gap:6}}>{[["preventie","Preventief"],["aanval","Aanval/pijn"]].map(([v,l])=><button key={v} onClick={()=>{setMType(v);setMNaam("");}} style={{flex:1,padding:"7px 4px",borderRadius:8,fontSize:12,cursor:"pointer",border:"1.5px solid "+(mType===v?(v==="preventie"?C.primary:C.danger):C.border),background:mType===v?(v==="preventie"?C.pL:C.dL):C.card,color:mType===v?(v==="preventie"?C.primary:C.danger):C.muted,fontWeight:mType===v?700:400}}>{l}</button>)}</div></div>
@@ -1284,14 +1815,14 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                 </Card>
                 <div style={{marginTop:12}}>
                 <Card title="Supplementen vandaag" icon="ti-leaf" accentColor={C.primary}>
-                  {(dag.suppl?.logs||[]).length>0&&<div style={{background:C.sL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.success,fontWeight:700}}>{dag.suppl.logs.length} inname{dag.suppl.logs.length>1?"s":""} vandaag</span></div>}
+                  {(dag.suppl?.logs||[]).length>0&&<div style={{background:C.sL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.success,fontWeight:700}}>{dag.suppl.logs.length} {dag.suppl.logs.length>1?"innames":"inname"} vandaag</span></div>}
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}><div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Tijdstip</div><input type="time" value={sTijd} onChange={e=>setSTijd(e.target.value)} style={{...inp,width:100}}/></div></div>
-                  <div style={{display:"flex",gap:8,marginBottom:10}}>
+                  {SCAN_AAN&&(<div style={{display:"flex",gap:8,marginBottom:10}}>
                     <FotoScan onResult={tekst=>{if(tekst)setSAnders(tekst);}}/>
                     <BarcodeScan onResult={(naam)=>{if(naam)setSAnders(naam);}}/>
-                  </div>
+                  </div>)}
                   <Chips opts={SUPPL} sel={sNaam?[sNaam]:[]} onToggle={item=>setSNaam(sNaam===item?"":item)} col={C.success} bg={C.sL}/>
-                  <input value={sAnders} onChange={e=>setSAnders(e.target.value)} placeholder="Of typ of scan een supplement..." style={{...inp,marginTop:10}}/>
+                  <input value={sAnders} onChange={e=>setSAnders(e.target.value)} placeholder="Of typ een supplement..." style={{...inp,marginTop:10}}/>
                   <button onClick={addSuppl} disabled={!sNaam&&!sAnders} style={{background:(sNaam||sAnders)?C.success:C.border,color:"#fff",border:"none",borderRadius:12,padding:"10px",fontSize:13,fontWeight:700,cursor:(sNaam||sAnders)?"pointer":"default",width:"100%",marginTop:10}}>+ Inname registreren</button>
                   {(dag.suppl?.logs||[]).length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>{dag.suppl.logs.map((s,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{s.tijd}</span><span style={{fontSize:12,fontWeight:600,flex:1}}>{s.naam}</span><button onClick={()=>remSuppl(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}><i className="ti ti-x" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></button></div>)}</div>}
                 </Card>
@@ -1301,7 +1832,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
 
             {regSec==="urinezuur"&&isPro&&(
               <Card title="Urinezuurwaarde" icon="ti-droplet" accentColor={C.danger}>
-                {(dag.urinezuur?.logs||[]).length>0&&<div style={{background:"#FEE2E2",borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.danger,fontWeight:700}}>{dag.urinezuur.logs.length} meting{dag.urinezuur.logs.length>1?"en":""} vandaag</span></div>}
+                {(dag.urinezuur?.logs||[]).length>0&&<div style={{background:"#FEE2E2",borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.danger,fontWeight:700}}>{dag.urinezuur.logs.length} {dag.urinezuur.logs.length>1?"metingen":"meting"} vandaag</span></div>}
                 <div style={{fontSize:13,color:C.muted,marginBottom:12,lineHeight:1.6}}>Voer de waarde in na een bloedprikbeurt. Streefwaarde bij jicht: onder 0.36 mmol/L (6 mg/dL).</div>
                 <div style={{display:"flex",gap:6,marginBottom:12}}>
                   {["mmol","mg"].map(e=>(
@@ -1473,6 +2004,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             <div style={{background:C.pL,borderRadius:16,padding:14,border:"1px solid "+C.border}}>
               <div style={{fontWeight:700,color:C.primary,fontSize:15,marginBottom:5}}><i className="ti ti-bulb" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Persoonlijk Jicht Advies</div>
               <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>Analyseert jouw registraties en geeft persoonlijk advies over patronen, triggers en verbeterpunten.</div>
+              <div style={{fontSize:12,color:C.pD,marginTop:6,fontWeight:500}}>Persoonlijk advies en rapporten kun je samen maximaal 1 keer per dag laten maken.</div>
               <div style={{fontSize:11,color:C.muted,marginTop:6}}><i className="ti ti-chart-bar" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>{entries.length} dag(en) · {profile.meds?.length||0} vaste medicatie(s)</div>
             </div>
             <button onClick={async()=>{setAiLoading(true);const r=await callAI("analyse");setAiResult(r);setAiLoading(false);}} disabled={aiLoading||entries.length<2} style={{background:entries.length>=2?C.accent:C.border,color:"#fff",border:"none",borderRadius:12,padding:"14px",fontSize:15,fontWeight:700,cursor:entries.length>=2?"pointer":"not-allowed",width:"100%",opacity:aiLoading?0.7:1}}>
