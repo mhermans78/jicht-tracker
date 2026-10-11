@@ -837,7 +837,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   ];
 
   return (
-    <div style={{fontFamily:FONT,background:C.bg,minHeight:"100vh",maxWidth:680,margin:"0 auto",paddingBottom:80,overflowX:"hidden",width:"100%"}}>
+    <div style={{fontFamily:FONT,background:C.bg,minHeight:"100vh",maxWidth:680,margin:"0 auto",paddingBottom:110,overflowX:"hidden",width:"100%"}}>
 
       {/* Header */}
       <div style={{background:C.card,padding:"14px 18px",color:C.text,display:"flex",alignItems:"center",gap:12,position:"relative",borderBottom:"1px solid "+C.border}}>
@@ -876,14 +876,13 @@ function JichtTracker({session,onLogout}){ const{token}=session;
         </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{display:"flex",background:C.card,borderBottom:"1px solid "+C.border,marginTop:14}}>
-        {MTABS.map(([id,icon,lbl])=>(
-          <button key={id} onClick={()=>setMainTab(id)} style={{flex:1,padding:"10px 0",border:"none",background:"transparent",cursor:"pointer",fontSize:11,fontWeight:mainTab===id?600:500,color:mainTab===id?C.primary:C.muted,borderBottom:mainTab===id?"3px solid "+C.primary:"3px solid transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-            <i className={"ti "+icon} style={{fontSize:20,display:"block",lineHeight:1,color:mainTab===id?C.primary:C.muted}} aria-hidden="true"></i><span>{lbl}</span>
-          </button>
-        ))}
-      </div>
+      {/* Onderste navigatiebalk */}
+      <nav aria-label="Hoofdmenu" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:680,zIndex:90,display:"flex",background:C.card,borderTop:"1px solid "+C.border,padding:"8px 8px calc(10px + env(safe-area-inset-bottom))",boxShadow:"0 -4px 18px rgba(18,48,61,0.07)",boxSizing:"border-box"}}>
+        {MTABS.map(([id,icon,lbl])=>{const on=mainTab===id;return(
+          <button key={id} onClick={()=>{setMainTab(id);window.scrollTo({top:0,behavior:"smooth"});}} aria-current={on?"page":undefined} style={{flex:1,border:"none",background:on?C.pL:"transparent",borderRadius:14,padding:"7px 2px",cursor:"pointer",fontSize:11,fontWeight:on?600:500,color:on?C.primary:C.muted,display:"flex",flexDirection:"column",alignItems:"center",gap:3,margin:"0 2px",fontFamily:FONT}}>
+            <i className={"ti "+icon} style={{fontSize:22,display:"block",lineHeight:1,color:on?C.primary:C.muted}} aria-hidden="true"></i><span>{lbl}</span>
+          </button>);})}
+      </nav>
 
       {/* Modals */}
       <Modal show={showProfiel} onClose={()=>setShowProfiel(false)} title="Profiel">
