@@ -22,9 +22,10 @@ async function upsertEntry(e,t){ const r=await fetch(SU+"/rest/v1/entries?on_con
 
 // ── Kleuren & constanten ──────────────────────────────────────────────────────
 // Modern font via system stack met Inter als voorkeur
-const FONT = '"Inter","SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+// Tabler icons worden geladen via index.html
+const FONT = '"IBM Plex Sans","Inter","SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
 
-const C={bg:"#F8F7F5",card:"#FFFFFF",dark:"#0C0A09",dark2:"#1C1917",dark3:"#292524",primary:"#F97316",pL:"#FFF7ED",pD:"#EA580C",accent:"#EF4444",aL:"#FEF2F2",aT:"#B91C1C",danger:"#EF4444",dL:"#FEF2F2",success:"#059669",sL:"#ECFDF5",text:"#1C1917",muted:"#A8A29E",border:"#E7E5E4",pro:"#7C3AED",proL:"#F5F3FF"};
+const C={bg:"#F3F8FB",card:"#FFFFFF",dark:"#12303D",dark2:"#FFFFFF",dark3:"#D9E6EC",primary:"#0E7C86",pL:"#E3F3F4",pD:"#0A5F67",accent:"#E8912D",aL:"#FDF3E3",aT:"#9A5B0F",danger:"#DC2F2F",dL:"#FEF2F2",success:"#2F9E6E",sL:"#E6F5EE",text:"#12303D",muted:"#6B8794",border:"#D9E6EC",pro:"#7C3AED",proL:"#F5F3FF"};
 const PC=["#ccc","#4CAF50","#8BC34A","#FF9800","#F44336","#B71C1C"];
 const PL=["","Licht","Matig","Ernstig","Hevig","Ondraaglijk"];
 const MNL=["Jan","Feb","Mrt","Apr","Mei","Jun","Jul","Aug","Sep","Okt","Nov","Dec"];
@@ -43,14 +44,17 @@ const PORTIE={ "Water":[{l:"Klein glas",i:"glas",ml:150},{l:"Glas",i:"glas",ml:2
 };
 const MMT=["Ontbijt","Lunch","Avondeten","Tussendoor","Avondsnack"];
 const PRO_TABS=["bewegen","slaap","medsuppl","weer","urinezuur"];
-const RTABS_S1=[{id:"aanval",icon:"⚠",label:"Aanval"},{id:"pijn",icon:"😣",label:"Pijn"},{id:"urinezuur",icon:"🩸",label:"Urinezuur"}];
-const RTABS_S2=[{id:"eten",icon:"🍽",label:"Eten"},{id:"drinken",icon:"💧",label:"Drinken"},{id:"bewegen",icon:"🏃",label:"Bewegen"},{id:"slaap",icon:"😴",label:"Slaap"},{id:"weer",icon:"🌤",label:"Weer"},{id:"medsupp",icon:"💊",label:"Med & Suppl"}];
-const MTABS=[["registreer","✏","Registreer"],["overzicht","📖","Dagboek"],["statistieken","📈","Trends"],["analyse","💡","Advies"]];
+const RTABS_S1=[{id:"aanval",icon:"ti-alert-triangle",label:"Aanval"},{id:"pijn",icon:"ti-mood-sad",label:"Pijn"},{id:"urinezuur",icon:"ti-droplet",label:"Urinezuur"}];
+const RTABS_S2=[{id:"eten",icon:"ti-salad",label:"Eten"},{id:"drinken",icon:"ti-droplets",label:"Drinken"},{id:"bewegen",icon:"ti-run",label:"Bewegen"},{id:"slaap",icon:"ti-moon",label:"Slaap"},{id:"weer",icon:"ti-cloud-sun",label:"Weer"},{id:"medsupp",icon:"ti-pill",label:"Med & Suppl"}];
+const MTABS=[["registreer","ti-pencil","Registreer"],["overzicht","ti-book","Dagboek"],["statistieken","ti-chart-line","Trends"],["analyse","ti-bulb","Advies"]];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function Card({title,children,accentColor}){ return (
-    <div style={{background:C.card,borderRadius:16,padding:"18px 20px",border:"1px solid "+C.border,borderTop:accentColor?"3px solid "+accentColor:"1px solid "+C.border,boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
-      {title&&<div style={{fontWeight:700,fontSize:15,color:C.text,marginBottom:12}}>{title}</div>}
+function Card({title,children,accentColor,icon}){ const ac=accentColor||C.primary; return (
+    <div style={{background:C.card,borderRadius:18,padding:"18px 20px",border:"1px solid "+C.border,boxShadow:"0 1px 3px rgba(18,48,61,0.05)"}}>
+      {title&&<div style={{fontWeight:600,fontSize:15,color:C.text,marginBottom:14,display:"flex",alignItems:"center",gap:10}}>
+        {icon&&<span style={{width:32,height:32,borderRadius:10,background:ac+"1A",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={"ti "+icon} style={{fontSize:18,color:ac}} aria-hidden="true"></i></span>}
+        {title}
+      </div>}
       {children}
     </div>
   );
@@ -64,15 +68,15 @@ function Chips({opts,sel,onToggle,col=C.primary,bg=C.pL}){ return (
   );
 }
 function Row({icon,label,val}){ return (
-    <div style={{display:"flex",gap:6,fontSize:12,marginBottom:2}}>
-      <span>{icon}</span>
+    <div style={{display:"flex",gap:8,fontSize:12,marginBottom:4,alignItems:"center"}}>
+      <i className={"ti "+icon} style={{fontSize:15,color:C.primary,flexShrink:0}} aria-hidden="true"></i>
       <span style={{color:C.muted,minWidth:80}}>{label}:</span>
       <span style={{color:C.text,flex:1}}>{val}</span>
     </div>
   );
 }
-function Empty({icon,text}){return <div style={{textAlign:"center",color:C.muted,marginTop:40}}><div style={{fontSize:40}}>{icon}</div><p style={{fontSize:14}}>{text}</p></div>;}
-function Spinner(){return <div style={{textAlign:"center",padding:40,color:C.muted}}><div style={{fontSize:32}}>⏳</div><p style={{fontSize:13,marginTop:8}}>Laden...</p></div>;}
+function Empty({icon,text}){return <div style={{textAlign:"center",color:C.muted,marginTop:40}}><div style={{width:72,height:72,borderRadius:22,background:C.pL,display:"inline-flex",alignItems:"center",justifyContent:"center"}}><i className={"ti "+icon} style={{fontSize:34,color:C.primary}} aria-hidden="true"></i></div><p style={{fontSize:14,marginTop:12}}>{text}</p></div>;}
+function Spinner(){return <div style={{textAlign:"center",padding:40,color:C.muted}}><i className="ti ti-loader-2" style={{fontSize:32,color:C.primary}} aria-hidden="true"></i><p style={{fontSize:13,marginTop:8}}>Laden...</p></div>;}
 
 function berekenSlaap(bed,wek){ if(!bed||!wek)return null;
   const[bh,bm]=bed.split(":").map(Number),[wh,wm]=wek.split(":").map(Number);
@@ -107,7 +111,7 @@ function BarChart({data,vk,color,maxV=1,unit=""}){ const max=maxV||Math.max(...d
 }
 
 // ── Modal wrapper ─────────────────────────────────────────────────────────────
-function Modal({show,onClose,title,accentColor=C.primary,children}){
+function Modal({show,onClose,title,accentColor=C.primary,icon,children}){
   useEffect(()=>{
     if(show){document.body.style.overflow="hidden";}
     else{document.body.style.overflow="";}
@@ -115,22 +119,22 @@ function Modal({show,onClose,title,accentColor=C.primary,children}){
   },[show]);
   if(!show)return null;
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:200,display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto"}} onClick={onClose}>
+    <div style={{position:"fixed",inset:0,background:"rgba(18,48,61,0.55)",zIndex:200,display:"flex",alignItems:"flex-start",justifyContent:"center",overflowY:"auto"}} onClick={onClose}>
       <div style={{background:"#FFFFFF",borderRadius:"0 0 24px 24px",padding:"24px 20px 0",width:"100%",maxWidth:680,minHeight:"60vh",display:"flex",flexDirection:"column",position:"relative"}} onClick={e=>e.stopPropagation()}>
         {/* Header */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,position:"sticky",top:0,background:C.card,zIndex:1,paddingTop:2,paddingBottom:4}}>
-          <div style={{fontWeight:700,fontSize:19,color:C.text}}>{title}</div>
-          <button onClick={onClose} style={{background:C.bg,border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:16,color:C.muted,flexShrink:0}}>✕</button>
+          <div style={{fontWeight:700,fontSize:19,color:C.text,display:"flex",alignItems:"center",gap:10}}>{icon&&<span style={{width:36,height:36,borderRadius:11,background:accentColor+"1A",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={"ti "+icon} style={{fontSize:20,color:accentColor}} aria-hidden="true"></i></span>}{title}</div>
+          <button onClick={onClose} aria-label="Sluiten" style={{background:C.bg,border:"none",borderRadius:10,width:36,height:36,cursor:"pointer",color:C.muted,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-x" style={{fontSize:18}} aria-hidden="true"></i></button>
         </div>
-        <div style={{width:50,height:4,background:accentColor,borderRadius:2,marginBottom:20,flexShrink:0}}/>
+        <div style={{height:1,background:C.border,marginBottom:18,flexShrink:0}}/>
         {/* Inhoud */}
         <div style={{flex:1,paddingBottom:16}}>
           {children}
         </div>
         {/* Sticky terug knop onderaan */}
         <div style={{position:"sticky",bottom:0,background:C.card,paddingTop:10,paddingBottom:28,marginTop:4,borderTop:"1px solid "+C.border}}>
-          <button onClick={onClose} style={{width:"100%",padding:"12px",background:C.bg,border:"1.5px solid "+C.border,borderRadius:10,color:C.muted,fontSize:14,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-            <span>←</span> Terug
+          <button onClick={onClose} style={{width:"100%",padding:"12px",background:C.bg,border:"1.5px solid "+C.border,borderRadius:12,color:C.muted,fontSize:14,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <i className="ti ti-arrow-left" style={{fontSize:16}} aria-hidden="true"></i> Terug
           </button>
         </div>
       </div>
@@ -140,21 +144,21 @@ function Modal({show,onClose,title,accentColor=C.primary,children}){
 
 // ── Informatie modals ─────────────────────────────────────────────────────────
 function OverModal({show,onClose}){ return (
-    <Modal show={show} onClose={onClose} title="ℹ Over Jicht Tracker">
+    <Modal show={show} onClose={onClose} title="Over Jicht Tracker" icon="ti-info-circle">
       <p style={{fontSize:14,lineHeight:1.8,color:C.text,marginBottom:16}}>Jicht Tracker heb ik, <strong>Maurice Hermans</strong>, ontwikkeld vanuit persoonlijke motivatie door eigen ervaring met de aandoening. Ik wilde meer inzicht zodat ik mijn aanvallen kon verminderen, ik minder pijn had en minder beperkt werd in mijn dagelijks doen en laten.</p>
       <p style={{fontSize:14,lineHeight:1.8,color:C.text,marginBottom:16}}>De app wordt beheerd door <strong>HOBC BV</strong> en de uit de pro versie gegenereerde opbrengsten zijn bedoeld om de infrastructuur kostendekkend te maken.</p>
       <div style={{background:C.bg,borderRadius:12,padding:16,marginBottom:16}}>
         <div style={{display:"flex",gap:12,marginBottom:14}}>
-          <span style={{fontSize:22}}>🎯</span>
+          <span style={{fontSize:22}}><i className="ti ti-target" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></span>
           <div><div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:4}}>Persoonlijk inzicht</div><div style={{fontSize:13,color:C.muted,lineHeight:1.6}}>De gebruiker helpen beter om te gaan met jicht door patronen en triggers in eigen data te ontdekken.</div></div>
         </div>
         <div style={{display:"flex",gap:12}}>
-          <span style={{fontSize:22}}>🔬</span>
+          <span style={{fontSize:22}}><i className="ti ti-microscope" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></span>
           <div><div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:4}}>Anoniem onderzoek</div><div style={{fontSize:13,color:C.muted,lineHeight:1.6}}>Op termijn anoniem geaggregeerde data verzamelen om betere behandeling mogelijk te maken.</div></div>
         </div>
       </div>
       <div style={{background:C.aL,border:"1px solid "+C.accent,borderRadius:10,padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
-        <span style={{fontSize:18,flexShrink:0}}>⚠</span>
+        <span style={{fontSize:18,flexShrink:0}}><i className="ti ti-alert-triangle" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></span>
         <p style={{fontSize:13,color:C.aT,lineHeight:1.6,margin:0}}><strong>Let op!</strong> Jicht Tracker is een persoonlijk initiatief en geen medisch hulpmiddel. Raadpleeg altijd uw arts voor medisch advies.</p>
       </div>
     </Modal>
@@ -164,29 +168,29 @@ function OverModal({show,onClose}){ return (
 function SupportModal({show,onClose}){
   const [tab,setTab]=useState("handleiding");
   const items=[
-    {icon:"📧",title:"E-mail",sub:"Vragen en feedback",val:"support@jichttracker.nl",link:"mailto:support@jichttracker.nl"},
-    {icon:"🐛",title:"Bug melden",sub:"Iets werkt niet?",val:"Stuur melding",link:"mailto:support@jichttracker.nl?subject=Bug"},
-    {icon:"💡",title:"Suggestie",sub:"Idee voor verbetering",val:"Stuur suggestie",link:"mailto:support@jichttracker.nl?subject=Suggestie"},
+    {icon:"ti-mail",title:"E-mail",sub:"Vragen en feedback",val:"support@jichttracker.nl",link:"mailto:support@jichttracker.nl"},
+    {icon:"ti-bug",title:"Bug melden",sub:"Iets werkt niet?",val:"Stuur melding",link:"mailto:support@jichttracker.nl?subject=Bug"},
+    {icon:"ti-bulb",title:"Suggestie",sub:"Idee voor verbetering",val:"Stuur suggestie",link:"mailto:support@jichttracker.nl?subject=Suggestie"},
   ];
   const stappen=[
-    {icon:"⚠",kleur:C.danger,titel:"1. Aanval & Metingen — altijd invullen",tekst:"Registreer elke aanval, pijnmeting of urinezuurwaarde zo snel mogelijk. Hoe preciezer de timing, hoe beter de app patronen herkent. Gebruik de Aanval-knop ook als je alleen signalen voelt — niet alleen bij een volledige aanval."},
-    {icon:"🍽",kleur:C.primary,titel:"2. Invloeden — dagelijks bijhouden",tekst:"Vul dagelijks in wat je at, dronk, hoe je bewoog en sliep. Juist de combinatie van deze gegevens over meerdere dagen onthult welke triggers bij jou jichtaanvallen uitlokken. Alcohol, bepaalde voeding en te weinig water zijn bekende triggers."},
-    {icon:"💧",kleur:C.primary,titel:"3. Waterdoel — stel jezelf een doel",tekst:"Voldoende drinken is een van de effectiefste manieren om jichtaanvallen te voorkomen. Stel je dagdoel in bovenaan de Drinken-tab en registreer wat je drinkt. Bij 2–3 liter water per dag scheidt het lichaam urinezuur beter uit."},
-    {icon:"🧠",kleur:"#7C3AED",titel:"4. Persoonlijk Advies",tekst:"Na minstens 5 registraties kun je een persoonlijk AI-advies opvragen. Hoe meer data, hoe scherper het advies. Probeer het eens per week te doen om je voortgang te volgen."},
-    {icon:"🩺",kleur:C.success,titel:"5. Arts of therapeut raadplegen",tekst:"Genereer een rapport vóór een bezoek aan uw arts of therapeut. Het rapport geeft een compleet overzicht van uw klachtenpatroon en kan het gesprek met uw zorgverlener sterk verbeteren."},
+    {icon:"ti-alert-triangle",kleur:C.danger,titel:"1. Aanval & Metingen — altijd invullen",tekst:"Registreer elke aanval, pijnmeting of urinezuurwaarde zo snel mogelijk. Hoe preciezer de timing, hoe beter de app patronen herkent. Gebruik de Aanval-knop ook als je alleen signalen voelt — niet alleen bij een volledige aanval."},
+    {icon:"ti-salad",kleur:C.primary,titel:"2. Invloeden — dagelijks bijhouden",tekst:"Vul dagelijks in wat je at, dronk, hoe je bewoog en sliep. Juist de combinatie van deze gegevens over meerdere dagen onthult welke triggers bij jou jichtaanvallen uitlokken. Alcohol, bepaalde voeding en te weinig water zijn bekende triggers."},
+    {icon:"ti-droplets",kleur:C.primary,titel:"3. Waterdoel — stel jezelf een doel",tekst:"Voldoende drinken is een van de effectiefste manieren om jichtaanvallen te voorkomen. Stel je dagdoel in bovenaan de Drinken-tab en registreer wat je drinkt. Bij 2–3 liter water per dag scheidt het lichaam urinezuur beter uit."},
+    {icon:"ti-brain",kleur:"#7C3AED",titel:"4. Persoonlijk Advies",tekst:"Na minstens 5 registraties kun je een persoonlijk AI-advies opvragen. Hoe meer data, hoe scherper het advies. Probeer het eens per week te doen om je voortgang te volgen."},
+    {icon:"ti-stethoscope",kleur:C.success,titel:"5. Arts of therapeut raadplegen",tekst:"Genereer een rapport vóór een bezoek aan uw arts of therapeut. Het rapport geeft een compleet overzicht van uw klachtenpatroon en kan het gesprek met uw zorgverlener sterk verbeteren."},
   ];
   const waarom=[
-    {icon:"📈",tekst:"Jicht is grillig — een aanval kan dagen later komen na de trigger. Alleen dagelijkse registratie legt dat verband bloot."},
-    {icon:"🔍",tekst:"De AI-analyse wordt nauwkeuriger naarmate er meer data is. Eén week data geeft hints, één maand geeft inzicht, drie maanden geeft echt persoonlijk advies."},
-    {icon:"💊",tekst:"Als u medicatie gebruikt, helpt dagelijkse registratie om te zien of die effectief is en of uw leefstijl de werking ondersteunt."},
-    {icon:"🩺",tekst:"Uw arts of therapeut kan met een goed bijgehouden dagboek veel gerichter adviseren dan op basis van uw herinnering tijdens een consult."},
-    {icon:"🎯",tekst:"Gebruikers die dagelijks registreren rapporteren gemiddeld 40% minder aanvallen binnen drie maanden, doordat ze hun persoonlijke triggers leren kennen en vermijden."},
+    {icon:"ti-chart-line",tekst:"Jicht is grillig — een aanval kan dagen later komen na de trigger. Alleen dagelijkse registratie legt dat verband bloot."},
+    {icon:"ti-search",tekst:"De AI-analyse wordt nauwkeuriger naarmate er meer data is. Eén week data geeft hints, één maand geeft inzicht, drie maanden geeft echt persoonlijk advies."},
+    {icon:"ti-pill",tekst:"Als u medicatie gebruikt, helpt dagelijkse registratie om te zien of die effectief is en of uw leefstijl de werking ondersteunt."},
+    {icon:"ti-stethoscope",tekst:"Uw arts of therapeut kan met een goed bijgehouden dagboek veel gerichter adviseren dan op basis van uw herinnering tijdens een consult."},
+    {icon:"ti-target",tekst:"Gebruikers die dagelijks registreren rapporteren gemiddeld 40% minder aanvallen binnen drie maanden, doordat ze hun persoonlijke triggers leren kennen en vermijden."},
   ];
   return (
-    <Modal show={show} onClose={onClose} title="🆘 Ondersteuning">
+    <Modal show={show} onClose={onClose} title="Ondersteuning" icon="ti-lifebuoy">
       {/* Tab switcher */}
       <div style={{display:"flex",background:C.bg,borderRadius:8,padding:3,marginBottom:20}}>
-        {[["handleiding","📖 Handleiding"],["contact","📞 Contact"]].map(([id,lbl])=>(
+        {[["handleiding","Handleiding"],["contact","Contact"]].map(([id,lbl])=>(
           <button key={id} onClick={()=>setTab(id)} style={{flex:1,padding:"8px",border:"none",borderRadius:6,cursor:"pointer",fontSize:13,fontWeight:tab===id?700:400,background:tab===id?C.card:"transparent",color:tab===id?C.primary:C.muted,boxShadow:tab===id?"0 1px 4px rgba(0,0,0,0.1)":"none"}}>{lbl}</button>
         ))}
       </div>
@@ -195,10 +199,10 @@ function SupportModal({show,onClose}){
         <div>
           {/* Waarom dagelijks */}
           <div style={{background:C.pL,borderRadius:12,padding:16,marginBottom:20,border:"1px solid "+C.primary+"40"}}>
-            <div style={{fontWeight:700,fontSize:15,color:C.primary,marginBottom:10}}>⭐ Waarom dagelijks registreren?</div>
+            <div style={{fontWeight:700,fontSize:15,color:C.primary,marginBottom:10}}><i className="ti ti-star" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Waarom dagelijks registreren?</div>
             {waarom.map((w,i)=>(
               <div key={i} style={{display:"flex",gap:10,marginBottom:i<waarom.length-1?10:0}}>
-                <span style={{fontSize:18,flexShrink:0}}>{w.icon}</span>
+                <i className={"ti "+w.icon} style={{fontSize:18,flexShrink:0,color:C.primary}} aria-hidden="true"></i>
                 <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>{w.tekst}</div>
               </div>
             ))}
@@ -210,14 +214,14 @@ function SupportModal({show,onClose}){
           {stappen.map((s,i)=>(
             <div key={i} style={{borderLeft:"3px solid "+s.kleur,paddingLeft:14,marginBottom:16}}>
               <div style={{fontWeight:700,fontSize:13,color:s.kleur,marginBottom:4,display:"flex",alignItems:"center",gap:6}}>
-                <span>{s.icon}</span>{s.titel}
+                <i className={"ti "+s.icon} style={{fontSize:16}} aria-hidden="true"></i>{s.titel}
               </div>
               <div style={{fontSize:13,color:C.muted,lineHeight:1.7}}>{s.tekst}</div>
             </div>
           ))}
 
           <div style={{background:C.sL,borderRadius:10,padding:"12px 14px",marginTop:4}}>
-            <div style={{fontSize:13,color:C.success,fontWeight:600,marginBottom:4}}>💡 Gouden tip</div>
+            <div style={{fontSize:13,color:C.success,fontWeight:600,marginBottom:4}}><i className="ti ti-bulb" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Gouden tip</div>
             <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>Maak er een vaste gewoonte van — registreer 's avonds voor het slapen gaan de dag. Dat duurt minder dan 2 minuten en levert waardevolle inzichten op.</div>
           </div>
         </div>
@@ -227,7 +231,7 @@ function SupportModal({show,onClose}){
         <div>
           {items.map(item=>(
             <a key={item.title} href={item.link} style={{display:"flex",gap:14,alignItems:"center",padding:"13px 14px",background:C.bg,borderRadius:12,marginBottom:10,textDecoration:"none"}}>
-              <span style={{fontSize:22}}>{item.icon}</span>
+              <span style={{width:40,height:40,borderRadius:12,background:C.pL,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={"ti "+item.icon} style={{fontSize:20,color:C.primary}} aria-hidden="true"></i></span>
               <div style={{flex:1}}><div style={{fontWeight:700,fontSize:14,color:C.text}}>{item.title}</div><div style={{fontSize:12,color:C.muted,marginTop:2}}>{item.sub}</div></div>
               <div style={{fontSize:12,color:C.primary,fontWeight:600}}>{item.val}</div>
             </a>
@@ -254,7 +258,7 @@ function PrivacyModal({show,onClose,entries,wisAlleData,wisConf,setWisConf}){ co
     {t:"Cookies",b:"Geen tracking-cookies. Alleen een sessie-token wordt lokaal opgeslagen om je ingelogd te houden."},
   ];
   return (
-    <Modal show={show} onClose={()=>{onClose();setWisConf(false);}} title="🔒 Privacybeleid">
+    <Modal show={show} onClose={()=>{onClose();setWisConf(false);}} title="Privacybeleid">
       {sections.map(s=>(
         <div key={s.t} style={{marginBottom:16}}>
           <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:5}}>{s.t}</div>
@@ -291,7 +295,7 @@ function DisclaimerModal({show,onClose}){ const sections=[
     {t:"Beschikbaarheid",b:"Wij streven naar hoge beschikbaarheid maar garanderen geen ononderbroken toegang tot de app of de AI-functies."},
   ];
   return (
-    <Modal show={show} onClose={onClose} title="⚖ Disclaimer" accentColor={C.danger}>
+    <Modal show={show} onClose={onClose} title="Disclaimer" icon="ti-scale" accentColor={C.danger}>
       <div style={{background:C.dL,border:"1px solid "+C.danger,borderRadius:12,padding:14,marginBottom:18}}>
         <div style={{fontWeight:700,color:C.danger,marginBottom:6}}>Geen medisch hulpmiddel</div>
         <div style={{fontSize:13,color:C.text,lineHeight:1.7}}>Jicht Tracker is een persoonlijke registratie-app en vervangt geen medisch advies, diagnose of behandeling.</div>
@@ -325,10 +329,10 @@ function TherapeutModal({show,onClose,entries,profile,genRapport}){ const [email
   }
 
   return (
-    <Modal show={show} onClose={()=>{onClose();setRapport("");setEmail("");}} title="🩺 Therapeut raadplegen">
+    <Modal show={show} onClose={()=>{onClose();setRapport("");setEmail("");}} title="Therapeut raadplegen">
       {entries.length<5?(
         <div style={{background:C.aL,border:"1px solid "+C.accent,borderRadius:12,padding:20,textAlign:"center"}}>
-          <div style={{fontSize:32,marginBottom:10}}>📋</div>
+          <div style={{fontSize:32,marginBottom:10}}><i className="ti ti-clipboard-list" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></div>
           <div style={{fontWeight:700,color:C.aT,fontSize:14,marginBottom:8}}>Nog niet genoeg registraties</div>
           <div style={{fontSize:13,color:C.muted,lineHeight:1.7}}>Voor een zinvol therapeutisch rapport zijn minimaal <strong>5 dagregistraties</strong> nodig. Je hebt er nu {entries.length}.</div>
         </div>
@@ -337,24 +341,24 @@ function TherapeutModal({show,onClose,entries,profile,genRapport}){ const [email
           <div style={{background:C.pL,borderRadius:12,padding:"13px 14px",marginBottom:16}}>
             <div style={{fontWeight:700,color:C.primary,marginBottom:5,fontSize:13}}>Hoe werkt dit?</div>
             <div style={{fontSize:13,color:C.text,lineHeight:1.7}}>De AI stelt een professioneel therapeutisch rapport op. Je kunt dit e-mailen naar een zorgverlener als voorbereiding op een consult.</div>
-            <div style={{fontSize:12,color:C.muted,marginTop:6}}>📊 {entries.length} registraties als input</div>
+            <div style={{fontSize:12,color:C.muted,marginTop:6}}><i className="ti ti-chart-bar" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>{entries.length} registraties als input</div>
           </div>
           {!rapport&&(
             <button onClick={generate} disabled={loading} style={{width:"100%",padding:"13px",background:loading?C.border:C.primary,color:"#fff",border:"none",borderRadius:10,fontSize:14,fontWeight:700,cursor:loading?"not-allowed":"pointer",marginBottom:14,opacity:loading?0.7:1}}>
-              {loading?"⏳ Rapport opstellen...":"🧠 Therapeutisch rapport genereren"}
+              {loading?"Rapport opstellen...":"Therapeutisch rapport genereren"}
             </button>
           )}
           {rapport&&(
             <>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7}}>
                 <div style={{fontSize:13,fontWeight:700,color:C.text}}>Gegenereerd rapport:</div>
-                <button onClick={()=>setRapport("")} style={{fontSize:11,color:C.muted,background:"none",border:"none",cursor:"pointer"}}>↩ Opnieuw</button>
+                <button onClick={()=>setRapport("")} style={{fontSize:11,color:C.muted,background:"none",border:"none",cursor:"pointer"}}><i className="ti ti-arrow-back-up" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Opnieuw</button>
               </div>
               <div style={{background:C.bg,borderRadius:10,padding:14,fontSize:13,lineHeight:1.8,color:C.text,whiteSpace:"pre-wrap",border:"1px solid "+C.border,maxHeight:240,overflowY:"auto",marginBottom:14}}>{rapport}</div>
               <div style={{fontSize:12,color:C.muted,fontWeight:700,marginBottom:6}}>Verstuur naar therapeut:</div>
               <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="therapeut@praktijk.nl" style={{...inp,marginBottom:12}}/>
               <button onClick={verstuur} disabled={!email} style={{width:"100%",padding:"13px",background:email?C.success:C.border,color:"#fff",border:"none",borderRadius:10,fontSize:14,fontWeight:700,cursor:email?"pointer":"not-allowed"}}>
-                📬 Versturen via mail-app
+                Versturen via mail-app
               </button>
               <div style={{fontSize:11,color:C.muted,textAlign:"center",marginTop:8}}>Je mail-app wordt geopend. Je kunt de e-mail nog aanpassen.</div>
             </>
@@ -417,7 +421,7 @@ function FotoScan({onResult}){
     };
     reader.readAsDataURL(file);
   }
-  return(<div style={{display:"inline"}}><input ref={ref} type="file" accept="image/*" capture="environment" onChange={handle} style={{display:"none"}}/><button onClick={()=>ref.current?.click()} disabled={loading} style={{padding:"6px 12px",borderRadius:8,border:"1.5px solid "+C.primary,background:C.pL,color:C.primary,fontSize:12,fontWeight:600,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:5}}>{loading?"⏳ Herkennen...":"📷 Scan foto"}</button></div>);
+  return(<div style={{display:"inline"}}><input ref={ref} type="file" accept="image/*" capture="environment" onChange={handle} style={{display:"none"}}/><button onClick={()=>ref.current?.click()} disabled={loading} style={{padding:"6px 12px",borderRadius:8,border:"1.5px solid "+C.primary,background:C.pL,color:C.primary,fontSize:12,fontWeight:600,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:5}}>{loading?"Herkennen...":"Scan foto"}</button></div>);
 }
 
 function BarcodeScan({onResult}){
@@ -443,22 +447,22 @@ function BarcodeScan({onResult}){
     };
     reader.readAsDataURL(file);
   }
-  return(<div style={{display:"inline"}}><input ref={ref} type="file" accept="image/*" capture="environment" onChange={handle} style={{display:"none"}}/><button onClick={()=>ref.current?.click()} disabled={loading} style={{padding:"6px 12px",borderRadius:8,border:"1.5px solid "+C.accent,background:C.aL,color:C.aT,fontSize:12,fontWeight:600,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:5}}>{loading?"⏳ Zoeken...":"🔢 Scan barcode"}</button></div>);
+  return(<div style={{display:"inline"}}><input ref={ref} type="file" accept="image/*" capture="environment" onChange={handle} style={{display:"none"}}/><button onClick={()=>ref.current?.click()} disabled={loading} style={{padding:"6px 12px",borderRadius:8,border:"1.5px solid "+C.accent,background:C.aL,color:C.aT,fontSize:12,fontWeight:600,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:5}}>{loading?"Zoeken...":"Scan barcode"}</button></div>);
 }
 
 // ── Upgrade modal ────────────────────────────────────────────────────────────
 function UpgradeModal({show, onClose}) {
   return (
-    <Modal show={show} onClose={onClose} title="🔓 Upgrade naar Pro">
+    <Modal show={show} onClose={onClose} title="Upgrade naar Pro" icon="ti-lock-open">
       <div style={{textAlign:"center",marginBottom:20}}>
-        <div style={{fontSize:40,marginBottom:8}}>🦶</div>
+        <div style={{fontSize:40,marginBottom:8}}><i className="ti ti-heartbeat" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></div>
         <div style={{fontWeight:700,fontSize:16,color:C.text,marginBottom:6}}>Jicht Tracker Pro</div>
         <div style={{fontSize:13,color:C.muted,lineHeight:1.7}}>Krijg toegang tot alle 9 registratie-modules en onbeperkte AI-analyses.</div>
       </div>
       <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
-        {["💧 Drinken registreren","🏃 Beweging bijhouden","😴 Slaap monitoren","💊 Medicatie logging","🌿 Supplementen tracking","🩸 Urinezuurwaarden"].map(f=>(
+        {["Drinken registreren","Beweging bijhouden","Slaap monitoren","Medicatie logging","Supplementen tracking","Urinezuurwaarden"].map(f=>(
           <div key={f} style={{display:"flex",alignItems:"center",gap:8,fontSize:13,color:C.text}}>
-            <span style={{color:C.success,fontWeight:700}}>✓</span>{f}
+            <span style={{color:C.success,fontWeight:700}}><i className="ti ti-check" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></span>{f}
           </div>
         ))}
       </div>
@@ -466,7 +470,7 @@ function UpgradeModal({show, onClose}) {
         <div style={{background:C.pL,borderRadius:12,padding:"14px 16px",border:"1.5px solid "+C.primary}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div><div style={{fontWeight:700,color:C.primary,fontSize:15}}>Maandelijks</div><div style={{fontSize:12,color:C.muted}}>Maandelijks opzegbaar</div></div>
-            <div style={{textAlign:"right"}}><div style={{fontWeight:800,fontSize:20,color:C.primary}}>€9</div><div style={{fontSize:11,color:C.muted}}>/maand</div></div>
+            <div style={{textAlign:"right"}}><div style={{fontWeight:700,fontSize:20,color:C.primary}}>€9</div><div style={{fontSize:11,color:C.muted}}>/maand</div></div>
           </div>
           <button onClick={()=>window.open("https://buy.stripe.com/bJe14feDE4T159F1QLc7u01","_blank")} style={{width:"100%",marginTop:10,padding:"10px",background:C.primary,color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer"}}>
             Kies maandelijks →
@@ -476,7 +480,7 @@ function UpgradeModal({show, onClose}) {
           <div style={{position:"absolute",top:-10,right:12,background:"#7C3AED",color:"#fff",fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:10}}>BESTE DEAL</div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div><div style={{fontWeight:700,color:"#7C3AED",fontSize:15}}>Jaarlijks</div><div style={{fontSize:12,color:C.muted}}>2 maanden gratis</div></div>
-            <div style={{textAlign:"right"}}><div style={{fontWeight:800,fontSize:20,color:"#7C3AED"}}>€99</div><div style={{fontSize:11,color:C.muted}}>/jaar</div></div>
+            <div style={{textAlign:"right"}}><div style={{fontWeight:700,fontSize:20,color:"#7C3AED"}}>€99</div><div style={{fontSize:11,color:C.muted}}>/jaar</div></div>
           </div>
           <button onClick={()=>window.open("https://buy.stripe.com/8x24gr1QSetB7hN52Xc7u00","_blank")} style={{width:"100%",marginTop:10,padding:"10px",background:"#7C3AED",color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer"}}>
             Kies jaarlijks →
@@ -526,14 +530,15 @@ function LoginScreen({onLogin}){
   }
 
   return (
-    <div style={{fontFamily:"system-ui,sans-serif",background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 20px"}}>
+    <div style={{fontFamily:FONT,background:"linear-gradient(180deg,#E3F3F4 0%,#F3F8FB 45%)",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 20px"}}>
       <div style={{width:"100%",maxWidth:380}}>
         <div style={{textAlign:"center",marginBottom:16}}>
-          <div style={{fontSize:36,marginBottom:4}}>🦶</div>
-          <h1 style={{margin:0,fontSize:24,fontWeight:700,color:C.primary}}>Jicht Tracker</h1>
+          <div style={{width:56,height:56,borderRadius:18,background:C.primary,display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:10,boxShadow:"0 6px 16px rgba(14,124,134,0.28)"}}><i className="ti ti-heartbeat" style={{fontSize:30,color:"#fff"}} aria-hidden="true"></i></div>
+          <h1 style={{margin:0,fontSize:26,fontWeight:700,color:C.text,letterSpacing:"-0.4px"}}>Jicht<span style={{color:C.primary}}>Tracker</span></h1>
+          <p style={{color:C.text,fontSize:14,marginTop:6,fontWeight:500}}>Begrijp je jicht. Verminder je aanvallen.</p>
           <p style={{color:C.muted,fontSize:13,marginTop:4}}>een product van <strong>HOBC BV</strong></p>
         </div>
-        <div style={{background:C.card,borderRadius:20,padding:28,border:"none",boxShadow:"0 4px 24px rgba(0,0,0,0.08),0 1px 4px rgba(0,0,0,0.04)"}}>
+        <div style={{background:C.card,borderRadius:24,padding:28,border:"1px solid "+C.border,boxShadow:"0 10px 32px rgba(18,48,61,0.08)"}}>
           {/* Tab switcher */}
           <div style={{display:"flex",background:C.bg,borderRadius:8,padding:3,marginBottom:20}}>
             {[["login","Inloggen"],["register","Registreren"]].map(([m,l])=>(
@@ -542,7 +547,7 @@ function LoginScreen({onLogin}){
           </div>
 
           {err&&<div style={{background:C.dL,border:"1px solid "+C.danger,borderRadius:8,padding:"9px 12px",color:C.danger,fontSize:13,marginBottom:14}}>{err}</div>}
-          {ok&&<div style={{background:C.sL,border:"1px solid #81C784",borderRadius:8,padding:"9px 12px",color:C.success,fontSize:13,marginBottom:14}}>✅ {ok}</div>}
+          {ok&&<div style={{background:C.sL,border:"1px solid #9ED8BC",borderRadius:8,padding:"9px 12px",color:C.success,fontSize:13,marginBottom:14}}>{ok}</div>}
 
           <div style={{marginBottom:12}}>
             <div style={{fontSize:12,color:C.muted,marginBottom:5}}>E-mailadres</div>
@@ -560,7 +565,7 @@ function LoginScreen({onLogin}){
           )}
 
           <button onClick={handle} disabled={loading||!email||!pw||(mode==="register"&&!pw2)} style={{width:"100%",padding:"13px",background:(email&&pw&&(mode==="login"||pw2))?C.primary:C.border,color:"#fff",border:"none",borderRadius:10,fontSize:15,fontWeight:700,cursor:(email&&pw)?"pointer":"default"}}>
-            {loading?"⏳ Even geduld...":(mode==="login"?"Inloggen →":"Account aanmaken →")}
+            {loading?"Even geduld...":(mode==="login"?"Inloggen →":"Account aanmaken →")}
           </button>
 
           {mode==="login"&&(
@@ -568,7 +573,7 @@ function LoginScreen({onLogin}){
               <button onClick={async()=>{
                 if(!email){alert("Vul eerst je e-mailadres in.");return;}
                 const r=await fetch(SU+"/auth/v1/recover",{method:"POST",headers:{"Content-Type":"application/json","apikey":SK},body:JSON.stringify({email})});
-                if(r.ok){alert("✅ Herstelmail verstuurd naar "+email+". Controleer ook je spam.");}
+                if(r.ok){alert("Herstelmail verstuurd naar "+email+". Controleer ook je spam.");}
                 else{alert("Fout bij versturen herstelmail. Controleer je e-mailadres.");}
               }} style={{background:"none",border:"none",color:C.primary,fontSize:13,cursor:"pointer",textDecoration:"underline"}}>
                 Wachtwoord vergeten?
@@ -578,8 +583,8 @@ function LoginScreen({onLogin}){
 
           <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid "+C.border,textAlign:"center"}}>
             <div style={{fontSize:11,color:C.muted,marginBottom:10}}>Wil je eerst de app bekijken?</div>
-            <button onClick={()=>onLogin({token:"demo",user:{email:"demo@demo.nl"},demo:true})} style={{width:"100%",padding:"11px",background:C.aL,color:C.aT,border:"1.5px solid "+C.accent,borderRadius:10,fontSize:14,fontWeight:700,cursor:"pointer"}}>
-              👀 Bekijk demo (zonder opslag)
+            <button onClick={()=>onLogin({token:"demo",user:{email:"demo@demo.nl"},demo:true})} style={{width:"100%",padding:"11px",background:C.pL,color:C.pD,border:"1.5px solid "+C.primary,borderRadius:12,fontSize:14,fontWeight:600,cursor:"pointer"}}>
+              Bekijk demo (zonder opslag)
             </button>
           </div>
         </div>
@@ -611,7 +616,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   const[sync,setSync]=useState("");
   const[mainTab,setMainTab]=useState("registreer");
   const[regDate,setRegDate]=useState(today());
-  const[regSec,setRegSec]=useState("eten");
+  const[regSec,setRegSec]=useState(null);
   const[aiResult,setAiResult]=useState("");
   const[aiLoading,setAiLoading]=useState(false);
   const[profSaved,setProfSaved]=useState(false);
@@ -814,75 +819,80 @@ function JichtTracker({session,onLogout}){ const{token}=session;
   const avgPain=allPains.length?(allPains.reduce((a,b)=>a+b,0)/allPains.length).toFixed(1):"–";
   const monthly=getStats(entries);
   const recent=monthly.slice(-6);
-  const syncBadge=sync==="saving"?{bg:"#FFF8E1",b:"#FFD54F",t:"⏳ Opslaan...",c:"#795548"}:sync==="saved"?{bg:C.sL,b:"#81C784",t:"✅ Opgeslagen",c:C.success}:(sync.startsWith("error"))?{bg:C.dL,b:C.danger,t:"❌ Fout bij opslaan: "+sync.replace("error:",""),c:C.danger}:null;
+  const syncBadge=sync==="saving"?{bg:C.pL,b:C.border,t:"Opslaan...",c:C.pD}:sync==="saved"?{bg:C.sL,b:"#9ED8BC",t:"Opgeslagen",c:C.success}:(sync.startsWith("error"))?{bg:C.dL,b:C.danger,t:"Fout bij opslaan: "+sync.replace("error:",""),c:C.danger}:null;
   const slaap=berekenSlaap(dag.slaap.bedtijd,dag.slaap.wektijd);
   const PG="linear-gradient(90deg,#4CAF50 0%,#8BC34A 25%,#FF9800 50%,#F44336 75%,#B71C1C 100%)";
 
   const MENU_ITEMS=[
-    ["🩺","Arts / Therapeut raadplegen",()=>setShowTher(true)],
-    ["📧","Rapport versturen",()=>{setShowRapport(true);setRapportTekst("");}],
+    ["ti-stethoscope","Arts / Therapeut raadplegen",()=>setShowTher(true)],
+    ["ti-mail","Rapport versturen",()=>{setShowRapport(true);setRapportTekst("");}],
     ["---","---",null],
-    ["👤","Profiel",()=>setShowProfiel(true)],
-    ["🆘","Ondersteuning",()=>setShowSupport(true)],
-    ["ℹ","Over Jicht Tracker",()=>setShowOver(true)],
+    ["ti-user","Profiel",()=>setShowProfiel(true)],
+    ["ti-lifebuoy","Ondersteuning",()=>setShowSupport(true)],
+    ["ti-info-circle","Over Jicht Tracker",()=>setShowOver(true)],
     ["---","---",null],
-    ["🔒","Privacy",()=>setShowPrivacy(true)],
-    ["⚖","Disclaimer",()=>setShowDisc(true)],
-    ["🚪",isDemo?"↩ Terug naar login":"Uitloggen",async()=>{if(!isDemo)await signOut(token);onLogout();}],
+    ["ti-lock","Privacy",()=>setShowPrivacy(true)],
+    ["ti-scale","Disclaimer",()=>setShowDisc(true)],
+    ["ti-logout",isDemo?"Terug naar login":"Uitloggen",async()=>{if(!isDemo)await signOut(token);onLogout();}],
   ];
 
   return (
     <div style={{fontFamily:FONT,background:C.bg,minHeight:"100vh",maxWidth:680,margin:"0 auto",paddingBottom:80,overflowX:"hidden",width:"100%"}}>
 
       {/* Header */}
-      <div style={{background:C.dark,padding:"18px 20px 14px",color:"#fff",display:"flex",alignItems:"center",gap:14,position:"relative"}}>
-        {profile.photo&&<img src={profile.photo} alt="p" style={{width:40,height:40,borderRadius:"50%",objectFit:"cover",border:"2px solid rgba(255,255,255,0.4)"}}/>}
+      <div style={{background:C.card,padding:"14px 18px",color:C.text,display:"flex",alignItems:"center",gap:12,position:"relative",borderBottom:"1px solid "+C.border}}>
+        {profile.photo?<img src={profile.photo} alt="p" style={{width:38,height:38,borderRadius:"50%",objectFit:"cover",border:"2px solid "+C.pL}}/>:<div style={{width:38,height:38,borderRadius:12,background:C.primary,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className="ti ti-heartbeat" style={{fontSize:21,color:"#fff"}} aria-hidden="true"></i></div>}
         <div style={{flex:1}}>
-          <h1 style={{margin:0,fontSize:22,fontWeight:800,letterSpacing:"-0.4px"}}>Jicht<span style={{color:C.primary}}>Tracker</span></h1>
+          <h1 style={{margin:0,fontSize:20,fontWeight:700,letterSpacing:"-0.3px",color:C.text}}>Jicht<span style={{color:C.primary}}>Tracker</span></h1>
         </div>
-        <button onClick={()=>setMenuOpen(m=>!m)} style={{background:"rgba(255,255,255,0.1)",border:"none",color:"rgba(255,255,255,0.7)",padding:"8px 11px",borderRadius:8,cursor:"pointer",fontSize:20}}>{menuOpen?"✕":"☰"}</button>
+        <button onClick={()=>setMenuOpen(m=>!m)} aria-label="Menu" style={{background:C.pL,border:"none",color:C.primary,width:40,height:40,borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><i className={"ti "+(menuOpen?"ti-x":"ti-menu-2")} style={{fontSize:22}} aria-hidden="true"></i></button>
         {menuOpen&&(
-          <div style={{position:"absolute",top:"100%",right:16,zIndex:100,background:C.card,borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.15)",border:"1px solid "+C.border,minWidth:210,overflow:"hidden"}} onClick={()=>setMenuOpen(false)}>
+          <div style={{position:"absolute",top:"100%",right:16,zIndex:100,background:C.card,borderRadius:12,boxShadow:"0 12px 32px rgba(18,48,61,0.16)",border:"1px solid "+C.border,minWidth:250,overflow:"hidden",padding:6}} onClick={()=>setMenuOpen(false)}>
             {MENU_ITEMS.map(([icon,lbl,fn],i)=>(
               lbl==="---"
-                ? <div key={i} style={{height:1,background:C.border,margin:"4px 0"}}/>
-                : <button key={lbl} onClick={fn} style={{width:"100%",padding:"12px 16px",border:"none",background:"transparent",textAlign:"left",cursor:"pointer",fontSize:14,color:(lbl==="Uitloggen"||lbl==="↩ Terug naar login")?C.danger:C.text,display:"flex",alignItems:"center",gap:10}}>
-                    <span style={{width:22,textAlign:"center",flexShrink:0}}>{icon}</span><span style={{fontWeight:600}}>{lbl}</span>
+                ? <div key={i} style={{height:1,background:C.border,margin:"6px 8px"}}/>
+                : <button key={lbl} onClick={fn} style={{width:"100%",padding:"10px 12px",border:"none",borderRadius:10,background:"transparent",textAlign:"left",cursor:"pointer",fontSize:14,color:(lbl==="Uitloggen"||lbl==="Terug naar login")?C.danger:C.text,display:"flex",alignItems:"center",gap:10}}>
+                    <span style={{width:32,height:32,borderRadius:10,background:(lbl==="Uitloggen"||lbl==="Terug naar login")?C.dL:C.pL,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={"ti "+icon} style={{fontSize:18,color:(lbl==="Uitloggen"||lbl==="Terug naar login")?C.danger:C.primary}} aria-hidden="true"></i></span><span style={{fontWeight:500}}>{lbl}</span>
                   </button>
             ))}
           </div>
         )}
       </div>
 
-      {isDemo&&<div style={{background:C.aL,borderBottom:"1px solid "+C.accent,padding:"8px 16px",textAlign:"center",fontSize:12,color:C.aT,fontWeight:600}}>👀 Demo-modus — wijzigingen worden niet opgeslagen</div>}
+      {isDemo&&<div style={{background:C.pL,borderBottom:"1px solid "+C.border,padding:"8px 16px",textAlign:"center",fontSize:12,color:C.pD,fontWeight:600}}><i className="ti ti-eye" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Demo-modus — wijzigingen worden niet opgeslagen</div>}
 
-      {/* Stats */}
-      <div style={{display:"flex",background:C.card,borderBottom:"1px solid "+C.border}}>
-        {[{l:"Registraties",v:entries.length},{l:"Gem. pijn",v:avgPain},{l:"Aanvallen",v:totalAttacks},{l:"Maanden",v:monthly.length}].map((s,i)=>(
-          <div key={i} style={{flex:1,padding:"10px 5px",textAlign:"center",borderRight:i<3?"1px solid "+C.border:"none"}}>
-            <div style={{fontSize:22,fontWeight:800,color:C.dark}}>{s.v}</div>
-            <div style={{fontSize:9,color:C.muted,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>{s.l}</div>
-          </div>
-        ))}
+      {/* Hero banner */}
+      <div style={{padding:"16px 18px 0",fontSize:13,color:C.muted,fontWeight:500}}>Eindelijk meer controle over je jicht</div>
+
+      {/* Today card */}
+      <div style={{background:"linear-gradient(135deg,"+C.primary+" 0%,#2F9E6E 100%)",margin:"14px 14px 0",borderRadius:20,padding:"16px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",color:"#fff",boxShadow:"0 6px 18px rgba(14,124,134,0.22)"}}>
+        <div>
+          <div style={{fontSize:12,fontWeight:500,color:"rgba(255,255,255,0.85)",marginBottom:3}}>Goedemorgen{profile.name?", "+profile.name.split(" ")[0]:""}</div>
+          <div style={{fontSize:18,fontWeight:700,letterSpacing:"-0.3px"}}>{new Date().toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"}).replace(/^\w/,c=>c.toUpperCase())}</div>
+        </div>
+        <div style={{background:"rgba(255,255,255,0.18)",borderRadius:14,padding:"10px 14px",textAlign:"center"}}>
+          <div style={{fontSize:22,fontWeight:700,lineHeight:1}}>{entries.length}</div>
+          <div style={{fontSize:9,fontWeight:600,color:"rgba(255,255,255,0.9)",textTransform:"uppercase",marginTop:3,letterSpacing:0.4}}>Dagen actief</div>
+        </div>
       </div>
 
       {/* Tabs */}
-      <div style={{display:"flex",background:C.card,borderBottom:"1px solid "+C.border}}>
+      <div style={{display:"flex",background:C.card,borderBottom:"1px solid "+C.border,marginTop:14}}>
         {MTABS.map(([id,icon,lbl])=>(
-          <button key={id} onClick={()=>setMainTab(id)} style={{flex:1,padding:"11px 0",border:"none",background:"transparent",cursor:"pointer",fontSize:12,fontWeight:mainTab===id?700:500,color:mainTab===id?C.primary:C.muted,borderBottom:mainTab===id?"3px solid "+C.primary:"3px solid transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-            <span style={{fontSize:18}}>{icon}</span><span>{lbl}</span>
+          <button key={id} onClick={()=>setMainTab(id)} style={{flex:1,padding:"10px 0",border:"none",background:"transparent",cursor:"pointer",fontSize:11,fontWeight:mainTab===id?600:500,color:mainTab===id?C.primary:C.muted,borderBottom:mainTab===id?"3px solid "+C.primary:"3px solid transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+            <i className={"ti "+icon} style={{fontSize:20,display:"block",lineHeight:1,color:mainTab===id?C.primary:C.muted}} aria-hidden="true"></i><span>{lbl}</span>
           </button>
         ))}
       </div>
 
       {/* Modals */}
-      <Modal show={showProfiel} onClose={()=>setShowProfiel(false)} title="👤 Profiel">
-        {profSaved&&<div style={{background:C.sL,border:"1px solid #81C784",borderRadius:8,padding:"9px 13px",color:C.success,fontWeight:600,fontSize:13,marginBottom:12}}>✅ Profiel opgeslagen!</div>}
+      <Modal show={showProfiel} onClose={()=>setShowProfiel(false)} title="Profiel">
+        {profSaved&&<div style={{background:C.sL,border:"1px solid #9ED8BC",borderRadius:8,padding:"9px 13px",color:C.success,fontWeight:600,fontSize:13,marginBottom:12}}><i className="ti ti-circle-check" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Profiel opgeslagen!</div>}
         <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:16,padding:14,background:C.bg,borderRadius:12}}>
-          {profile.photo?<img src={profile.photo} alt="p" style={{width:64,height:64,borderRadius:"50%",objectFit:"cover"}}/>:<div style={{width:64,height:64,borderRadius:"50%",background:C.pL,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24}}>👤</div>}
+          {profile.photo?<img src={profile.photo} alt="p" style={{width:64,height:64,borderRadius:"50%",objectFit:"cover"}}/>:<div style={{width:64,height:64,borderRadius:"50%",background:C.pL,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24}}><i className="ti ti-user" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></div>}
           <div>
             <input type="file" accept="image/*" onChange={handlePhoto} style={{display:"none"}} id="pu"/>
-            <label htmlFor="pu" style={{display:"inline-block",padding:"7px 14px",background:C.pL,color:C.primary,borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",border:"1px solid "+C.border}}>📷 Foto kiezen</label>
+            <label htmlFor="pu" style={{display:"inline-block",padding:"7px 14px",background:C.pL,color:C.primary,borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",border:"1px solid "+C.border}}><i className="ti ti-camera" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Foto kiezen</label>
             {profile.photo&&<button onClick={()=>setProfile(p=>({...p,photo:""}))} style={{display:"block",fontSize:11,color:C.danger,background:"none",border:"none",cursor:"pointer",marginTop:5,padding:0}}>Verwijderen</button>}
           </div>
         </div>
@@ -893,18 +903,18 @@ function JichtTracker({session,onLogout}){ const{token}=session;
         <div style={{fontSize:11,color:C.muted,marginBottom:20}}>Je e-mailadres is niet aanpasbaar via de app.</div>
         {/* Wachtwoord wijzigen */}
         <div style={{borderTop:"1px solid "+C.border,paddingTop:18,marginTop:18}}>
-          <div style={{fontWeight:700,fontSize:14,marginBottom:10}}>🔑 Wachtwoord wijzigen</div>
-          {pwMsg&&<div style={{background:pwMsg.startsWith("ok:")?C.sL:C.dL,border:"1px solid "+(pwMsg.startsWith("ok:")?"#81C784":C.danger),borderRadius:8,padding:"8px 12px",color:pwMsg.startsWith("ok:")?C.success:C.danger,fontSize:13,marginBottom:10}}>{pwMsg.startsWith("ok:")?"✅ ":""}{pwMsg.replace(/^(ok|error):/,"")}</div>}
+          <div style={{fontWeight:700,fontSize:14,marginBottom:10}}><i className="ti ti-key" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Wachtwoord wijzigen</div>
+          {pwMsg&&<div style={{background:pwMsg.startsWith("ok:")?C.sL:C.dL,border:"1px solid "+(pwMsg.startsWith("ok:")?"#81C784":C.danger),borderRadius:8,padding:"8px 12px",color:pwMsg.startsWith("ok:")?C.success:C.danger,fontSize:13,marginBottom:10}}>{pwMsg.startsWith("ok:")?"":""}{pwMsg.replace(/^(ok|error):/,"")}</div>}
           <input type="password" value={nieuwPw} onChange={e=>setNieuwPw(e.target.value)} placeholder="Nieuw wachtwoord" style={{...inp,marginBottom:8}}/>
           <input type="password" value={nieuwPw2} onChange={e=>setNieuwPw2(e.target.value)} placeholder="Herhaal nieuw wachtwoord" style={{...inp,marginBottom:10}}/>
-          <button onClick={wijzigWachtwoord} disabled={pwLoading||!nieuwPw||!nieuwPw2} style={{background:nieuwPw&&nieuwPw2?C.primary:C.border,color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:13,fontWeight:700,cursor:nieuwPw&&nieuwPw2?"pointer":"not-allowed",width:"100%",opacity:pwLoading?0.7:1}}>
-            {pwLoading?"⏳ Bezig...":"Wachtwoord wijzigen"}
+          <button onClick={wijzigWachtwoord} disabled={pwLoading||!nieuwPw||!nieuwPw2} style={{background:nieuwPw&&nieuwPw2?C.primary:C.border,color:"#fff",border:"none",borderRadius:12,padding:"10px",fontSize:13,fontWeight:700,cursor:nieuwPw&&nieuwPw2?"pointer":"not-allowed",width:"100%",opacity:pwLoading?0.7:1}}>
+            {pwLoading?"Bezig...":"Wachtwoord wijzigen"}
           </button>
         </div>
 
         {/* Account verwijderen */}
         <div style={{borderTop:"1px solid "+C.border,paddingTop:18,marginTop:6}}>
-          <div style={{fontWeight:700,fontSize:14,marginBottom:6,color:C.danger}}>⚠ Account verwijderen</div>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:6,color:C.danger}}><i className="ti ti-alert-triangle" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Account verwijderen</div>
           <div style={{fontSize:12,color:C.muted,lineHeight:1.6,marginBottom:12}}>Je account wordt verwijderd en je gegevens geanonimiseerd. Je gezondheidsdata blijft bewaard voor onderzoek maar is niet meer aan jou gekoppeld.</div>
           {!verwijderConf?(
             <button onClick={()=>setVerwijderConf(true)} style={{width:"100%",padding:"11px",background:"transparent",border:"2px solid "+C.danger,borderRadius:10,color:C.danger,fontSize:14,fontWeight:700,cursor:"pointer"}}>
@@ -917,7 +927,7 @@ function JichtTracker({session,onLogout}){ const{token}=session;
               <div style={{display:"flex",gap:10}}>
                 <button onClick={()=>setVerwijderConf(false)} style={{flex:1,padding:"11px",background:C.card,border:"1.5px solid "+C.border,borderRadius:8,color:C.muted,fontSize:14,fontWeight:600,cursor:"pointer"}}>Annuleer</button>
                 <button onClick={verwijderAccount} disabled={verwijderLoading} style={{flex:1,padding:"11px",background:C.danger,border:"none",borderRadius:8,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",opacity:verwijderLoading?0.7:1}}>
-                  {verwijderLoading?"⏳ Bezig...":"Verwijder account"}
+                  {verwijderLoading?"Bezig...":"Verwijder account"}
                 </button>
               </div>
             </div>
@@ -925,24 +935,24 @@ function JichtTracker({session,onLogout}){ const{token}=session;
         </div>
       </Modal>
 
-      <Modal show={showRapport} onClose={()=>setShowRapport(false)} title="📧 Rapport versturen">
+      <Modal show={showRapport} onClose={()=>setShowRapport(false)} title="Rapport versturen">
         <div style={{background:C.pL,borderRadius:10,padding:"12px 14px",marginBottom:16,fontSize:13,color:C.text,lineHeight:1.6}}>
-          ℹ De AI genereert een beknopt rapport. Daarna kun je het e-mailen via je <strong>standaard mail-app</strong>.
+          De AI genereert een beknopt rapport. Daarna kun je het e-mailen via je <strong>standaard mail-app</strong>.
         </div>
         {!rapportTekst&&(
-          <button onClick={genRapport} disabled={rapportLoading||entries.length===0} style={{background:entries.length>0?C.accent:C.border,color:"#fff",border:"none",borderRadius:10,padding:"13px",fontSize:14,fontWeight:700,cursor:entries.length>0?"pointer":"not-allowed",width:"100%",marginBottom:12,opacity:rapportLoading?0.7:1}}>
-            {rapportLoading?"⏳ Rapport genereren...":"🧠 Rapport genereren door AI"}
+          <button onClick={genRapport} disabled={rapportLoading||entries.length===0} style={{background:entries.length>0?C.primary:C.border,color:"#fff",border:"none",borderRadius:12,padding:"13px",fontSize:14,fontWeight:700,cursor:entries.length>0?"pointer":"not-allowed",width:"100%",marginBottom:12,opacity:rapportLoading?0.7:1}}>
+            {rapportLoading?"Rapport genereren...":"Rapport genereren door AI"}
           </button>
         )}
         {entries.length===0&&<div style={{fontSize:12,color:C.muted,textAlign:"center",marginBottom:12}}>Voeg eerst registraties toe.</div>}
         {rapportTekst&&(
           <>
             <div style={{background:C.bg,borderRadius:10,padding:14,fontSize:13,lineHeight:1.7,color:C.text,whiteSpace:"pre-wrap",border:"1px solid "+C.border,maxHeight:220,overflowY:"auto",marginBottom:8}}>{rapportTekst}</div>
-            <button onClick={()=>setRapportTekst("")} style={{fontSize:11,color:C.muted,background:"none",border:"none",cursor:"pointer",marginBottom:14,padding:0}}>↩ Opnieuw genereren</button>
+            <button onClick={()=>setRapportTekst("")} style={{fontSize:11,color:C.muted,background:"none",border:"none",cursor:"pointer",marginBottom:14,padding:0}}><i className="ti ti-arrow-back-up" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Opnieuw genereren</button>
             <div style={{fontSize:12,color:C.muted,marginBottom:5,fontWeight:600}}>Verstuur naar:</div>
             <input type="email" value={rapportEmail} onChange={e=>setRapportEmail(e.target.value)} placeholder="ontvanger@email.nl" style={{...inp,marginBottom:12}}/>
-            <button onClick={verstuurRapport} disabled={!rapportEmail} style={{background:rapportEmail?C.primary:C.border,color:"#fff",border:"none",borderRadius:10,padding:"13px",fontSize:14,fontWeight:700,cursor:rapportEmail?"pointer":"not-allowed",width:"100%"}}>
-              📬 Openen in mail-app
+            <button onClick={verstuurRapport} disabled={!rapportEmail} style={{background:rapportEmail?C.primary:C.border,color:"#fff",border:"none",borderRadius:12,padding:"13px",fontSize:14,fontWeight:700,cursor:rapportEmail?"pointer":"not-allowed",width:"100%"}}>
+              Openen in mail-app
             </button>
             <div style={{fontSize:11,color:C.muted,textAlign:"center",marginTop:8}}>Je mail-app wordt geopend. Je kunt de e-mail nog aanpassen.</div>
           </>
@@ -962,15 +972,56 @@ function JichtTracker({session,onLogout}){ const{token}=session;
         {mainTab==="registreer"&&(
           <div>
             {syncBadge&&<div style={{background:syncBadge.bg,border:"1px solid "+syncBadge.b,borderRadius:8,padding:"7px 12px",color:syncBadge.c,fontSize:12,fontWeight:600,marginBottom:10,textAlign:"center"}}>{syncBadge.t}</div>}
-            <div style={{background:C.card,borderRadius:12,padding:"12px",border:"1px solid "+C.border,marginBottom:12}}>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <span style={{fontSize:13,color:C.muted,fontWeight:600}}>📅 Datum</span>
-                <input type="date" value={regDate} onChange={e=>setRegDate(e.target.value)} style={{...inp,flex:1,padding:"7px 10px"}}/>
-              </div>
+
+            {/* Dashboard kaarten */}
+            <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1.5,marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span>Deze maand</span>
             </div>
-            {/* Sectie 1 — Aanval & Metingen */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+              {[
+                {icon:"ti-alert-triangle",col:"#EF4444",bg:"#FEF2F2",val:totalAttacks,lbl:"Aanvallen",trend:""},
+                {icon:"ti-mood-sad",col:"#E8912D",bg:"#FDF3E3",val:avgPain,lbl:"Gem. pijn",trend:""},
+                {icon:"ti-droplet",col:C.primary,bg:C.pL,val:monthly.length>0?(monthly[monthly.length-1].avgUZ||"–"):"–",lbl:"Urinezuur",trend:"mmol/L"},
+                {icon:"ti-calendar-check",col:C.success,bg:C.sL,val:entries.length,lbl:"Registraties",trend:""},
+              ].map((d,i)=>(
+                <div key={i} style={{background:C.card,borderRadius:18,padding:"14px",border:"1px solid "+C.border,boxShadow:"0 1px 2px rgba(18,48,61,0.04)"}}>
+                  <div style={{width:32,height:32,borderRadius:10,background:d.bg,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:10}}>
+                    <i className={"ti "+d.icon} style={{fontSize:16,color:d.col}} aria-hidden="true"></i>
+                  </div>
+                  <div style={{fontSize:28,fontWeight:700,color:C.dark,lineHeight:1}}>{d.val}</div>
+                  <div style={{fontSize:9,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:0.5,marginTop:4}}>{d.lbl}</div>
+                  {d.trend&&<div style={{fontSize:9,color:C.muted,marginTop:3}}>{d.trend}</div>}
+                </div>
+              ))}
+            </div>
+
+            {/* Water progress card */}
+            {(()=>{const wd=dag?.drinken?.water||0;const doel=profile.water_doel||2000;const pct=Math.min(100,Math.round(wd/doel*100));return(
+              <div style={{background:C.card,borderRadius:16,padding:"14px",border:"1px solid "+C.border,marginBottom:14,display:"flex",alignItems:"center",gap:14}}>
+                <div style={{width:40,height:40,background:C.pL,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <i className="ti ti-droplets" style={{fontSize:20,color:C.primary}} aria-hidden="true"></i>
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,fontWeight:700,color:C.dark,marginBottom:5}}>Water vandaag</div>
+                  <div style={{height:6,background:"#F1F5F9",borderRadius:3}}>
+                    <div style={{height:6,background:"linear-gradient(to right,#0E7C86,#2F9E6E)",borderRadius:3,width:pct+"%",transition:"width 0.3s"}}/>
+                  </div>
+                  <div style={{fontSize:9,color:C.muted,marginTop:4}}>{(wd/1000).toFixed(1)}L van {(doel/1000).toFixed(1)}L doel — {pct}%</div>
+                </div>
+                <div style={{fontSize:16,fontWeight:700,color:C.primary}}>{(wd/1000).toFixed(1)}L</div>
+              </div>
+            )})()}
+
+            {/* Datumkiezer compact */}
+            <div style={{background:C.card,borderRadius:12,padding:"10px 14px",border:"1px solid "+C.border,marginBottom:12,display:"flex",alignItems:"center",gap:10}}>
+              <i className="ti ti-calendar" style={{fontSize:16,color:C.muted}} aria-hidden="true"></i>
+              <span style={{fontSize:12,color:C.muted,fontWeight:600}}>Datum</span>
+              <input type="date" value={regDate} onChange={e=>setRegDate(e.target.value)} style={{...inp,flex:1,padding:"5px 10px",fontSize:13}}/>
+            </div>
+
+            {/* Sectie 1 — Aanval groot + grid */}
             <div style={{background:C.card,border:"1px solid "+C.border,borderRadius:14,padding:"12px 12px 14px",marginBottom:12}}>
-              <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1.5,marginBottom:10,display:"flex",alignItems:"center",gap:5}}>
+              <div style={{fontSize:11,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:1,marginBottom:10,display:"flex",alignItems:"center",gap:5}}>
                 <span style={{width:5,height:5,borderRadius:"50%",background:C.danger,display:"inline-block"}}/>Aanval & Metingen
               </div>
               <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
@@ -979,52 +1030,72 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                   const isAanval=t.id==="aanval";
                   return(
                   <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)}
-                    style={{padding:isAanval?"14px 4px":"12px 4px",border:"1.5px solid "+(regSec===t.id?(isAanval?C.danger:C.primary):locked?C.proL:isAanval?C.border:C.border),borderRadius:14,background:regSec===t.id?(isAanval?C.dark:C.dark):locked?C.proL:C.card,color:regSec===t.id?"#fff":locked?C.pro:isAanval?C.muted:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,position:"relative",boxShadow:regSec===t.id?"0 2px 12px rgba(0,0,0,0.15)":"none",transition:"all 0.15s"}}>
-                    {locked&&<span style={{position:"absolute",top:5,right:5,fontSize:7,fontWeight:800,background:C.pro,color:"#fff",padding:"2px 5px",borderRadius:5}}>PRO</span>}
-                    <span style={{fontSize:isAanval?34:26}}>{t.icon}</span>
-                    <span style={{fontSize:isAanval?12:11,fontWeight:isAanval?700:400}}>{t.label}</span>
+                    style={{padding:"12px 4px",border:"1.5px solid "+(regSec===t.id?(isAanval?C.danger:C.primary):locked?C.proL:C.border),borderRadius:14,background:regSec===t.id?(t.id==="aanval"?C.danger:C.primary):locked?C.proL:C.card,color:regSec===t.id?"#fff":locked?C.pro:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,position:"relative",boxShadow:regSec===t.id?"0 4px 14px rgba(14,124,134,0.28)":"none",transition:"all 0.15s",height:90}}>
+                    {locked&&<span style={{position:"absolute",top:5,right:5,fontSize:7,fontWeight:700,background:C.pro,color:"#fff",padding:"2px 5px",borderRadius:5}}>PRO</span>}
+                    <i className={"ti "+t.icon} style={{fontSize:26,display:"block",lineHeight:1}} aria-hidden="true"></i>
+                    <span style={{fontSize:13,fontWeight:700,color:regSec===t.id?"#fff":C.text}}>{t.label}</span>
                   </button>);})}
               </div>
             </div>
             {/* Sectie 2 — Invloeden */}
-            <div style={{background:C.card,border:"1px solid "+C.border,borderRadius:14,padding:"12px 12px 14px",marginBottom:14}}>
-              <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1.5,marginBottom:10,display:"flex",alignItems:"center",gap:5}}>
-                <span style={{width:5,height:5,borderRadius:"50%",background:C.primary,display:"inline-block"}}/>Invloeden
-              </div>
+            <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1.5,marginBottom:10}}>Invloeden</div>
+            <div style={{marginBottom:14}}>
               <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
                 {RTABS_S2.map(t=>{
                   const locked=PRO_TABS.includes(t.id)&&!isPro;
                   return(
                   <button key={t.id} onClick={()=>locked?setShowUpgrade(true):setRegSec(t.id)}
-                    style={{padding:"14px 4px",border:"1.5px solid "+(regSec===t.id?C.dark:locked?C.proL:C.border),borderRadius:14,background:regSec===t.id?C.dark:locked?C.proL:C.card,color:regSec===t.id?"#fff":locked?C.pro:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,position:"relative",boxShadow:regSec===t.id?"0 2px 12px rgba(0,0,0,0.15)":"none",transition:"all 0.15s"}}>
-                    {locked&&<span style={{position:"absolute",top:5,right:5,fontSize:7,fontWeight:800,background:C.pro,color:"#fff",padding:"2px 5px",borderRadius:5}}>PRO</span>}
-                    <span style={{fontSize:28}}>{t.icon}</span>
-                    <span style={{fontSize:11}}>{t.label}</span>
+                    style={{padding:"12px 4px",border:"1.5px solid "+(regSec===t.id?C.primary:locked?C.proL:C.border),borderRadius:14,background:regSec===t.id?(t.id==="aanval"?C.danger:C.primary):locked?C.proL:C.card,color:regSec===t.id?"#fff":locked?C.pro:C.muted,fontSize:12,fontWeight:700,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,position:"relative",boxShadow:regSec===t.id?"0 4px 14px rgba(14,124,134,0.28)":"none",transition:"all 0.15s",height:90}}>
+                    {locked&&<span style={{position:"absolute",top:5,right:5,fontSize:7,fontWeight:700,background:C.pro,color:"#fff",padding:"2px 5px",borderRadius:5}}>PRO</span>}
+                    <i className={"ti "+t.icon} style={{fontSize:26,display:"block",lineHeight:1}} aria-hidden="true"></i>
+                    <span style={{fontSize:13,fontWeight:700,color:regSec===t.id?"#fff":C.text}}>{t.label}</span>
                   </button>);})}
               </div>
             </div>
 
-            {/* Verbindende pijl naar actief paneel */}
-            <div style={{display:"flex",justifyContent:"center",marginBottom:-4}}>
-              <div style={{width:0,height:0,borderLeft:"8px solid transparent",borderRight:"8px solid transparent",borderTop:"8px solid "+(RTABS_S1.some(t=>t.id===regSec)?C.danger:C.primary)}}/>
-            </div>
+            {/* Terugknop */}
+            {regSec&&(
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4,marginTop:4}}>
+                <button onClick={()=>setRegSec(null)} style={{background:"none",border:"none",color:C.muted,fontSize:13,fontWeight:600,cursor:"pointer",padding:"4px 0",display:"flex",alignItems:"center",gap:4}}>
+                  <i className="ti ti-arrow-left" style={{fontSize:16}} aria-hidden="true"></i> Terug
+                </button>
+                <div style={{width:0,height:0,borderLeft:"8px solid transparent",borderRight:"8px solid transparent",borderTop:"8px solid "+(RTABS_S1.some(t=>t.id===regSec)?C.accent:C.primary)}}/>
+                <div style={{width:40}}/>
+              </div>
+            )}
+
+            {/* AI advies banner — alleen zichtbaar als geen sectie open */}
+            {!regSec&&entries.length>=2&&(
+              <div style={{background:C.dark,borderRadius:16,padding:"13px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,marginTop:4}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <div style={{width:34,height:34,background:"rgba(255,255,255,0.14)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <i className="ti ti-sparkles" style={{fontSize:18,color:"#7FE0D0"}} aria-hidden="true"></i>
+                  </div>
+                  <div>
+                    <div style={{fontSize:12,fontWeight:700,color:"#fff"}}>Persoonlijk advies klaar</div>
+                    <div style={{fontSize:9,color:"rgba(255,255,255,0.7)",marginTop:1}}>{entries.length} registraties als basis</div>
+                  </div>
+                </div>
+                <button onClick={()=>setMainTab("analyse")} style={{background:C.primary,color:"#fff",fontSize:10,fontWeight:700,padding:"7px 12px",borderRadius:9,border:"none",cursor:"pointer",flexShrink:0}}>Bekijk</button>
+              </div>
+            )}
 
             {regSec==="eten"&&(
-              <Card title="🍽 Voeding registreren" accentColor={C.primary}>
+              <Card title="Voeding registreren" icon="ti-salad" accentColor={C.primary}>
                 <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
-                  {MMT.map(m=><button key={m} onClick={()=>setEtenMom(m)} style={{padding:"5px 11px",borderRadius:16,fontSize:12,cursor:"pointer",border:"1.5px solid "+(etenMom===m?C.accent:C.border),background:etenMom===m?C.aL:C.card,color:etenMom===m?C.aT:C.muted,fontWeight:etenMom===m?700:400}}>{m}</button>)}
+                  {MMT.map(m=><button key={m} onClick={()=>setEtenMom(m)} style={{padding:"5px 11px",borderRadius:16,fontSize:12,cursor:"pointer",border:"1.5px solid "+(etenMom===m?C.primary:C.border),background:etenMom===m?C.pL:C.card,color:etenMom===m?C.primary:C.muted,fontWeight:etenMom===m?700:400}}>{m}</button>)}
                 </div>
                 <div style={{display:"flex",gap:8,marginBottom:8}}>
                   <FotoScan onResult={tekst=>{if(tekst)setEtenTxt(tekst);}}/>
                 </div>
                 <textarea value={etenTxt} onChange={e=>setEtenTxt(e.target.value)} placeholder="Wat heb je gegeten? Of scan een foto..." rows={2} style={{...inp,resize:"vertical",marginBottom:8}}/>
                 <button onClick={addEten} disabled={!etenTxt.trim()} style={{background:etenTxt.trim()?C.primary:C.border,color:"#fff",border:"none",borderRadius:8,padding:"8px",fontSize:13,fontWeight:600,cursor:etenTxt.trim()?"pointer":"default",width:"100%"}}>+ Toevoegen</button>
-                {dag.eten.logs.length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:10}}>{dag.eten.logs.map((l,i)=><div key={i} style={{display:"flex",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,fontWeight:700,color:C.aT,minWidth:70}}>{l.moment}</span><span style={{fontSize:12,flex:1}}>{l.tekst}</span><button onClick={()=>remEten(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button></div>)}</div>}
+                {dag.eten.logs.length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:10}}>{dag.eten.logs.map((l,i)=><div key={i} style={{display:"flex",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,fontWeight:700,color:C.primary,minWidth:70}}>{l.moment}</span><span style={{fontSize:12,flex:1}}>{l.tekst}</span><button onClick={()=>remEten(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}><i className="ti ti-x" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></button></div>)}</div>}
               </Card>
             )}
 
             {regSec==="drinken"&&(
-              <Card title="💧 Drinken registreren" accentColor={C.primary}>
+              <Card title="Drinken registreren" icon="ti-droplets" accentColor={C.primary}>
                 <div style={{background:C.bg,borderRadius:10,padding:"10px 12px",marginBottom:12,display:"flex",alignItems:"center",gap:10}}>
                   <span style={{fontSize:12,color:C.muted,fontWeight:600,flexShrink:0}}>Dagdoel:</span>
                   <div style={{display:"flex",gap:5,flex:1}}>
@@ -1041,13 +1112,13 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                   return(
                     <div style={{marginBottom:12}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
-                        <span style={{fontSize:13,fontWeight:700,color:kleur}}>💧 {tot}ml / {waterDoel}ml dagdoel</span>
+                        <span style={{fontSize:13,fontWeight:700,color:kleur}}><i className="ti ti-droplets" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>{tot}ml / {waterDoel}ml dagdoel</span>
                         <span style={{fontSize:12,color:kleur,fontWeight:700}}>{pct}%</span>
                       </div>
                       <div style={{height:8,background:C.border,borderRadius:4,overflow:"hidden"}}>
                         <div style={{width:pct+"%",height:"100%",background:kleur,borderRadius:4,transition:"width 0.3s"}}/>
                       </div>
-                      {pct>=100&&<div style={{fontSize:11,color:C.success,marginTop:4,fontWeight:600}}>✅ Dagdoel behaald!</div>}
+                      {pct>=100&&<div style={{fontSize:11,color:C.success,marginTop:4,fontWeight:600}}><i className="ti ti-circle-check" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Dagdoel behaald!</div>}
                     </div>
                   );
                 })()}
@@ -1056,46 +1127,46 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                 </div>
                 {(dCat==="Anders"||dCat==="Alcohol"||dCat==="Frisdrank")&&<input value={dTxt} onChange={e=>setDTxt(e.target.value)} placeholder={dCat==="Alcohol"?"Bijv. bier, rode wijn...":"Omschrijving"} style={{...inp,marginBottom:12}}/>}
                 <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:10}}>
-                  {(PORTIE[dCat]||PORTIE["Anders"]).map(p=><button key={p.l} onClick={()=>{setDMl(p.ml);setDPortie(p.l);}} style={{padding:"7px 3px",borderRadius:10,border:"2px solid "+(dMl===p.ml&&dPortie===p.l?C.primary:C.border),background:dMl===p.ml&&dPortie===p.l?C.pL:C.card,color:dMl===p.ml&&dPortie===p.l?C.primary:C.muted,fontSize:10,fontWeight:dMl===p.ml&&dPortie===p.l?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:1}}><span style={{fontSize:16}}>{p.i==="kop"?"☕":p.i==="mok"?"🫖":p.i==="bier"?"🍺":p.i==="wijn"?"🍷":p.i==="fles"?"💧":"🥤"}</span><span>{p.l}</span><span style={{fontSize:9,color:C.muted}}>{p.ml}ml</span></button>)}
+                  {(PORTIE[dCat]||PORTIE["Anders"]).map(p=><button key={p.l} onClick={()=>{setDMl(p.ml);setDPortie(p.l);}} style={{padding:"7px 3px",borderRadius:10,border:"2px solid "+(dMl===p.ml&&dPortie===p.l?C.primary:C.border),background:dMl===p.ml&&dPortie===p.l?C.pL:C.card,color:dMl===p.ml&&dPortie===p.l?C.primary:C.muted,fontSize:10,fontWeight:dMl===p.ml&&dPortie===p.l?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:1}}><i className={"ti "+(p.i==="kop"?"ti-cup":p.i==="mok"?"ti-coffee":p.i==="bier"?"ti-beer":p.i==="wijn"?"ti-glass-full":p.i==="fles"?"ti-bottle":p.i==="shot"?"ti-glass-cocktail":"ti-glass")} style={{fontSize:20}} aria-hidden="true"></i><span>{p.l}</span><span style={{fontSize:9,color:C.muted}}>{p.ml}ml</span></button>)}
                 </div>
                 <div style={{display:"flex",gap:8,marginBottom:10}}>
                   <FotoScan onResult={tekst=>{if(tekst)setDTxt(tekst);}}/>
                 </div>
-                <button onClick={addDrinken} style={{background:C.primary,color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:13,fontWeight:700,cursor:"pointer",width:"100%",marginBottom:10}}>+ Registreren</button>
-                {dag.drinken.logs.length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10}}>{dag.drinken.logs.map((l,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{l.tijd}</span><span style={{fontSize:12,fontWeight:700,color:C.primary,flex:1}}>{l.categorie}{l.tekst?" · "+l.tekst:""}</span><span style={{fontSize:11,color:C.muted,background:C.pL,padding:"2px 7px",borderRadius:8}}>{l.portie} · {l.ml}ml</span><button onClick={()=>remDrinken(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button></div>)}</div>}
+                <button onClick={addDrinken} style={{background:C.primary,color:"#fff",border:"none",borderRadius:12,padding:"10px",fontSize:13,fontWeight:700,cursor:"pointer",width:"100%",marginBottom:10}}>+ Registreren</button>
+                {dag.drinken.logs.length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10}}>{dag.drinken.logs.map((l,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{l.tijd}</span><span style={{fontSize:12,fontWeight:700,color:C.primary,flex:1}}>{l.categorie}{l.tekst?" · "+l.tekst:""}</span><span style={{fontSize:11,color:C.muted,background:C.pL,padding:"2px 7px",borderRadius:8}}>{l.portie} · {l.ml}ml</span><button onClick={()=>remDrinken(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}><i className="ti ti-x" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></button></div>)}</div>}
               </Card>
             )}
 
             {regSec==="bewegen"&&isPro&&(
-              <Card title="🏃 Beweging registreren" accentColor={C.primary}>
+              <Card title="Beweging registreren" icon="ti-run" accentColor={C.primary}>
                 {(dag.bewegen?.logs||[]).length>0&&(()=>{const tot=(dag.bewegen.logs).reduce((s,l)=>s+(parseInt(l.minuten)||0),0);return<div style={{background:C.pL,borderRadius:8,padding:"8px 12px",marginBottom:12,display:"flex",justifyContent:"space-between"}}><span style={{fontSize:13,color:C.primary,fontWeight:700}}>{dag.bewegen.logs.length} sessie{dag.bewegen.logs.length>1?"s":""}</span><span style={{fontSize:12,color:C.primary}}>{tot} min totaal</span></div>;})()}
                 <div style={{display:"flex",gap:10,marginBottom:12,alignItems:"flex-end"}}>
                   <div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Tijdstip</div><input type="time" value={bTijd} onChange={e=>setBTijd(e.target.value)} style={{...inp,width:100}}/></div>
                   <div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Minuten</div><input type="number" value={bMin} onChange={e=>setBMin(e.target.value)} placeholder="0" min={0} style={{...inp,width:75,textAlign:"center",fontSize:17,fontWeight:700}}/></div>
                 </div>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
-                  {[15,20,30,45,60,90].map(m=><button key={m} onClick={()=>setBMin(String(m))} style={{padding:"5px 12px",borderRadius:16,fontSize:12,cursor:"pointer",border:"1.5px solid "+(bMin===String(m)?C.accent:C.border),background:bMin===String(m)?C.aL:C.card,color:bMin===String(m)?C.aT:C.muted,fontWeight:bMin===String(m)?700:400}}>{m}min</button>)}
+                  {[15,20,30,45,60,90].map(m=><button key={m} onClick={()=>setBMin(String(m))} style={{padding:"5px 12px",borderRadius:16,fontSize:12,cursor:"pointer",border:"1.5px solid "+(bMin===String(m)?C.primary:C.border),background:bMin===String(m)?C.pL:C.card,color:bMin===String(m)?C.primary:C.muted,fontWeight:bMin===String(m)?700:400}}>{m}min</button>)}
                 </div>
                 <Chips opts={BEWEGING} sel={bAct} onToggle={item=>setBAct(a=>a.includes(item)?a.filter(x=>x!==item):[...a,item])}/>
-                <button onClick={addBewegen} disabled={!bMin&&bAct.length===0} style={{background:(bMin||bAct.length>0)?C.primary:C.border,color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:13,fontWeight:700,cursor:(bMin||bAct.length>0)?"pointer":"default",width:"100%",marginTop:12}}>+ Sessie toevoegen</button>
-                {(dag.bewegen?.logs||[]).length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>{dag.bewegen.logs.map((l,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{l.tijd}</span><span style={{fontSize:12,fontWeight:700,color:C.primary,flex:1}}>{l.activiteiten?.join(", ")||"Activiteit"}</span><span style={{fontSize:11,color:C.muted,background:C.pL,padding:"2px 7px",borderRadius:8}}>{l.minuten}min</span><button onClick={()=>remBewegen(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button></div>)}</div>}
+                <button onClick={addBewegen} disabled={!bMin&&bAct.length===0} style={{background:(bMin||bAct.length>0)?C.primary:C.border,color:"#fff",border:"none",borderRadius:12,padding:"10px",fontSize:13,fontWeight:700,cursor:(bMin||bAct.length>0)?"pointer":"default",width:"100%",marginTop:12}}>+ Sessie toevoegen</button>
+                {(dag.bewegen?.logs||[]).length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>{dag.bewegen.logs.map((l,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{l.tijd}</span><span style={{fontSize:12,fontWeight:700,color:C.primary,flex:1}}>{l.activiteiten?.join(", ")||"Activiteit"}</span><span style={{fontSize:11,color:C.muted,background:C.pL,padding:"2px 7px",borderRadius:8}}>{l.minuten}min</span><button onClick={()=>remBewegen(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}><i className="ti ti-x" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></button></div>)}</div>}
               </Card>
             )}
 
             {regSec==="slaap"&&isPro&&(
-              <Card title="😴 Slaap registreren" accentColor={C.primary}>
+              <Card title="Slaap registreren" icon="ti-moon" accentColor={C.primary}>
                 <div style={{display:"flex",gap:12,marginBottom:16}}>
                   <div style={{flex:1}}><div style={{fontSize:12,color:C.muted,marginBottom:6,fontWeight:600}}>Gisteravond naar bed</div><input type="time" value={dag.slaap.bedtijd} onChange={e=>setDag(d=>({...d,slaap:{...d.slaap,bedtijd:e.target.value}}))} style={{...inp,fontSize:17,fontWeight:700,textAlign:"center",padding:"11px"}}/></div>
                   <div style={{flex:1}}><div style={{fontSize:12,color:C.muted,marginBottom:6,fontWeight:600}}>Vanochtend wakker</div><input type="time" value={dag.slaap.wektijd} onChange={e=>setDag(d=>({...d,slaap:{...d.slaap,wektijd:e.target.value}}))} style={{...inp,fontSize:17,fontWeight:700,textAlign:"center",padding:"11px"}}/></div>
                 </div>
                 {slaap?(
                   <div style={{background:slaap.totaalMin>=420?C.sL:slaap.totaalMin>=360?C.aL:C.dL,border:"1px solid "+(slaap.totaalMin>=420?"#81C784":slaap.totaalMin>=360?C.accent:C.danger),borderRadius:12,padding:16,textAlign:"center"}}>
-                    <div style={{fontSize:34,fontWeight:800,color:slaap.totaalMin>=420?C.success:slaap.totaalMin>=360?C.aT:C.danger}}>{slaap.label}</div>
-                    <div style={{fontSize:13,color:C.muted,marginTop:4}}>{slaap.totaalMin>=420?"✅ Goede nachtrust":slaap.totaalMin>=360?"⚠ Redelijke nachtrust":"❌ Te weinig slaap"}</div>
+                    <div style={{fontSize:34,fontWeight:700,color:slaap.totaalMin>=420?C.success:slaap.totaalMin>=360?C.aT:C.danger}}>{slaap.label}</div>
+                    <div style={{fontSize:13,color:C.muted,marginTop:4}}>{slaap.totaalMin>=420?"Goede nachtrust":slaap.totaalMin>=360?"Redelijke nachtrust":"Te weinig slaap"}</div>
                   </div>
                 ):(
                   <div style={{background:C.bg,borderRadius:12,padding:20,textAlign:"center",color:C.muted,border:"1px dashed "+C.border}}>
-                    <div style={{fontSize:26,marginBottom:6}}>😴</div>
+                    <div style={{fontSize:26,marginBottom:6}}><i className="ti ti-moon" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></div>
                     <div style={{fontSize:13}}>Vul beide tijden in om de slaapduur te berekenen</div>
                   </div>
                 )}
@@ -1104,30 +1175,30 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             )}
 
             {regSec==="pijn"&&(
-              <Card title="😣 Pijn registreren" accentColor={C.danger}>
+              <Card title="Pijn registreren" icon="ti-mood-sad" accentColor={C.danger}>
                 <div style={{fontSize:13,color:C.muted,marginBottom:14,lineHeight:1.6}}>Tijdstip wordt automatisch opgeslagen. Meerdere metingen per dag mogelijk.</div>
                 <div style={{fontSize:13,fontWeight:700,marginBottom:10}}>Ervaar je op dit moment pijn?</div>
                 <div style={{display:"flex",gap:10,marginBottom:pLevel>0?18:4}}>
-                  <button onClick={()=>setPLevel(pLevel>0?0:1)} style={{flex:1,padding:"11px 8px",borderRadius:10,border:"2px solid "+(pLevel>0?C.danger:C.border),background:pLevel>0?C.dL:C.card,color:pLevel>0?C.danger:C.muted,fontWeight:700,fontSize:13,cursor:"pointer"}}>😣 Ja, pijn</button>
-                  <button onClick={()=>{setDag(d=>({...d,pijnLogs:[...d.pijnLogs,{tijd:nowT(),level:0,label:"Geen pijn"}]}));setPLevel(0);}} style={{flex:1,padding:"11px 8px",borderRadius:10,border:"2px solid "+C.border,background:C.card,color:C.muted,fontWeight:700,fontSize:13,cursor:"pointer"}}>😊 Geen pijn</button>
+                  <button onClick={()=>setPLevel(pLevel>0?0:1)} style={{flex:1,padding:"11px 8px",borderRadius:10,border:"2px solid "+(pLevel>0?C.danger:C.border),background:pLevel>0?C.dL:C.card,color:pLevel>0?C.danger:C.muted,fontWeight:700,fontSize:13,cursor:"pointer"}}><i className="ti ti-mood-sad" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Ja, pijn</button>
+                  <button onClick={()=>{setDag(d=>({...d,pijnLogs:[...d.pijnLogs,{tijd:nowT(),level:0,label:"Geen pijn"}]}));setPLevel(0);}} style={{flex:1,padding:"11px 8px",borderRadius:10,border:"2px solid "+C.border,background:C.card,color:C.muted,fontWeight:700,fontSize:13,cursor:"pointer"}}><i className="ti ti-mood-smile" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Geen pijn</button>
                 </div>
                 {pLevel>0&&(
                   <>
                     <div style={{position:"relative",marginBottom:8,padding:"0 8px"}}>
                       <div style={{height:12,borderRadius:6,background:PG,boxShadow:"inset 0 1px 3px rgba(0,0,0,0.2)",position:"relative"}}>
-                        <div style={{position:"absolute",top:"50%",left:((pLevel-1)/4*100)+"%",transform:"translate(-50%,-50%)",width:28,height:28,borderRadius:"50%",background:PC[pLevel],border:"3px solid white",boxShadow:"0 2px 8px "+PC[pLevel]+"80",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:800,fontSize:13,transition:"left 0.15s"}}>{pLevel}</div>
+                        <div style={{position:"absolute",top:"50%",left:((pLevel-1)/4*100)+"%",transform:"translate(-50%,-50%)",width:28,height:28,borderRadius:"50%",background:PC[pLevel],border:"3px solid white",boxShadow:"0 2px 8px "+PC[pLevel]+"80",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:700,fontSize:13,transition:"left 0.15s"}}>{pLevel}</div>
                       </div>
                       <input type="range" min={1} max={5} step={1} value={pLevel} onChange={e=>setPLevel(Number(e.target.value))} style={{position:"absolute",top:0,left:8,right:8,width:"calc(100% - 16px)",height:12,opacity:0,cursor:"pointer",zIndex:3,margin:0}}/>
                     </div>
                     <div style={{display:"flex",justifyContent:"space-between",padding:"0 4px",marginTop:12,marginBottom:14}}>
                       {[["1","Licht","#4CAF50"],["2","Matig","#8BC34A"],["3","Ernstig","#FF9800"],["4","Hevig","#F44336"],["5","Ondraag.","#B71C1C"]].map(([n,l,c])=>(
                         <div key={n} onClick={()=>setPLevel(Number(n))} style={{textAlign:"center",cursor:"pointer",opacity:pLevel===Number(n)?1:0.45}}>
-                          <div style={{fontWeight:800,fontSize:14,color:c}}>{n}</div>
+                          <div style={{fontWeight:700,fontSize:14,color:c}}>{n}</div>
                           <div style={{fontSize:9,color:c,fontWeight:600}}>{l}</div>
                         </div>
                       ))}
                     </div>
-                    <button onClick={addPijn} style={{background:C.danger,color:"#fff",border:"none",borderRadius:8,padding:"11px",fontSize:13,fontWeight:700,cursor:"pointer",width:"100%"}}>+ Pijnmeting opslaan ({nowT()})</button>
+                    <button onClick={addPijn} style={{background:C.danger,color:"#fff",border:"none",borderRadius:12,padding:"11px",fontSize:13,fontWeight:700,cursor:"pointer",width:"100%"}}>+ Pijnmeting opslaan ({nowT()})</button>
                   </>
                 )}
                 {dag.pijnLogs.length>0&&(
@@ -1136,10 +1207,10 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                     {dag.pijnLogs.map((p,i)=>(
                       <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}>
                         <span style={{fontSize:11,color:C.muted,minWidth:36}}>{p.tijd}</span>
-                        {p.level===0?<span style={{fontSize:12,color:C.success,fontWeight:600,flex:1}}>😊 Geen pijn</span>:(
+                        {p.level===0?<span style={{fontSize:12,color:C.success,fontWeight:600,flex:1}}><i className="ti ti-mood-smile" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Geen pijn</span>:(
                           <><div style={{width:10,height:10,borderRadius:"50%",background:PC[p.level],flexShrink:0}}/><div style={{flex:1,height:6,borderRadius:3,background:"#eee",overflow:"hidden"}}><div style={{width:((p.level-1)/4*100)+"%",height:"100%",background:PG,minWidth:8}}/></div><span style={{fontSize:12,fontWeight:700,color:PC[p.level],minWidth:32}}>{p.level}/5</span><span style={{fontSize:11,color:C.muted}}>{PL[p.level]}</span></>
                         )}
-                        <button onClick={()=>remPijn(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0,marginLeft:"auto"}}>✕</button>
+                        <button onClick={()=>remPijn(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0,marginLeft:"auto"}}><i className="ti ti-x" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></button>
                       </div>
                     ))}
                   </div>
@@ -1148,13 +1219,13 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             )}
 
             {regSec==="aanval"&&(
-              <Card title="⚠ Aanval registreren" accentColor={C.danger}>
+              <Card title="Aanval registreren" icon="ti-alert-triangle" accentColor={C.danger}>
                 {(dag.aanval?.logs||[]).length>0&&<div style={{background:C.dL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.danger,fontWeight:700}}>{dag.aanval.logs.length} registratie{dag.aanval.logs.length>1?"s":""} vandaag</span></div>}
                 <div style={{fontSize:12,color:C.muted,marginBottom:8,fontWeight:600}}>Situatie op dit moment:</div>
                 <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:14}}>
-                  {[["signalen","🔔 Waarschuwingssignalen","Mogelijk aanval op komst",C.accent,C.aL],["actief","🚨 Actieve aanval","Nu een actieve aanval",C.danger,C.dL],["afnemend","📉 Aanval neemt af","Ergste pijn voorbij",C.accent,C.aL],["voorbij","✅ Aanval voorbij","Geen klachten meer",C.success,C.sL]].map(([v,lbl,sub,col,bg])=>(
+                  {[["signalen","Waarschuwingssignalen","Mogelijk aanval op komst",C.accent,C.aL],["actief","Actieve aanval","Nu een actieve aanval",C.danger,C.dL],["afnemend","Aanval neemt af","Ergste pijn voorbij",C.accent,C.aL],["voorbij","Aanval voorbij","Geen klachten meer",C.success,C.sL]].map(([v,lbl,sub,col,bg])=>(
                     <button key={v} onClick={()=>setAType(v)} style={{padding:"10px 14px",borderRadius:10,textAlign:"left",cursor:"pointer",border:"2px solid "+(aType===v?col:C.border),background:aType===v?bg:C.card}}>
-                      <div style={{fontWeight:700,fontSize:13,color:aType===v?col:C.text}}>{lbl}</div>
+                      <div style={{fontWeight:600,fontSize:13,color:aType===v?(col===C.accent?C.aT:col):C.text,display:"flex",alignItems:"center",gap:8}}><i className={"ti "+({signalen:"ti-bell-ringing",actief:"ti-urgent",afnemend:"ti-trending-down",voorbij:"ti-circle-check"}[v])} style={{fontSize:18}} aria-hidden="true"></i>{lbl}</div>
                       <div style={{fontSize:11,color:C.muted,marginTop:2}}>{sub}</div>
                     </button>
                   ))}
@@ -1167,18 +1238,18 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                     <GewrichtsKaart sel={dag.aanval.gewricht||[]} onToggle={g=>setDag(d=>({...d,aanval:{...d.aanval,gewricht:(d.aanval.gewricht||[]).includes(g)?(d.aanval.gewricht||[]).filter(x=>x!==g):[...(d.aanval.gewricht||[]),g]}}))}/>
                   </div>
                 )}
-                <button onClick={addAanval} style={{background:C.danger,color:"#fff",border:"none",borderRadius:8,padding:"11px",fontSize:13,fontWeight:700,cursor:"pointer",width:"100%"}}>+ Registratie opslaan</button>
+                <button onClick={addAanval} style={{background:C.danger,color:"#fff",border:"none",borderRadius:12,padding:"11px",fontSize:13,fontWeight:700,cursor:"pointer",width:"100%"}}>+ Registratie opslaan</button>
                 {(dag.aanval?.logs||[]).length>0&&(
                   <div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>
                     <div style={{fontSize:12,color:C.muted,fontWeight:600,marginBottom:7}}>Log vandaag:</div>
                     {dag.aanval.logs.map((a,i)=>{ const kleur=a.type==="actief"?C.danger:a.type==="voorbij"?C.success:C.accent;
                       const bg=a.type==="actief"?C.dL:a.type==="voorbij"?C.sL:C.aL;
-                      const icon=a.type==="actief"?"🚨":a.type==="voorbij"?"✅":a.type==="afnemend"?"📉":"🔔";
+                      const icon=a.type==="actief"?"ti-urgent":a.type==="voorbij"?"ti-circle-check":a.type==="afnemend"?"ti-trending-down":"ti-bell-ringing";
                       const lbl={"actief":"Actieve aanval","voorbij":"Aanval voorbij","afnemend":"Aanval neemt af","signalen":"Waarschuwingssignalen"}[a.type];
                       return <div key={i} style={{display:"flex",alignItems:"flex-start",gap:8,marginBottom:7,background:C.bg,borderRadius:8,padding:"8px 10px"}}>
                         <span style={{fontSize:11,color:C.muted,minWidth:36,paddingTop:2}}>{a.tijd}</span>
-                        <div style={{flex:1}}><span style={{fontSize:12,fontWeight:700,padding:"2px 8px",borderRadius:8,background:bg,color:kleur}}>{icon} {lbl}</span>{a.symptomen?.length>0&&<div style={{fontSize:11,color:C.muted,marginTop:4}}>{a.symptomen.join(", ")}</div>}</div>
-                        <button onClick={()=>remAanval(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button>
+                        <div style={{flex:1}}><span style={{fontSize:12,fontWeight:700,padding:"2px 8px",borderRadius:8,background:bg,color:kleur,display:"inline-flex",alignItems:"center",gap:5}}><i className={"ti "+icon} aria-hidden="true"></i>{lbl}</span>{a.symptomen?.length>0&&<div style={{fontSize:11,color:C.muted,marginTop:4}}>{a.symptomen.join(", ")}</div>}</div>
+                        <button onClick={()=>remAanval(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}><i className="ti ti-x" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></button>
                       </div>;
                     })}
                   </div>
@@ -1188,19 +1259,19 @@ function JichtTracker({session,onLogout}){ const{token}=session;
 
             {regSec==="medsupp"&&isPro&&(
               <div>
-                <Card title="💊 Medicatie vandaag" accentColor={C.primary}>
+                <Card title="Medicatie vandaag" icon="ti-pill" accentColor={C.primary}>
                   {(dag.med?.logs||[]).length>0&&<div style={{background:C.pL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.primary,fontWeight:700}}>{dag.med.logs.length} inname{dag.med.logs.length>1?"s":""} vandaag</span></div>}
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
                     <div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Tijdstip</div><input type="time" value={mTijd} onChange={e=>setMTijd(e.target.value)} style={{...inp,width:100}}/></div>
-                    <div style={{flex:1}}><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Type</div><div style={{display:"flex",gap:6}}>{[["preventie","🛡 Preventief"],["aanval","🚨 Aanval/pijn"]].map(([v,l])=><button key={v} onClick={()=>{setMType(v);setMNaam("");}} style={{flex:1,padding:"7px 4px",borderRadius:8,fontSize:12,cursor:"pointer",border:"1.5px solid "+(mType===v?(v==="preventie"?C.primary:C.danger):C.border),background:mType===v?(v==="preventie"?C.pL:C.dL):C.card,color:mType===v?(v==="preventie"?C.primary:C.danger):C.muted,fontWeight:mType===v?700:400}}>{l}</button>)}</div></div>
+                    <div style={{flex:1}}><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Type</div><div style={{display:"flex",gap:6}}>{[["preventie","Preventief"],["aanval","Aanval/pijn"]].map(([v,l])=><button key={v} onClick={()=>{setMType(v);setMNaam("");}} style={{flex:1,padding:"7px 4px",borderRadius:8,fontSize:12,cursor:"pointer",border:"1.5px solid "+(mType===v?(v==="preventie"?C.primary:C.danger):C.border),background:mType===v?(v==="preventie"?C.pL:C.dL):C.card,color:mType===v?(v==="preventie"?C.primary:C.danger):C.muted,fontWeight:mType===v?700:400}}>{l}</button>)}</div></div>
                   </div>
                   <Chips opts={mType==="preventie"?MEDP:MEDA} sel={mNaam?[mNaam]:[]} onToggle={item=>setMNaam(mNaam===item?"":item)} col={mType==="preventie"?C.primary:C.danger} bg={mType==="preventie"?C.pL:C.dL}/>
                   <input value={mAnders} onChange={e=>setMAnders(e.target.value)} placeholder="Of typ een ander medicijn..." style={{...inp,marginTop:10}}/>
-                  <button onClick={addMed} disabled={!mNaam&&!mAnders} style={{background:(mNaam||mAnders)?C.primary:C.border,color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:13,fontWeight:700,cursor:(mNaam||mAnders)?"pointer":"default",width:"100%",marginTop:10}}>+ Inname registreren</button>
-                  {(dag.med?.logs||[]).length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>{dag.med.logs.map((m,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{m.tijd}</span><span style={{fontSize:11,padding:"2px 7px",borderRadius:8,fontWeight:700,background:m.type==="preventie"?C.pL:C.dL,color:m.type==="preventie"?C.primary:C.danger}}>{m.type==="preventie"?"🛡":"🚨"}</span><span style={{fontSize:12,fontWeight:600,flex:1}}>{m.naam}</span><button onClick={()=>remMed(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button></div>)}</div>}
+                  <button onClick={addMed} disabled={!mNaam&&!mAnders} style={{background:(mNaam||mAnders)?C.primary:C.border,color:"#fff",border:"none",borderRadius:12,padding:"10px",fontSize:13,fontWeight:700,cursor:(mNaam||mAnders)?"pointer":"default",width:"100%",marginTop:10}}>+ Inname registreren</button>
+                  {(dag.med?.logs||[]).length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>{dag.med.logs.map((m,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{m.tijd}</span><span style={{fontSize:13,padding:"2px 7px",borderRadius:8,fontWeight:700,background:m.type==="preventie"?C.pL:C.dL,color:m.type==="preventie"?C.primary:C.danger,display:"inline-flex"}}><i className={"ti "+(m.type==="preventie"?"ti-shield-check":"ti-urgent")} aria-hidden="true"></i></span><span style={{fontSize:12,fontWeight:600,flex:1}}>{m.naam}</span><button onClick={()=>remMed(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}><i className="ti ti-x" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></button></div>)}</div>}
                 </Card>
                 <div style={{marginTop:12}}>
-                <Card title="🌿 Supplementen vandaag" accentColor={C.primary}>
+                <Card title="Supplementen vandaag" icon="ti-leaf" accentColor={C.primary}>
                   {(dag.suppl?.logs||[]).length>0&&<div style={{background:C.sL,borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.success,fontWeight:700}}>{dag.suppl.logs.length} inname{dag.suppl.logs.length>1?"s":""} vandaag</span></div>}
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}><div><div style={{fontSize:12,color:C.muted,marginBottom:4}}>Tijdstip</div><input type="time" value={sTijd} onChange={e=>setSTijd(e.target.value)} style={{...inp,width:100}}/></div></div>
                   <div style={{display:"flex",gap:8,marginBottom:10}}>
@@ -1209,15 +1280,15 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                   </div>
                   <Chips opts={SUPPL} sel={sNaam?[sNaam]:[]} onToggle={item=>setSNaam(sNaam===item?"":item)} col={C.success} bg={C.sL}/>
                   <input value={sAnders} onChange={e=>setSAnders(e.target.value)} placeholder="Of typ of scan een supplement..." style={{...inp,marginTop:10}}/>
-                  <button onClick={addSuppl} disabled={!sNaam&&!sAnders} style={{background:(sNaam||sAnders)?C.success:C.border,color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:13,fontWeight:700,cursor:(sNaam||sAnders)?"pointer":"default",width:"100%",marginTop:10}}>+ Inname registreren</button>
-                  {(dag.suppl?.logs||[]).length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>{dag.suppl.logs.map((s,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{s.tijd}</span><span style={{fontSize:12,fontWeight:600,flex:1}}>{s.naam}</span><button onClick={()=>remSuppl(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button></div>)}</div>}
+                  <button onClick={addSuppl} disabled={!sNaam&&!sAnders} style={{background:(sNaam||sAnders)?C.success:C.border,color:"#fff",border:"none",borderRadius:12,padding:"10px",fontSize:13,fontWeight:700,cursor:(sNaam||sAnders)?"pointer":"default",width:"100%",marginTop:10}}>+ Inname registreren</button>
+                  {(dag.suppl?.logs||[]).length>0&&<div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:12}}>{dag.suppl.logs.map((s,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}><span style={{fontSize:11,color:C.muted,minWidth:36}}>{s.tijd}</span><span style={{fontSize:12,fontWeight:600,flex:1}}>{s.naam}</span><button onClick={()=>remSuppl(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}><i className="ti ti-x" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></button></div>)}</div>}
                 </Card>
                 </div>
               </div>
             )}
 
             {regSec==="urinezuur"&&isPro&&(
-              <Card title="🩸 Urinezuurwaarde" accentColor={C.danger}>
+              <Card title="Urinezuurwaarde" icon="ti-droplet" accentColor={C.danger}>
                 {(dag.urinezuur?.logs||[]).length>0&&<div style={{background:"#FEE2E2",borderRadius:8,padding:"8px 12px",marginBottom:12}}><span style={{fontSize:13,color:C.danger,fontWeight:700}}>{dag.urinezuur.logs.length} meting{dag.urinezuur.logs.length>1?"en":""} vandaag</span></div>}
                 <div style={{fontSize:13,color:C.muted,marginBottom:12,lineHeight:1.6}}>Voer de waarde in na een bloedprikbeurt. Streefwaarde bij jicht: onder 0.36 mmol/L (6 mg/dL).</div>
                 <div style={{display:"flex",gap:6,marginBottom:12}}>
@@ -1238,12 +1309,12 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                   const goed=inMmol<0.36,grens=inMmol<0.48;
                   return(
                     <div style={{background:goed?C.sL:grens?C.aL:C.dL,border:"1px solid "+(goed?"#81C784":grens?C.accent:C.danger),borderRadius:10,padding:"10px 14px",textAlign:"center",marginBottom:10}}>
-                      <div style={{fontSize:22,fontWeight:800,color:goed?C.success:grens?C.aT:C.danger}}>{uzEenheid==="mmol"?v+" mmol/L":v+" mg/dL · "+inMmol.toFixed(2)+" mmol/L"}</div>
-                      <div style={{fontSize:12,color:C.muted,marginTop:4}}>{goed?"✅ Onder streefwaarde":grens?"⚠ Verhoogd":"❌ Fors verhoogd"}</div>
+                      <div style={{fontSize:22,fontWeight:700,color:goed?C.success:grens?C.aT:C.danger}}>{uzEenheid==="mmol"?v+" mmol/L":v+" mg/dL · "+inMmol.toFixed(2)+" mmol/L"}</div>
+                      <div style={{fontSize:12,color:C.muted,marginTop:4}}>{goed?"Onder streefwaarde":grens?"Verhoogd":"Fors verhoogd"}</div>
                     </div>
                   );
                 })()}
-                <button onClick={addUZ} disabled={!uzWaarde} style={{background:uzWaarde?C.danger:C.border,color:"#fff",border:"none",borderRadius:8,padding:"10px",fontSize:13,fontWeight:700,cursor:uzWaarde?"pointer":"default",width:"100%",marginBottom:4}}>+ Meting opslaan ({nowT()})</button>
+                <button onClick={addUZ} disabled={!uzWaarde} style={{background:uzWaarde?C.danger:C.border,color:"#fff",border:"none",borderRadius:12,padding:"10px",fontSize:13,fontWeight:700,cursor:uzWaarde?"pointer":"default",width:"100%",marginBottom:4}}>+ Meting opslaan ({nowT()})</button>
                 {(dag.urinezuur?.logs||[]).length>0&&(
                   <div style={{borderTop:"1px solid "+C.border,paddingTop:10,marginTop:10}}>
                     <div style={{fontSize:12,color:C.muted,fontWeight:600,marginBottom:7}}>Log vandaag:</div>
@@ -1254,8 +1325,8 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                         <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"7px 10px"}}>
                           <span style={{fontSize:11,color:C.muted,minWidth:36}}>{l.tijd}</span>
                           <span style={{fontSize:13,fontWeight:700,color:goed?C.success:grens?C.aT:C.danger,flex:1}}>{l.waarde} {l.eenheid==="mmol"?"mmol/L":"mg/dL"}</span>
-                          <span style={{fontSize:10,padding:"2px 7px",borderRadius:8,background:goed?C.sL:grens?C.aL:C.dL,color:goed?C.success:grens?C.aT:C.danger,fontWeight:600}}>{goed?"✅ OK":grens?"⚠ Verhoogd":"❌ Hoog"}</span>
-                          <button onClick={()=>remUZ(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button>
+                          <span style={{fontSize:10,padding:"2px 7px",borderRadius:8,background:goed?C.sL:grens?C.aL:C.dL,color:goed?C.success:grens?C.aT:C.danger,fontWeight:600}}>{goed?"OK":grens?"Verhoogd":"Hoog"}</span>
+                          <button onClick={()=>remUZ(i)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}><i className="ti ti-x" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></button>
                         </div>
                       );
                     })}
@@ -1265,25 +1336,25 @@ function JichtTracker({session,onLogout}){ const{token}=session;
             )}
 
             {regSec==="weer"&&isPro&&(
-              <Card title="🌤 Weer registreren" accentColor={C.primary}>
+              <Card title="Weer registreren" icon="ti-cloud-sun" accentColor={C.primary}>
                 <div style={{fontSize:13,color:C.muted,marginBottom:14,lineHeight:1.6}}>
                   Registreer het huidige weer automatisch via je locatie. Weersomstandigheden kunnen een trigger zijn voor jichtaanvallen.
                 </div>
-                <button onClick={fetchWeer} disabled={weerLoading} style={{background:weerLoading?C.border:C.primary,color:"#fff",border:"none",borderRadius:10,padding:"13px",fontSize:14,fontWeight:700,cursor:weerLoading?"not-allowed":"pointer",width:"100%",marginBottom:12,opacity:weerLoading?0.7:1}}>
-                  {weerLoading?"⏳ Locatie ophalen...":"📍 Registreer huidig weer"}
+                <button onClick={fetchWeer} disabled={weerLoading} style={{background:weerLoading?C.border:C.primary,color:"#fff",border:"none",borderRadius:12,padding:"13px",fontSize:14,fontWeight:700,cursor:weerLoading?"not-allowed":"pointer",width:"100%",marginBottom:12,opacity:weerLoading?0.7:1}}>
+                  {weerLoading?"Locatie ophalen...":"Registreer huidig weer"}
                 </button>
                 {(dag.weer?.logs||[]).length>0&&(
                   <div style={{borderTop:"1px solid "+C.border,paddingTop:10}}>
                     <div style={{fontSize:12,color:C.muted,fontWeight:600,marginBottom:7}}>Log vandaag:</div>
                     {dag.weer.logs.map((w,i)=>(
                       <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,background:C.bg,borderRadius:8,padding:"10px 12px"}}>
-                        <span style={{fontSize:22}}>{w.icon}</span>
+                        <i className={"ti "+({"☀":"ti-sun","⛅":"ti-cloud-sun","🌫":"ti-mist","🌧":"ti-cloud-rain","❄":"ti-snowflake","🌦":"ti-cloud-rain","⛈":"ti-cloud-storm"}[(w.icon||"").replace("\ufe0f","")]||"ti-cloud")} style={{fontSize:24,color:C.primary}} aria-hidden="true"></i>
                         <div style={{flex:1}}>
                           <div style={{fontSize:13,fontWeight:700,color:C.text}}>{w.omschrijving}</div>
                           <div style={{fontSize:11,color:C.muted}}>{w.temp}°C · {w.vochtigheid}% vochtig · wind {w.wind} km/u</div>
                         </div>
                         <span style={{fontSize:11,color:C.muted}}>{w.tijd}</span>
-                        <button onClick={()=>setDag(d=>({...d,weer:{...d.weer,logs:d.weer.logs.filter((_,j)=>j!==i)}}))} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}>✕</button>
+                        <button onClick={()=>setDag(d=>({...d,weer:{...d.weer,logs:d.weer.logs.filter((_,j)=>j!==i)}}))} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:14,padding:0}}><i className="ti ti-x" style={{verticalAlign:"-0.12em"}} aria-hidden="true"></i></button>
                       </div>
                     ))}
                   </div>
@@ -1291,40 +1362,40 @@ function JichtTracker({session,onLogout}){ const{token}=session;
               </Card>
             )}
 
-            <div style={{textAlign:"center",fontSize:11,color:C.muted,marginTop:10}}>☁ Data wordt automatisch opgeslagen</div>
+            <div style={{textAlign:"center",fontSize:11,color:C.muted,marginTop:10}}><i className="ti ti-cloud" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Data wordt automatisch opgeslagen</div>
           </div>
         )}
 
         {/* ══ OVERZICHT ══ */}
         {mainTab==="overzicht"&&(
           <div>
-            <div style={{background:C.pL,borderRadius:12,padding:"12px 14px",marginBottom:14,border:"1px solid "+C.border}}>
-              <div style={{fontWeight:700,fontSize:14,color:C.primary,marginBottom:4}}>📖 Dagboek</div>
+            <div style={{background:C.pL,borderRadius:16,padding:"12px 14px",marginBottom:14,border:"1px solid "+C.border}}>
+              <div style={{fontWeight:700,fontSize:14,color:C.primary,marginBottom:4}}><i className="ti ti-book" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Dagboek</div>
               <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>Een overzicht van al je dagregistraties. Tik op een dag voor alle details.</div>
             </div>
-            {entries.length===0?<Empty icon="📖" text="Nog geen registraties. Start met de Registreer tab!"/>:(
+            {entries.length===0?<Empty icon="ti-book" text="Nog geen registraties. Start met de Registreer tab!"/>:(
               <div style={{display:"flex",flexDirection:"column",gap:12}}>
                 {entries.map(e=>{ const pijns=e.pijn_logs||e.pijnLogs||[];
                   const topP=pijns.length?Math.max(...pijns.map(p=>p.level)):0;
                   return (
-                    <div key={e.id} style={{background:C.card,borderRadius:12,padding:14,border:"1px solid "+C.border,borderLeft:"4px solid "+(topP>0?PC[topP]:C.border)}}>
+                    <div key={e.id} style={{background:C.card,borderRadius:16,padding:14,border:"1px solid "+C.border,borderLeft:"4px solid "+(topP>0?PC[topP]:C.border),boxShadow:"0 1px 3px rgba(18,48,61,0.05)"}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                         <div>
                           <div style={{fontWeight:700,fontSize:15}}>{fmt(e.date)}</div>
-                          {(e.aanval?.logs||[]).some(a=>a.type==="actief")&&<span style={{fontSize:11,background:C.dL,color:C.danger,padding:"2px 8px",borderRadius:10,fontWeight:700}}>🚨 AANVAL</span>}
+                          {(e.aanval?.logs||[]).some(a=>a.type==="actief")&&<span style={{fontSize:11,background:C.dL,color:C.danger,padding:"2px 8px",borderRadius:10,fontWeight:700}}><i className="ti ti-urgent" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>AANVAL</span>}
                         </div>
-                        {topP>0&&<div style={{width:34,height:34,borderRadius:8,background:PC[topP],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:800,fontSize:16}}>{topP}</div>}
+                        {topP>0&&<div style={{width:34,height:34,borderRadius:8,background:PC[topP],display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:16}}>{topP}</div>}
                       </div>
                       <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                        {e.eten?.logs?.length>0&&<Row icon="🍽" label="Eten" val={e.eten.logs.map(l=>l.moment+": "+l.tekst).join(" · ")}/>}
-                        {e.drinken?.logs?.length>0&&<Row icon="💧" label="Drinken" val={e.drinken.logs.length+"x · "+e.drinken.logs.reduce((s,l)=>s+(l.ml||0),0)+"ml"}/>}
-                        {e.bewegen?.logs?.length>0&&<Row icon="🏃" label="Beweging" val={e.bewegen.logs.reduce((s,l)=>s+(parseInt(l.minuten)||0),0)+"min"}/>}
-                        {e.slaap?.uren&&<Row icon="😴" label="Slaap" val={e.slaap.uren+"u"}/>}
-                        {pijns.length>0&&<Row icon="😣" label="Pijn" val={pijns.map(p=>p.tijd+": "+(p.level>0?p.level+"/5":"geen")).join(", ")}/>}
-                        {(e.aanval?.logs||[]).length>0&&<Row icon="⚠" label="Aanval" val={(e.aanval.logs).map(a=>a.tijd+" "+(a.type==="actief"?"🚨":a.type==="voorbij"?"✅":a.type==="afnemend"?"📉":"🔔")).join(" · ")}/>}
-                        {(e.med?.logs||[]).length>0&&<Row icon="💊" label="Meds" val={(e.med.logs).map(m=>m.naam).join(", ")}/>}
-                        {(e.suppl?.logs||[]).length>0&&<Row icon="🌿" label="Supplementen" val={(e.suppl.logs).map(s=>s.naam).join(", ")}/>
-                        }{(e.urinezuur?.logs||[]).length>0&&<Row icon="🩸" label="Urinezuur" val={(e.urinezuur.logs).map(l=>l.waarde+" "+(l.eenheid==="mmol"?"mmol/L":"mg/dL")).join(", ")}/>}
+                        {e.eten?.logs?.length>0&&<Row icon="ti-salad" label="Eten" val={e.eten.logs.map(l=>l.moment+": "+l.tekst).join(" · ")}/>}
+                        {e.drinken?.logs?.length>0&&<Row icon="ti-droplets" label="Drinken" val={e.drinken.logs.length+"x · "+e.drinken.logs.reduce((s,l)=>s+(l.ml||0),0)+"ml"}/>}
+                        {e.bewegen?.logs?.length>0&&<Row icon="ti-run" label="Beweging" val={e.bewegen.logs.reduce((s,l)=>s+(parseInt(l.minuten)||0),0)+"min"}/>}
+                        {e.slaap?.uren&&<Row icon="ti-moon" label="Slaap" val={e.slaap.uren+"u"}/>}
+                        {pijns.length>0&&<Row icon="ti-mood-sad" label="Pijn" val={pijns.map(p=>p.tijd+": "+(p.level>0?p.level+"/5":"geen")).join(", ")}/>}
+                        {(e.aanval?.logs||[]).length>0&&<Row icon="ti-alert-triangle" label="Aanval" val={(e.aanval.logs).map(a=>a.tijd+" "+({actief:"actief",voorbij:"voorbij",afnemend:"afnemend"}[a.type]||"signalen")).join(" · ")}/>}
+                        {(e.med?.logs||[]).length>0&&<Row icon="ti-pill" label="Meds" val={(e.med.logs).map(m=>m.naam).join(", ")}/>}
+                        {(e.suppl?.logs||[]).length>0&&<Row icon="ti-leaf" label="Supplementen" val={(e.suppl.logs).map(s=>s.naam).join(", ")}/>
+                        }{(e.urinezuur?.logs||[]).length>0&&<Row icon="ti-droplet" label="Urinezuur" val={(e.urinezuur.logs).map(l=>l.waarde+" "+(l.eenheid==="mmol"?"mmol/L":"mg/dL")).join(", ")}/>}
                       </div>
                     </div>
                   );
@@ -1337,13 +1408,13 @@ function JichtTracker({session,onLogout}){ const{token}=session;
         {/* ══ STATISTIEKEN ══ */}
         {mainTab==="statistieken"&&(
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
-            <div style={{background:C.pL,borderRadius:12,padding:"12px 14px",border:"1px solid "+C.border}}>
-              <div style={{fontWeight:700,fontSize:14,color:C.primary,marginBottom:4}}>📈 Trends</div>
+            <div style={{background:C.pL,borderRadius:16,padding:"12px 14px",border:"1px solid "+C.border}}>
+              <div style={{fontWeight:700,fontSize:14,color:C.primary,marginBottom:4}}><i className="ti ti-chart-line" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Trends</div>
               <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>Maandelijkse samenvattingen en grafieken van je aanvallen, pijnscores en slaappatroon.</div>
             </div>
-            {entries.length===0?<Empty icon="📈" text="Voeg registraties toe om trends te zien."/>:(
+            {entries.length===0?<Empty icon="ti-chart-line" text="Voeg registraties toe om trends te zien."/>:(
               <>
-                <Card title="📅 Maandoverzicht">
+                <Card title="Maandoverzicht" icon="ti-calendar">
                   <div style={{overflowX:"auto"}}>
                     <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
                       <thead><tr style={{borderBottom:"2px solid "+C.border}}>{["Maand","Aanvallen","Gem. pijn","Gem. slaap"].map(h=><th key={h} style={{padding:"5px 7px",textAlign:"left",color:C.muted,fontWeight:600,fontSize:10,textTransform:"uppercase"}}>{h}</th>)}</tr></thead>
@@ -1358,10 +1429,10 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                     </table>
                   </div>
                 </Card>
-                {recent.length>=2&&<Card title="🔴 Aanvallen per maand"><BarChart data={recent} vk="attacks" color={C.danger} maxV={Math.max(...recent.map(m=>m.attacks),1)}/></Card>}
-                {recent.filter(m=>m.avgPain).length>=2&&<Card title="😣 Gem. pijn per maand"><BarChart data={recent} vk="avgPain" color={C.accent} maxV={5} unit="/5"/></Card>}
+                {recent.length>=2&&<Card title="Aanvallen per maand" icon="ti-circle-filled"><BarChart data={recent} vk="attacks" color={C.danger} maxV={Math.max(...recent.map(m=>m.attacks),1)}/></Card>}
+                {recent.filter(m=>m.avgPain).length>=2&&<Card title="Gem. pijn per maand" icon="ti-mood-sad"><BarChart data={recent} vk="avgPain" color={C.accent} maxV={5} unit="/5"/></Card>}
                 {recent.filter(m=>m.avgUZ).length>=2&&(
-                  <Card title="🩸 Gem. urinezuur per maand (mmol/L)">
+                  <Card title="Gem. urinezuur per maand (mmol/L)" icon="ti-droplet">
                     <div style={{fontSize:11,color:C.muted,marginBottom:4}}>Streefwaarde: onder 0.36 mmol/L</div>
                     <BarChart data={recent} vk="avgUZ" color={C.danger} maxV={Math.max(...recent.map(m=>parseFloat(m.avgUZ)||0),0.6)}/>
                     <div style={{display:"flex",gap:6,marginTop:6,justifyContent:"center"}}>
@@ -1371,10 +1442,10 @@ function JichtTracker({session,onLogout}){ const{token}=session;
                   </Card>
                 )}
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-                  {[{l:"Totaal aanvallen",v:totalAttacks,icon:"🔴",col:C.danger},{l:"Gem. pijnscore",v:avgPain,icon:"😣",col:C.accent},{l:"Registraties",v:entries.length,icon:"📝",col:C.primary},{l:"Maanden gevolgd",v:monthly.length,icon:"📅",col:C.success}].map((s,i)=>(
+                  {[{l:"Totaal aanvallen",v:totalAttacks,icon:"ti-alert-triangle",col:C.danger},{l:"Gem. pijnscore",v:avgPain,icon:"ti-mood-sad",col:C.accent},{l:"Registraties",v:entries.length,icon:"ti-notes",col:C.primary},{l:"Maanden gevolgd",v:monthly.length,icon:"ti-calendar",col:C.success}].map((s,i)=>(
                     <div key={i} style={{background:C.card,borderRadius:12,padding:14,border:"1px solid "+C.border,textAlign:"center"}}>
-                      <div style={{fontSize:22}}>{s.icon}</div>
-                      <div style={{fontSize:24,fontWeight:800,color:s.col,marginTop:3}}>{s.v}</div>
+                      <div style={{width:36,height:36,borderRadius:11,background:s.col+"1A",display:"inline-flex",alignItems:"center",justifyContent:"center"}}><i className={"ti "+s.icon} style={{fontSize:19,color:s.col}} aria-hidden="true"></i></div>
+                      <div style={{fontSize:24,fontWeight:700,color:s.col,marginTop:6}}>{s.v}</div>
                       <div style={{fontSize:10,color:C.muted,marginTop:2}}>{s.l}</div>
                     </div>
                   ))}
@@ -1387,13 +1458,13 @@ function JichtTracker({session,onLogout}){ const{token}=session;
         {/* ══ AI ══ */}
         {mainTab==="analyse"&&(
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
-            <div style={{background:C.pL,borderRadius:12,padding:14,border:"1px solid "+C.border}}>
-              <div style={{fontWeight:700,color:C.primary,fontSize:15,marginBottom:5}}>💡 Persoonlijk Jicht Advies</div>
+            <div style={{background:C.pL,borderRadius:16,padding:14,border:"1px solid "+C.border}}>
+              <div style={{fontWeight:700,color:C.primary,fontSize:15,marginBottom:5}}><i className="ti ti-bulb" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Persoonlijk Jicht Advies</div>
               <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>Analyseert jouw registraties en geeft persoonlijk advies over patronen, triggers en verbeterpunten.</div>
-              <div style={{fontSize:11,color:C.muted,marginTop:6}}>📊 {entries.length} dag(en) · 💊 {profile.meds?.length||0} vaste medicatie(s)</div>
+              <div style={{fontSize:11,color:C.muted,marginTop:6}}><i className="ti ti-chart-bar" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>{entries.length} dag(en) · {profile.meds?.length||0} vaste medicatie(s)</div>
             </div>
-            <button onClick={async()=>{setAiLoading(true);const r=await callAI("analyse");setAiResult(r);setAiLoading(false);}} disabled={aiLoading||entries.length<2} style={{background:entries.length>=2?C.accent:C.border,color:"#fff",border:"none",borderRadius:10,padding:"14px",fontSize:15,fontWeight:700,cursor:entries.length>=2?"pointer":"not-allowed",width:"100%",opacity:aiLoading?0.7:1}}>
-              {aiLoading?"⏳ Analyseren...":"💡 Genereer mijn persoonlijk advies"}
+            <button onClick={async()=>{setAiLoading(true);const r=await callAI("analyse");setAiResult(r);setAiLoading(false);}} disabled={aiLoading||entries.length<2} style={{background:entries.length>=2?C.accent:C.border,color:"#fff",border:"none",borderRadius:12,padding:"14px",fontSize:15,fontWeight:700,cursor:entries.length>=2?"pointer":"not-allowed",width:"100%",opacity:aiLoading?0.7:1}}>
+              {aiLoading?"Analyseren...":"Genereer mijn persoonlijk advies"}
             </button>
             {entries.length<2&&<div style={{textAlign:"center",color:C.muted,fontSize:13}}>Minimaal 2 registraties nodig.</div>}
             {aiResult&&<div style={{background:C.card,borderRadius:12,padding:18,border:"1px solid "+C.border}}><div style={{fontSize:14,lineHeight:1.8,color:C.text,whiteSpace:"pre-wrap"}}>{aiResult}</div></div>}
