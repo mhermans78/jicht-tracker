@@ -75,6 +75,15 @@ const MTABS=[["home","ti-home","Home"],["registreer","ti-pencil","Registreer"],[
 let LANG="nl";
 const LOC=()=>LANG==="de"?"de-DE":"nl-NL";
 const DE={
+"Slaap opslaan": "Schlaf speichern",
+"In de demo-modus is het AI-advies niet beschikbaar. Maak een gratis account aan om een persoonlijk advies te ontvangen.": "Im Demo-Modus ist die KI-Empfehlung nicht verfügbar. Erstelle ein kostenloses Konto, um eine persönliche Empfehlung zu erhalten.",
+"De AI is nu niet beschikbaar. Probeer het later opnieuw.": "Die KI ist derzeit nicht verfügbar. Versuche es später erneut.",
+"Je sessie is verlopen. Log opnieuw in.": "Deine Sitzung ist abgelaufen. Melde dich erneut an.",
+"Abonnement": "Abonnement",
+"Zeg je abonnement op, wijzig je betaalmethode of download je facturen. Je opent hiervoor een beveiligde pagina van Stripe.": "Kündige dein Abonnement, ändere deine Zahlungsmethode oder lade deine Rechnungen herunter. Dafür öffnest du eine sichere Seite von Stripe.",
+"Abonnement beheren": "Abonnement verwalten",
+"Er is geen lopend abonnement gevonden bij dit account.": "Für dieses Konto wurde kein laufendes Abonnement gefunden.",
+"Het beheerscherm is nu niet beschikbaar. Probeer het later opnieuw.": "Die Verwaltung ist derzeit nicht verfügbar. Versuche es später erneut.",
 "De eerste maand is gratis": "Der erste Monat ist kostenlos",
 "Probeer Pro een maand zonder kosten. Je betaalt pas na die maand. Zeg je vóór het einde van de proefmaand op, dan betaal je niets.": "Teste Pro einen Monat lang kostenlos. Du zahlst erst nach diesem Monat. Wenn du vor Ende des Probemonats kündigst, zahlst du nichts.",
 "Start gratis maand →": "Kostenlosen Monat starten →",
@@ -1315,6 +1324,17 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
   const[aiResult,setAiResult]=useState("");
   const[aiLoading,setAiLoading]=useState(false);
   const[profSaved,setProfSaved]=useState(false);
+  const[subBusy,setSubBusy]=useState(false);
+  async function manageSub(){
+    setSubBusy(true);
+    try{
+      const r=await fetch("/.netlify/functions/billing-portal",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token}});
+      const d=await r.json();
+      if(d?.url){window.location.href=d.url;return;}
+      dialog(r.status===404?"Er is geen lopend abonnement gevonden bij dit account.":"Het beheerscherm is nu niet beschikbaar. Probeer het later opnieuw.");
+    }catch(e){dialog("Het beheerscherm is nu niet beschikbaar. Probeer het later opnieuw.");}
+    setSubBusy(false);
+  }
   const[menuOpen,setMenuOpen]=useState(false);
   const[showProfiel,setShowProfiel]=useState(false);
   const[showRapport,setShowRapport]=useState(false);
@@ -1415,17 +1435,16 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
   }
 
   const callAI=useCallback(async(mode)=>{
-    if(!isDemo){
-      try{ await checkAndIncrementLimit('ai'); }
-      catch(e){ if(e.message.startsWith('LIMIT:')) return e.message.replace('LIMIT:','⚠ '); throw e; }
-    }
+    if(isDemo)return "In de demo-modus is het AI-advies niet beschikbaar. Maak een gratis account aan om een persoonlijk advies te ontvangen.";
     const medInfo=profile.meds?.length>0?"Vaste medicatie: "+profile.meds.map(m=>m.name+" "+m.dose).join(", "):"";
     const summary=entries.slice(0,60).map(e=>{ const pijns=e.pijn_logs||e.pijnLogs||[];
       return e.date+"|E:"+(e.eten?.logs?.map(l=>l.moment+":"+l.tekst).join(";")||"–")+"|D:"+(e.drinken?.logs?.map(l=>l.categorie+"("+l.ml+"ml)").join(",")||"–")+"|B:"+(e.bewegen?.logs?.map(l=>(l.activiteiten?.join(",")||"?")+" "+l.minuten+"min").join("+")||"–")+"|S:"+(e.slaap?.uren?e.slaap.uren+"u":"–")+"|P:"+(pijns.map(p=>p.tijd+" lvl"+p.level).join(",")||"geen")+"|A:"+((e.aanval?.logs||[]).map(a=>a.tijd+":"+a.type).join(",")||"–")+"|M:"+((e.med?.logs||[]).map(m=>m.naam).join(",")||"–");
     }).join("\n");
     const prompts={ analyse:`Je bent expert jichtmanagement. ${medInfo}\nAnalyseer:\n1.🔍PATRONEN\n2.⚠TRIGGERS\n3.✅POSITIEVE TRENDS\n4.💡TIPS(4 concreet)\n5.📈VOORTGANG\nNederlands, empathisch.\n\nDATA:\n${summary}`, rapport:`Maak beknopt medisch jicht-rapport (max 350 woorden). ${medInfo}\n1.SAMENVATTING 2.PIJNVERLOOP 3.TRIGGERS 4.MEDICATIE 5.AANBEVELINGEN\n\nDATA:\n${summary}`, therapeut:`Je bent jicht-therapeut. ${medInfo}\nStel therapeutisch adviesrapport op:\n1.KLINISCH BEELD\n2.LEEFSTIJLANALYSE\n3.TRIGGERS\n4.MEDICATIE\n5.THERAPEUTISCHE AANBEVELINGEN(min 5)\n6.VERVOLGVRAGEN(3)\nProfessioneel, empathisch, max 500 woorden.\n\nDATA:\n${summary}`, };
-    try{ const r=await fetch("/.netlify/functions/ai-proxy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompts[mode]+(LANG==="de"?"\n\nAntworte ausschließlich auf Deutsch (du-Form, empathisch). Das Wort für jicht ist Gicht.":"")}]})});
+    try{ const r=await fetch("/.netlify/functions/ai-proxy",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompts[mode]+(LANG==="de"?"\n\nAntworte ausschließlich auf Deutsch (du-Form, empathisch). Das Wort für jicht ist Gicht.":"")}]})});
       const d=await r.json();
+      if(r.status===429)return "⚠ "+(d.error||"Je hebt je dagelijkse AI-limiet bereikt: maximaal 1 advies of rapport per dag. Probeer het morgen weer.");
+      if(!r.ok)return "⚠ "+(d.error||"De AI is nu niet beschikbaar. Probeer het later opnieuw.");
       return d.content?.map(b=>b.text||"").join("\n")||"Geen resultaat.";
     }catch{return"Fout bij genereren.";}
   },[entries,profile]);
@@ -1458,6 +1477,7 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
       const omschrijving=weerCode<=1?"Helder":weerCode<=3?"Bewolkt":weerCode<=48?"Mist":weerCode<=67?"Regen":weerCode<=77?"Sneeuw":weerCode<=82?"Buien":"Onweer";
       const icon=weerCode<=1?"☀":weerCode<=3?"⛅":weerCode<=48?"🌫":weerCode<=67?"🌧":weerCode<=77?"❄":weerCode<=82?"🌦":"⛈";
       setDag(dg=>({...dg,weer:{...dg.weer,logs:[...( dg.weer?.logs||[]),{tijd:nowT(),temp:c.temperature_2m,vochtigheid:c.relative_humidity_2m,wind:c.wind_speed_10m,omschrijving,icon}]}}));
+      closeReg();
     }catch(e){dialog("Kan weersdata niet ophalen: "+e.message);}
     setWeerLoading(false);
   }
@@ -1619,6 +1639,12 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
         <div style={{fontSize:12,color:C.muted,marginBottom:5}}>E-mailadres</div>
         <input value={session.user?.email||""} readOnly style={{...inp,marginBottom:4,background:"#E8EDF0",color:C.muted,cursor:"not-allowed",border:"1.5px solid "+C.border}}/>
         <div style={{fontSize:11,color:C.muted,marginBottom:20}}>Je e-mailadres is niet aanpasbaar via de app.</div>
+        {/* Abonnement beheren */}
+        {!isDemo&&isPro&&(<div style={{borderTop:"1px solid "+C.border,paddingTop:18,marginTop:18}}>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:6}}><i className="ti ti-credit-card" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Abonnement</div>
+          <div style={{fontSize:12,color:C.muted,lineHeight:1.6,marginBottom:10}}>Zeg je abonnement op, wijzig je betaalmethode of download je facturen. Je opent hiervoor een beveiligde pagina van Stripe.</div>
+          <button onClick={manageSub} disabled={subBusy} style={{width:"100%",padding:"11px",background:C.pL,color:C.primary,border:"1.5px solid "+C.primary,borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",opacity:subBusy?0.7:1}}>{subBusy?"Even geduld...":"Abonnement beheren"}</button>
+        </div>)}
         {/* Wachtwoord wijzigen */}
         <div style={{borderTop:"1px solid "+C.border,paddingTop:18,marginTop:18}}>
           <div style={{fontWeight:700,fontSize:14,marginBottom:10}}><i className="ti ti-key" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Wachtwoord wijzigen</div>
@@ -1903,6 +1929,7 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
                     <div style={{fontSize:13}}>Vul beide tijden in om de slaapduur te berekenen</div>
                   </div>
                 )}
+                <button onClick={closeReg} disabled={!slaap} style={{background:slaap?C.primary:C.border,color:"#fff",border:"none",borderRadius:12,padding:"12px",fontSize:14,fontWeight:700,cursor:slaap?"pointer":"default",width:"100%",marginTop:14}}>Slaap opslaan</button>
                 <div style={{fontSize:11,color:C.muted,marginTop:10,textAlign:"center"}}>Slaapduur wordt automatisch berekend en opgeslagen</div>
               </Card>
             )}

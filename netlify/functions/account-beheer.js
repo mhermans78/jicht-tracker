@@ -1,4 +1,5 @@
 const { createClient } = require("@supabase/supabase-js");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -36,6 +37,24 @@ exports.handler = async (event) => {
   // ── Account verwijderen + anonimiseren ───────────────────────────────────
   if (actie === "verwijder") {
     const anoniemEmail = "anoniem-" + user.id + "@verwijderd.nl";
+
+    // 0. Stop eerst een lopend Stripe-abonnement (ook tijdens de proefperiode), anders blijft de klant betalen
+    try {
+      const { data: sp } = await supabase.from("profiles").select("stripe_subscription_id,stripe_customer_id").eq("id", user.id).maybeSingle();
+      const ids = new Set();
+      if (sp?.stripe_subscription_id) ids.add(sp.stripe_subscription_id);
+      if (sp?.stripe_customer_id) {
+        const subs = await stripe.subscriptions.list({ customer: sp.stripe_customer_id, status: "all", limit: 20 });
+        for (const sub of subs.data) if (["active", "trialing", "past_due", "unpaid"].includes(sub.status)) ids.add(sub.id);
+      }
+      for (const id of ids) {
+        try { await stripe.subscriptions.cancel(id); }
+        catch (e) { if (!/No such subscription|already been canceled/i.test(e.message)) throw e; }
+      }
+    } catch (e) {
+      console.error("Abonnement stopzetten mislukt:", e.message);
+      return { statusCode: 500, body: JSON.stringify({ error: "Je abonnement kon niet worden stopgezet. Je account is niet verwijderd. Probeer het later opnieuw of neem contact op." }) };
+    }
 
     // 1. Anonimiseer profiel
     await supabase.from("profiles").update({
