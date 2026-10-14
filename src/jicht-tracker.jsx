@@ -75,6 +75,10 @@ const MTABS=[["home","ti-home","Home"],["registreer","ti-pencil","Registreer"],[
 let LANG="nl";
 const LOC=()=>LANG==="de"?"de-DE":"nl-NL";
 const DE={
+"Goedemiddag": "Guten Tag",
+"Goedenavond": "Guten Abend",
+"Goedenacht": "Gute Nacht",
+"Dagen aanvalvrij": "Anfallsfreie Tage",
 "Slaap opslaan": "Schlaf speichern",
 "In de demo-modus is het AI-advies niet beschikbaar. Maak een gratis account aan om een persoonlijk advies te ontvangen.": "Im Demo-Modus ist die KI-Empfehlung nicht verfügbar. Erstelle ein kostenloses Konto, um eine persönliche Empfehlung zu erhalten.",
 "De AI is nu niet beschikbaar. Probeer het later opnieuw.": "Die KI ist derzeit nicht verfügbar. Versuche es später erneut.",
@@ -1533,6 +1537,16 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
   if(loading)return <Spinner/>;
   const isPro = isDemo || profile.plan==='pro';
 
+  const _h=new Date().getHours();
+  const greet=_h>=5&&_h<12?"Goedemorgen":_h>=12&&_h<18?"Goedemiddag":_h>=18?"Goedenavond":"Goedenacht";
+  const aanvalVrij=(()=>{
+    if(entries.length===0)return 0;
+    const n=new Date();const t0=Date.UTC(n.getFullYear(),n.getMonth(),n.getDate());
+    const dd=ds=>Math.max(0,Math.round((t0-Date.UTC(+ds.slice(0,4),+ds.slice(5,7)-1,+ds.slice(8,10)))/86400000));
+    const att=entries.filter(e=>(e.aanval?.logs||[]).some(a=>a.type==="actief")).map(e=>e.date).sort();
+    if(att.length)return dd(att[att.length-1]);
+    return dd(entries.map(e=>e.date).sort()[0]);
+  })();
   const totalAttacks=entries.filter(e=>(e.aanval?.logs||[]).some(a=>a.type==="actief")).length;
   const allPains=entries.flatMap(e=>e.pijn_logs||e.pijnLogs||[]).map(p=>p.level).filter(Boolean);
   const avgPain=allPains.length?(allPains.reduce((a,b)=>a+b,0)/allPains.length).toFixed(1):"–";
@@ -1589,18 +1603,15 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
       {isDemo&&<div style={{background:C.pL,borderBottom:"1px solid "+C.border,padding:"8px 16px",textAlign:"center",fontSize:12,color:C.pD,fontWeight:600}}><i className="ti ti-eye" style={{verticalAlign:"-0.12em",marginRight:6}} aria-hidden="true"></i>Demo-modus — wijzigingen worden niet opgeslagen</div>}
 
       {mainTab==="home"&&(<>
-      {/* Hero banner */}
-      <div style={{padding:"16px 18px 0",fontSize:13,color:C.muted,fontWeight:500}}>Eindelijk meer controle over je jicht</div>
-
       {/* Today card */}
-      <div style={{background:"linear-gradient(135deg,"+C.primary+" 0%,#2F9E6E 100%)",margin:"14px 14px 0",borderRadius:20,padding:"16px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",color:"#fff",boxShadow:"0 6px 18px rgba(14,124,134,0.22)"}}>
+      <div style={{background:"linear-gradient(135deg,"+C.primary+" 0%,#2F9E6E 100%)",margin:"12px 14px 0",borderRadius:20,padding:"16px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",color:"#fff",boxShadow:"0 6px 18px rgba(14,124,134,0.22)"}}>
         <div>
-          <div style={{fontSize:12,fontWeight:500,color:"rgba(255,255,255,0.85)",marginBottom:3}}>Goedemorgen{profile.name?", "+profile.name.split(" ")[0]:""}</div>
+          <div style={{fontSize:12,fontWeight:500,color:"rgba(255,255,255,0.85)",marginBottom:3}}>{greet}{profile.name?", "+profile.name.split(" ")[0]:""}</div>
           <div style={{fontSize:18,fontWeight:700,letterSpacing:"-0.3px"}}>{new Date().toLocaleDateString(LOC(),{weekday:"long",day:"numeric",month:"long"}).replace(/^\w/,c=>c.toUpperCase())}</div>
         </div>
         <div style={{background:"rgba(255,255,255,0.18)",borderRadius:14,padding:"10px 14px",textAlign:"center"}}>
-          <div style={{fontSize:22,fontWeight:700,lineHeight:1}}>{entries.length}</div>
-          <div style={{fontSize:9,fontWeight:600,color:"rgba(255,255,255,0.9)",textTransform:"uppercase",marginTop:3,letterSpacing:0.4}}>Dagen actief</div>
+          <div style={{fontSize:22,fontWeight:700,lineHeight:1}}>{aanvalVrij}</div>
+          <div style={{fontSize:9,fontWeight:600,color:"rgba(255,255,255,0.9)",textTransform:"uppercase",marginTop:3,letterSpacing:0.4}}>Dagen aanvalvrij</div>
         </div>
       </div>
       </>)}
@@ -1718,6 +1729,9 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
         {mainTab==="home"&&(
           <div>
             {syncBadge&&<div style={{background:syncBadge.bg,border:"1px solid "+syncBadge.b,borderRadius:8,padding:"7px 12px",color:syncBadge.c,fontSize:12,fontWeight:600,marginBottom:10,textAlign:"center"}}>{syncBadge.t}</div>}
+            <button onClick={()=>{setRegSec(null);setMainTab("registreer");window.scrollTo({top:0});}} style={{width:"100%",background:C.primary,border:"1.5px solid "+C.primary,color:"#fff",borderRadius:16,padding:"14px",fontSize:14,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:14,marginTop:14,fontFamily:FONT}}>
+              <i className="ti ti-pencil-plus" style={{fontSize:20}} aria-hidden="true"></i> Registreer vandaag
+            </button>
             {/* Dashboard kaarten */}
             <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1.5,marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <span>Deze maand</span>
@@ -1757,9 +1771,6 @@ function JichtTracker({session,onLogout,lang,setLang}){ const{token}=session;
               </div>
             )})()}
 
-            <button onClick={()=>{setRegSec(null);setMainTab("registreer");window.scrollTo({top:0});}} style={{width:"100%",background:C.card,border:"1.5px solid "+C.primary,color:C.primary,borderRadius:16,padding:"14px",fontSize:14,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:14,fontFamily:FONT}}>
-              <i className="ti ti-pencil-plus" style={{fontSize:20}} aria-hidden="true"></i> Registreer vandaag
-            </button>
             {/* AI advies banner  */}
             {entries.length>=5&&(
               <div style={{background:C.dark,borderRadius:16,padding:"13px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,marginTop:4}}>
