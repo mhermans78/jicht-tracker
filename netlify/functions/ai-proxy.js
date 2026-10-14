@@ -1,12 +1,12 @@
 // Beveiligde AI-proxy: alleen ingelogde gebruikers, model + maximale lengte + daglimiet bepaalt de SERVER.
 // Netlify-variabelen: ANTHROPIC_API_KEY (verplicht), SUPABASE_URL, SUPABASE_SERVICE_KEY,
-// AI_MODEL (optioneel, vaste modelnaam), AI_DAILY_LIMIT (optioneel, standaard 1), AI_MAX_TOKENS (optioneel, standaard 1000)
+// AI_MODEL (optioneel, vaste modelnaam), AI_DAILY_LIMIT (optioneel, standaard 1), AI_MAX_TOKENS (optioneel, standaard 2000)
 const { createClient } = require("@supabase/supabase-js");
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 const MODEL = process.env.AI_MODEL || "claude-haiku-5-5";
 const DAILY_LIMIT = parseInt(process.env.AI_DAILY_LIMIT || "1", 10);
-const MAX_TOKENS = parseInt(process.env.AI_MAX_TOKENS || "1000", 10);
+const MAX_TOKENS = parseInt(process.env.AI_MAX_TOKENS || "2000", 10);
 const MAX_PROMPT_CHARS = 80000;
 const SYSTEM =
   "Je bent de assistent van JichtTracker, een dagboek-app voor mensen met jicht. " +
@@ -68,18 +68,28 @@ exports.handler = async (event) => {
 
   // 4. Aanroep met model en limieten van de server
   try {
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
+    const maxTokens = Math.min(parseInt(body.max_tokens, 10) || MAX_TOKENS, MAX_TOKENS);
+    const call = (extra) => fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: MODEL, max_tokens: Math.min(parseInt(body.max_tokens, 10) || MAX_TOKENS, MAX_TOKENS), system: SYSTEM, messages: clean }),
+      body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, system: SYSTEM, messages: clean, ...extra }),
     });
-    const data = await r.json();
+    // Zonder 'denkruimte': anders kan het model de hele limiet opmaken voordat er tekst staat.
+    let r = await call({ thinking: { type: "disabled" } });
+    let data = await r.json();
+    if (r.status === 400 && /thinking/i.test(JSON.stringify(data))) { r = await call({}); data = await r.json(); }
     if (!r.ok) {
       await refund();
       console.error("Anthropic fout:", r.status, JSON.stringify(data).slice(0, 300));
       return json(502, { error: "De AI is nu niet beschikbaar. Probeer het later opnieuw." });
     }
-    return json(200, { content: data.content, stop_reason: data.stop_reason });
+    const texts = (data.content || []).filter(b => b && b.type === "text" && b.text);
+    if (texts.length === 0) {
+      await refund();
+      console.error("Lege AI-respons:", data.stop_reason, JSON.stringify((data.content || []).map(b => b && b.type)));
+      return json(502, { error: "De AI gaf geen antwoord. Probeer het opnieuw." });
+    }
+    return json(200, { content: texts, stop_reason: data.stop_reason });
   } catch (err) {
     await refund();
     console.error("AI-proxy fout:", err.message);

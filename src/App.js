@@ -75,6 +75,7 @@ const MTABS=[["home","ti-home","Home"],["registreer","ti-pencil","Registreer"],[
 let LANG="nl";
 const LOC=()=>LANG==="de"?"de-DE":"nl-NL";
 const DE={
+"De AI gaf geen antwoord. Probeer het opnieuw.": "Die KI hat keine Antwort geliefert. Versuche es erneut.",
 "Goedemiddag": "Guten Tag",
 "Goedenavond": "Guten Abend",
 "Goedenacht": "Gute Nacht",
