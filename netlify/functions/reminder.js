@@ -73,9 +73,13 @@ exports.handler = async () => {
       const { data: u } = await supabase.auth.admin.getUserById(p.id);
       const email = u?.user?.email;
       if (!email || email.endsWith("@verwijderd.nl")) { skipped++; continue; }
-      const { data: last } = await supabase.from("entries").select("date").eq("user_id", p.id).order("date", { ascending: false }).limit(1);
-      const ref = last?.[0]?.date ? new Date(last[0].date + "T12:00:00Z").getTime() : new Date(u.user.created_at).getTime();
+      const { data: last, error: eErr } = await supabase.from("entries").select("date").eq("user_id", p.id).order("date", { ascending: false }).limit(1);
+      if (eErr) { failed++; console.error("Entries ophalen mislukt voor", p.id, eErr.message); continue; } // bij twijfel niet mailen
+      const lastDate = last?.[0]?.date || null;
+      const ref = lastDate ? new Date(String(lastDate).slice(0, 10) + "T12:00:00Z").getTime() : new Date(u.user.created_at).getTime();
+      if (!isFinite(ref)) { failed++; console.error("Ongeldige datum voor", p.id, lastDate); continue; }
       const dagen = Math.floor((now - ref) / DAY);
+      console.log("[reminder]", p.id, "laatste registratie:", lastDate || "geen (accountdatum gebruikt)", "->", dagen, "dagen");
       if (dagen < DAYS_INACTIVE) { skipped++; continue; }
       const unsub = SITE + "/.netlify/functions/reminder-unsub?uid=" + p.id + "&t=" + sign(p.id);
       if (dry) { console.log("[dry-run] zou mailen:", email, p.lang || "nl", dagen, "dagen"); sent++; continue; }
